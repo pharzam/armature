@@ -147,6 +147,20 @@ the quick-reference table. A rename that the glossary does not reflect leaves th
 rest of the docs inconsistent with themselves, which is exactly what the glossary
 exists to prevent.
 
+**No undefined abbreviation.** Every abbreviation that appears in any conversation,
+context, prompt, reply, or response must have an entry in [`glossary.md`](glossary.md).
+If an abbreviation is not yet defined there, the same turn that uses it adds it — the
+full row: Term, Abbr., Description, and Example. This rule binds **all LLMs and all
+human operators** working in this project; it is not optional, and "the reader will
+know what it means" is not a substitute for the entry. An abbreviation that is used
+but never defined is the exact gap the glossary exists to close, one turn at a time.
+
+The one boundary: general-English abbreviations — for example `e.g.`, `i.e.`, `etc.`,
+`vs.` — are exempt, because they are already shared vocabulary. The exemption ends the
+moment such a form carries a project-specific meaning; then it is a term like any
+other and needs its row. When in doubt, add the entry: a glossary with one line too
+many costs a reader a glance, while a missing line costs them the meaning.
+
 ## Plain-language summaries
 
 Every doc that carries a **decision-grade finding** — a result that someone is

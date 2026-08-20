@@ -2,8 +2,13 @@
 
 Terms, abbreviations, and short definitions for this project. This is the shared
 vocabulary the rest of the docs assume. It is the target of the
-[Glossary](engineering-discipline.md#glossary) rule: any change that adds a term,
-renames one, or changes a meaning updates this file in the same change.
+[Glossary](engineering-discipline.md#glossary) rule, which has two parts. First: any
+change that adds a term, renames one, or changes a meaning updates this file in the
+same change. Second — **No undefined abbreviation**: every abbreviation used in any
+conversation, context, prompt, reply, or response must have an entry here, and any
+LLM or operator who uses one that is missing adds it in the same turn. General-English
+abbreviations (`e.g.`, `i.e.`, `etc.`) are exempt unless they carry a
+project-specific meaning.
 
 > **How to adapt this file.** This is an empty skeleton. Keep the format below,
 > then fill the tables with your own terms. Group terms into sections that match
