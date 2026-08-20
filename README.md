@@ -1,4 +1,6 @@
-# Engineering Discipline Kit
+# Armature
+
+*The engineering-discipline kit.*
 
 > A domain-free scaffold for running a new software project with discipline — the
 > "how we work," ready to compose onto any domain.
@@ -7,6 +9,18 @@
 a new project a ready-made engineering-discipline system — a quality gate,
 guardrails, ADRs, a glossary, a customer-facts convention, and a task backlog — that
 you adapt to your domain and grow over time.
+
+## About the name
+
+**Armature** — say it *AR-mə-chər* (`/ˈɑːr.mə.tʃər/`), three syllables: *ar·ma·ture*.
+In sculpture, an armature is the internal wire-and-metal frame a figure is built
+around: the skeleton holds the shape, and the clay goes on top. This kit is that
+skeleton for a software project — it holds the engineering discipline, and your
+domain is the clay you add.
+
+The word traces to Latin *armatura*, "armor, equipment," from *armare* "to arm"
+(from *arma*, "weapons, tools") — the same root as *arm* and *armor*. An armature is
+the frame that gives a thing its strength.
 
 ## Start here
 
