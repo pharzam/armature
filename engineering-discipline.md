@@ -11,6 +11,10 @@ The practices come as one **quality gate**: a fixed, ordered sequence that every
 substantive task must pass. A gate works because it stores the team's hard-won
 lessons. You follow the step; you do not re-learn the lesson the hard way.
 
+This document is the project's *how*. For the *what and why* — the problem the
+project solves — see the
+[Problem statement](onboarding-for-engineers.md#1-problem-statement).
+
 ## How to adapt this kit
 
 Two kinds of thing need your input. Do both, then delete this section.

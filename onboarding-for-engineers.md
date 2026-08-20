@@ -15,7 +15,7 @@
 > anywhere else (see the [plain-language-summaries](engineering-discipline.md#plain-language-summaries)
 > rule). Delete this note when the file is real.
 
-## 1. What we are building, in one paragraph
+## 1. Problem statement
 
 `‹Describe the product in plain language, with no unexplained jargon. What does it
 do, for whom, and what question was the project set out to answer. If the project
