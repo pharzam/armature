@@ -57,7 +57,20 @@ same discipline drops onto any project — you add the domain, not the process.
 
 To stand up a new project:
 
-1. Copy the kit into your repository (or use it as a GitHub template).
+1. **Start with a clean history.** Your project is a *new* repository, not a fork
+   of the kit — it must not keep Armature's git history or remote. Two paths give
+   you that for free: click **Use this template** on GitHub, or run
+   `npx degit pharzam/armature my-project`. If you already cloned, detach by hand —
+   deleting `.git` clears Armature's history and its remote in one move:
+
+   ```bash
+   rm -rf .git            # drop Armature's history and remote
+   git init && git add -A
+   git commit -m "chore: initialize from Armature kit"
+   git remote add origin git@github.com:you/my-project.git
+   ```
+
+   To pull kit improvements later, keep the link as `upstream`, never `origin`.
 2. Follow **[How to adapt this kit](engineering-discipline.md#how-to-adapt-this-kit)** —
    set the project-wide values (test runner, evidence store, task-ID scheme, worktree
    directory) and fill the sibling documents.

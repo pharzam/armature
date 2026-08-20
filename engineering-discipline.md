@@ -17,6 +17,11 @@ project solves — see the
 
 ## How to adapt this kit
 
+**Before you fill anything, start from a clean history.** Your project is a *new*
+repository, not a fork of the kit — do not keep Armature's git history or remote.
+Use GitHub's *Use this template*, or detach by hand: delete `.git`, run `git init`,
+commit, and add your own remote. Then do the two things below.
+
 Two kinds of thing need your input. Do both, then delete this section.
 
 **1. Fill the sibling documents.** Each is a generic template with its own
