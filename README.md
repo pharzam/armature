@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="assets/armature-logo.jpg" width="360"
+       alt="Armature logo: a low-poly human figure rendered as a wireframe armature, ringed by the kit's icons — a shield, documents, a book, a person, and a checklist.">
+</p>
+
 # Armature
 
 *The engineering-discipline kit.*
