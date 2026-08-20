@@ -36,7 +36,7 @@ Two rules keep the glossary earning its place:
 
 ## Kit vocabulary — the abbreviations these discipline docs use
 
-These three are defined here because the kit's own documents use them. Keep this
+These are defined here because the kit's own documents use them. Keep this
 section as-is; add your domain terms in the sections below.
 
 | Term | Abbr. | Description | Example |
@@ -44,6 +44,8 @@ section as-is; add your domain terms in the sections below.
 | Large Language Model | `LLM` | A machine-learning model that generates and transforms natural-language text. In this kit it is one of the two operator classes the rules bind, alongside the human operator. | An AI assistant that edits these docs must add any abbreviation it uses to this glossary in the same turn. |
 | Architecture Decision Record | `ADR` | A short, numbered document that records one architecturally significant decision and its context. Stored under [`adr/`](adr/). | [`adr/0001-record-architecture-decisions.md`](adr/0001-record-architecture-decisions.md) records the decision to use ADRs. |
 | Continuous Integration | `CI` | The automated pipeline that builds the project and runs its checks on each change. Collision to watch for: in statistics and machine-learning writing, "CI" usually means *Confidence Interval* — state which you mean. | The cheap validation checks in [`guardrails.md`](guardrails.md) are the ones worth wiring into CI so they run on every change. |
+| Facts Document | `—` | A record under [`facts/`](facts/) that stores one customer's requirements or statements as-is, word for word, as immutable evidence. Carries a stable `F-NNNN` ID that derived requirements cite. Collision to watch for: not a data-warehouse "fact table" — this is a source document, not a database row. | `F-0007#3` cites the third fact in facts document `F-0007`; a requirement written from it names that ID. |
+| Simplified Technical English | `STE` | A controlled subset of English — the ASD-STE100 standard — with a limited vocabulary and short, active sentences, used for unambiguous technical writing. In this kit it is the language of the derived requirements written from [facts documents](facts/). Collision to watch for: not the same as a [plain-language summary](engineering-discipline.md#plain-language-summaries) — STE is a formal standard, a plain-language summary is just jargon-free prose. | The requirements derived from `F-0007` are written in STE: short, active sentences drawn from the approved word list. |
 
 ## 1. `‹Domain area one›`
 

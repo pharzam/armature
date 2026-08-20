@@ -27,6 +27,10 @@ Two kinds of thing need your input. Do both, then delete this section.
 - [`adr/`](adr/) — your Architecture Decision Records. Start at
   [`adr/README.md`](adr/README.md); copy [`adr/template.md`](adr/template.md) for
   each new record.
+- [`facts/`](facts/) — the facts documents you collect from a customer, stored
+  as-is. Skip this if your project has no external customer. Start at
+  [`facts/README.md`](facts/README.md); copy [`facts/template.md`](facts/template.md)
+  for each new record.
 - [`glossary.md`](glossary.md) — your shared-vocabulary document.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.
@@ -137,6 +141,29 @@ records the decision to use ADRs.
 A decision is "architecturally significant" if it affects structure,
 non-functional characteristics, dependencies, interfaces, or construction
 techniques. When in doubt, write it down.
+
+## Customer facts
+
+Facts you collect from a customer — requirements, statements, domain facts — live
+in [`facts/`](facts/) under a two-layer rule, so the customer's exact words and
+your interpretation of them never get confused.
+
+**Layer 1 — raw, stored as-is.** Commit each customer document word for word,
+with a provenance header (source, collector, date, origin) and nothing rewritten.
+This is evidence, and it follows the [Honesty and evidence](#honesty-and-evidence)
+rule: it stays untouched so a requirement can be checked against the words that
+produced it. A raw facts document is immutable once committed, exactly like an
+[ADR](#architecture-decision-records); a correction is a new record, not an edit.
+
+**Layer 2 — derived, in your own words.** Write your requirements, ADRs, and
+glossary terms *from* the raw facts, and have each derived statement cite the raw
+fact it came from by its `F-NNNN` ID. Layer 2 is where the
+[plain-language](#plain-language-summaries) and [glossary](#glossary) rules apply,
+and where interpretation is allowed. Layer 1 is where interpretation is forbidden.
+
+The mechanics — the ID scheme, how to add a document, how to correct one — are in
+[`facts/README.md`](facts/README.md). A project with no external customer skips
+this section and the [`facts/`](facts/) directory entirely.
 
 ## Glossary
 
