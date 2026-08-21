@@ -29,10 +29,10 @@ the frame that gives a thing its strength.
 
 ## Start here
 
-1. **[`onboarding-for-engineers.md`](onboarding-for-engineers.md)** — read this first
-   (~30 min). It states the [Problem statement](onboarding-for-engineers.md#1-problem-statement)
+1. **[`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md)** — read this first
+   (~30 min). It states the [Problem statement](docs/onboarding-for-engineers.md#1-problem-statement)
    and teaches the project's vocabulary.
-2. **[`engineering-discipline.md`](engineering-discipline.md)** — how we work: the
+2. **[`docs/engineering-discipline.md`](docs/engineering-discipline.md)** — how we work: the
    quality gate every substantive task passes, plus branches, tests, reviews, and
    ADRs. Read before your first commit.
 
@@ -40,13 +40,13 @@ the frame that gives a thing its strength.
 
 | Piece | What it holds |
 |-------|---------------|
-| [`onboarding-for-engineers.md`](onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
-| [`engineering-discipline.md`](engineering-discipline.md) | The quality gate and every working practice. |
-| [`glossary.md`](glossary.md) | The shared vocabulary the other docs assume. |
-| [`guardrails.md`](guardrails.md) | Known pitfalls, pre-registered pass/fail rules, and validation. |
-| [`adr/`](adr/) | Architecture Decision Records — the *why* behind structural choices. |
-| [`facts/`](facts/) | Raw customer facts kept as immutable evidence, and the citation convention that derives requirements from them. |
-| [`tasks/`](tasks/) | The task index — [`backlog.md`](tasks/backlog.md) and [`completed.md`](tasks/completed.md). |
+| [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
+| [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate and every working practice. |
+| [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary the other docs assume. |
+| [`docs/guardrails.md`](docs/guardrails.md) | Known pitfalls, pre-registered pass/fail rules, and validation. |
+| [`docs/adr/`](docs/adr/) | Architecture Decision Records — the *why* behind structural choices. |
+| [`docs/facts/`](docs/facts/) | Raw customer facts kept as immutable evidence, and the citation convention that derives requirements from them. |
+| [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md). |
 
 ## Using it as a template
 
@@ -71,7 +71,7 @@ To stand up a new project:
    ```
 
    To pull kit improvements later, keep the link as `upstream`, never `origin`.
-2. Follow **[How to adapt this kit](engineering-discipline.md#how-to-adapt-this-kit)** —
+2. Follow **[How to adapt this kit](docs/engineering-discipline.md#how-to-adapt-this-kit)** —
    set the project-wide values (test runner, evidence store, task-ID scheme, worktree
    directory) and fill the sibling documents.
 3. Search for `‹` to find everything still unfilled; delete every "How to adapt" note
