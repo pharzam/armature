@@ -1,0 +1,62 @@
+# Continuous integration — GitHub Actions (OPTIONAL template).
+#
+# This file is INERT here on purpose: GitHub only runs workflows placed under
+# .github/workflows/. To activate it, copy it into place and fill the ‹…›:
+#
+#   mkdir -p .github/workflows
+#   cp docs/ci/github-actions-ci.yml .github/workflows/ci.yml
+#
+# Then replace every ‹…› with your stack's command. CI is the AUTHORITY for the
+# quality gate — make these jobs required checks on your default branch (Settings
+# → Branches → branch protection). The .githooks/ run the same rules locally for
+# fast feedback. Delete any job your project does not need.
+#
+# See docs/engineering-discipline.md §"Continuous integration (optional)".
+
+name: CI
+
+on:
+  pull_request:
+    branches: [ "‹default branch, e.g. main›" ]
+  push:
+    branches: [ "‹default branch, e.g. main›" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  adr-lint:
+    name: adr-lint (docs/adr discipline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — the ADR linter needs no toolchain.
+      - run: sh docs/adr/adr-lint.sh
+
+  lint:
+    name: lint (‹your linter/formatter›)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ‹set up your toolchain here›
+      - run: "‹lint command, e.g. a formatter --check plus a linter›"
+
+  tests:
+    name: tests (‹test runner›)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ‹set up your toolchain here›
+      - run: "‹test runner command›"
+
+  secrets:
+    name: secrets (‹secret scanner›)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so the scan sees every commit
+      - run: "‹secret-scan command over full history, e.g. a pinned gitleaks image›"
