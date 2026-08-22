@@ -19,6 +19,18 @@ lightweight format described by Michael Nygard — see
 The Status line is the one part of an accepted ADR that may be edited, and only
 to record one of these two relationships. Everything else stays immutable.
 
+## The linter enforces these rules
+
+[`adr-lint.sh`](adr-lint.sh) checks every `NNNN-*.md` in this directory against
+the conventions above — filename shape, contiguous numbering, the title line, a
+`Date:` line, an allowed `## Status`, the required `## Context` / `## Decision` /
+`## Consequences` sections, and a row in the index table below (a missing inbound
+cross-link is a warning). It reads only Markdown, so `sh docs/adr/adr-lint.sh`
+runs anywhere, and it is wired into the
+[`pre-commit` hook](../engineering-discipline.md#git-hooks) and
+[CI](../engineering-discipline.md#continuous-integration-optional). If you change
+this template's shape, change the linter in the same change — the two must agree.
+
 ## Index
 
 | ADR                                             | Title                         | Status   |
