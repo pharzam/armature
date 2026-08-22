@@ -22,7 +22,7 @@ repository, not a fork of the kit — do not keep Armature's git history or remo
 Use GitHub's *Use this template*, or detach by hand: delete `.git`, run `git init`,
 commit, and add your own remote. Then do the two things below.
 
-Two kinds of thing need your input. Do both, then delete this section.
+Three kinds of thing need your input. Do all three, then delete this section.
 
 **1. Fill the sibling documents.** Each is a generic template with its own
 "How to adapt" notes:
@@ -52,6 +52,23 @@ of their own:
 - `‹task-ID scheme›` — how you tag a task (for example `T-` plus four random
   characters).
 - `‹worktree dir›` — your per-task isolation directory (for example `.worktree/`).
+
+**3. Turn on enforcement.** The gate below is only as real as what enforces it.
+Wire in the two enforcement layers so a violation is caught automatically, not by
+memory:
+
+- **Install the git hooks** — run `git config core.hooksPath .githooks` once per
+  clone. This turns on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
+  [commit format](#commit-messages), and the `pre-commit` hook runs the
+  [ADR linter](#testing) plus the fast gate you fill in. See
+  [Git hooks](#git-hooks).
+- **Fill the hook and CI `‹…›` steps** for your stack (`‹lint›`, `‹test runner›`,
+  `‹secret-scan›`), then, if you use GitHub or GitLab, **activate CI** by copying
+  the matching template from [`docs/ci/`](ci/) into place — see
+  [Continuous integration](#continuous-integration-optional). CI is optional but
+  recommended; it is the authority the hooks give you fast feedback against.
+- **Confirm the ADR linter runs** — `sh docs/adr/adr-lint.sh` should print
+  `adr-lint: OK`. It ships wired into the hook and the CI templates.
 
 ## Working a task under the quality gate
 
@@ -240,6 +257,52 @@ once the code already "works". A bug fix's test must fail against the old code a
 pass against the fix — otherwise it is not proof that the bug is gone.
 
 Tests run through `‹test runner›`.
+
+**Discipline tests keep the process itself honest.** Beyond tests of the product,
+the kit ships one test of its own conventions: [`adr/adr-lint.sh`](adr/adr-lint.sh)
+lints [`adr/`](adr/) against the [ADR](#architecture-decision-records) rules —
+filenames, sequential numbering, required sections, the index, and cross-links.
+It reads only Markdown, so it needs no toolchain and can be the project's first
+test, before any product code exists. It runs in the
+[`pre-commit`](#git-hooks) hook and in [CI](#continuous-integration-optional). Add
+a discipline test whenever a convention is worth enforcing automatically rather
+than by review; wire each one into both the hook and CI.
+
+## Continuous integration (optional)
+
+CI runs this whole gate automatically on every change, so it is enforced by the
+forge rather than by memory. It is the **authority**: its checks — the
+[ADR linter](#testing), your `‹test runner›`, lint, a secret scan, and the
+[commit-format](#commit-messages) check — are the ones you make *required* before
+a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
+
+It is optional because the kit is forge-free. Ready-to-copy templates for GitHub
+Actions and GitLab CI live in [`docs/ci/`](ci/), inert until you copy one into
+place and fill its `‹…›` steps — see [`docs/ci/README.md`](ci/README.md). Turn CI
+on as part of [adapting the kit](#how-to-adapt-this-kit).
+
+## Git hooks
+
+Git hooks enforce the cheap parts of the gate **before** a commit is recorded, so
+a violation never reaches CI or a reviewer. The tracked [`.githooks/`](../.githooks/)
+directory holds them, shared by the whole team (unlike the local, untracked
+`.git/hooks`). Install once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Two hooks ship with the kit:
+
+- **`commit-msg`** — rejects a subject line that does not follow
+  [Conventional Commits](#commit-messages). Ready as-is.
+- **`pre-commit`** — runs the [ADR linter](#testing), then the `‹lint›`,
+  `‹test runner›` (fast subset), and `‹secret-scan›` steps you fill in for your
+  stack. Keep it cheap-first; the full suite belongs in
+  [CI](#continuous-integration-optional).
+
+[`.githooks/README.md`](../.githooks/README.md) has the details and the optional
+[`pre-commit` framework](https://pre-commit.com) alternative.
 
 ## Progress indicators for long-running operations
 
