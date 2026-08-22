@@ -70,7 +70,9 @@ To stand up a new project:
    git remote add origin git@github.com:you/my-project.git
    ```
 
-   To pull kit improvements later, keep the link as `upstream`, never `origin`.
+   The scaffold is a one-time copy, not a dependency: your project keeps no link
+   back to Armature — no `upstream` remote, no fork relationship. Adopt any later
+   kit improvements by hand, if and when you want them.
 2. Follow **[How to adapt this kit](docs/engineering-discipline.md#how-to-adapt-this-kit)** —
    set the project-wide values (test runner, evidence store, task-ID scheme, worktree
    directory) and fill the sibling documents.
