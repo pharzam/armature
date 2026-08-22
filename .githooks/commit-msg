@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# commit-msg — enforce Conventional Commits.
+#
+# Mirrors docs/engineering-discipline.md §"Commit messages":
+#   <type>: <description>            e.g. docs: add glossary
+#   <type>(scope): <description>     e.g. feat(cli): add scale command
+#   <type>: <ID> <description>       when a commit closes a backlog task
+# Types: feat fix docs refactor perf test build ci chore revert
+#
+# This hook is language-agnostic — it reads only the commit message. It is
+# inert until you run `git config core.hooksPath .githooks` (see .githooks/README.md).
+#
+# How to adapt: this file is ready to use as-is. Widen the type list below only
+# if your project agrees a new type in §"Commit messages" first.
+
+subject=$(sed -n '1p' "$1")
+
+# Let git's own machine-generated messages through untouched.
+case "$subject" in
+	"Merge "*|"Revert "*|fixup!*|squash!*|"amend!"*) exit 0 ;;
+esac
+
+if printf '%s' "$subject" \
+	| grep -Eq '^(feat|fix|docs|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'; then
+	exit 0
+fi
+
+cat >&2 <<EOF
+commit-msg: subject line does not follow Conventional Commits.
+  wanted: <type>: <description>   (types: feat fix docs refactor perf test build ci chore revert)
+  got:    $subject
+See docs/engineering-discipline.md §"Commit messages".
+EOF
+exit 1

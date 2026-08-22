@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# pre-commit — run the cheap quality-gate checks before a commit is recorded,
+# so a violation is caught here rather than in CI (docs/ci/) or review.
+#
+# It runs the ADR linter out of the box (docs-only, no toolchain needed). The
+# lint / test / secret-scan steps are ‹…› placeholders you fill for your stack —
+# keep them cheap-first, so a failure stops the expensive checks. This hook is
+# inert until you run `git config core.hooksPath .githooks` (see .githooks/README.md).
+#
+# How to adapt: replace each ‹…› with your project's command and uncomment the
+# line. Delete any step you do not use. Run only the fast subset here; the full
+# suite belongs in CI.
+
+set -e
+
+# 1. ADR discipline — keeps docs/adr/ honest (see docs/adr/adr-lint.sh).
+if [ -f docs/adr/adr-lint.sh ]; then
+	sh docs/adr/adr-lint.sh
+fi
+
+# 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
+# ‹your-linter› || exit 1
+
+# 3. Tests (fast subset) — ‹test runner, e.g. the unit-test command›
+# ‹your-test-runner› || exit 1
+
+# 4. Secret scan (staged changes) — ‹secret-scan command, e.g. gitleaks protect --staged›
+# ‹your-secret-scanner› || exit 1
+
+exit 0
