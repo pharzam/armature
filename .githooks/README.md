@@ -23,6 +23,17 @@ them, `git config --unset core.hooksPath`.
 |------|------|--------|
 | [`pre-commit`](pre-commit) | The ADR linter, then your `‹lint›` / `‹test runner›` / `‹secret-scan›` (fast subset). | Fill the `‹…›` steps for your stack. |
 | [`commit-msg`](commit-msg) | Conventional-Commits check on the subject line. | Ready as-is. |
+| [`pre-push`](pre-push) | Refuses a direct push to `main` — use a branch and a PR instead. | Change the branch name if your default is not `main`. |
+
+## Protecting `main`
+
+[`pre-push`](pre-push) blocks a direct push to `main` so changes go through a
+branch and a pull request. It is a **local, fast-feedback guardrail only** —
+advisory, bypassable with `git push --no-verify`, and absent on a fresh clone
+until `core.hooksPath` is set. The real, unbypassable lock is your host's
+**branch-protection rule** (require a pull request before merging), enforced
+server-side. Turn that on for every repo; this hook is its local twin, not a
+substitute.
 
 ## How to adapt
 

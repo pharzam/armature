@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# pre-push — refuse a direct push to the protected branch (main), so the
+# branch-and-PR workflow in docs/engineering-discipline.md is followed and a
+# stray `git push` is caught here rather than bounced back by the host.
+#
+# This is a LOCAL guardrail only: advisory, bypassable (git push --no-verify),
+# and absent on a fresh clone until core.hooksPath is set. The real,
+# unbypassable lock lives server-side in the host's branch-protection rules
+# (require a pull request before merging). Keep both — this hook is the
+# fast-feedback twin of that server-side rule, not a replacement for it.
+#
+# git passes each ref being pushed on stdin, one per line:
+#   <local ref> <local sha> <remote ref> <remote sha>
+# It is inert until you run `git config core.hooksPath .githooks`
+# (see .githooks/README.md).
+#
+# How to adapt: change `protected` below if your default branch is not `main`.
+
+protected="refs/heads/main"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+	if [ "$remote_ref" = "$protected" ]; then
+		cat >&2 <<EOF
+pre-push: direct push to '${protected#refs/heads/}' is not allowed.
+  Use a branch and open a pull request instead:
+    git switch -c my-change
+    git push -u origin my-change
+    # then open the PR
+See docs/engineering-discipline.md.
+(The host's branch protection enforces this server-side; this hook is the
+ local, fast-feedback twin. To bypass in an emergency: git push --no-verify.)
+EOF
+		exit 1
+	fi
+done
+
+exit 0
