@@ -36,11 +36,19 @@ Three kinds of thing need your input. Do all three, then delete this section.
   as-is. Skip this if your project has no external customer. Start at
   [`facts/README.md`](facts/README.md); copy [`facts/template.md`](facts/template.md)
   for each new record.
+- [`prd/`](prd/) — your Product Requirements Documents, derived from the facts.
+  Skip this if your project tracks no requirements. Start at
+  [`prd/README.md`](prd/README.md); copy [`prd/template.md`](prd/template.md) for
+  each new record.
 - [`glossary.md`](glossary.md) — your shared-vocabulary document.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.
 - [`tasks/backlog.md`](tasks/backlog.md) and
   [`tasks/completed.md`](tasks/completed.md) — your task index.
+- [`issue-workflow.md`](issue-workflow.md) — the issue-first rules (R1–R11), the
+  ticket policy the gate assumes.
+- [`templates/`](templates/) — inert forge issue/PR templates; copy into place
+  only if you adopt that forge.
 
 **2. Replace the `‹…›` markers.** These are the per-project values with no file
 of their own:
@@ -60,21 +68,23 @@ memory:
 - **Install the git hooks** — run `git config core.hooksPath .githooks` once per
   clone. This turns on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
   [commit format](#commit-messages), and the `pre-commit` hook runs the
-  [ADR linter](#testing) plus the fast gate you fill in. See
-  [Git hooks](#git-hooks).
+  [ADR linter](#testing) and the [PRD linter](#testing) plus the fast gate you
+  fill in. See [Git hooks](#git-hooks).
 - **Fill the hook and CI `‹…›` steps** for your stack (`‹lint›`, `‹test runner›`,
   `‹secret-scan›`), then, if you use GitHub or GitLab, **activate CI** by copying
   the matching template from [`docs/ci/`](ci/) into place — see
   [Continuous integration](#continuous-integration-optional). CI is optional but
   recommended; it is the authority the hooks give you fast feedback against.
-- **Confirm the ADR linter runs** — `sh docs/adr/adr-lint.sh` should print
-  `adr-lint: OK`. It ships wired into the hook and the CI templates.
+- **Confirm the discipline linters run** — `sh docs/adr/adr-lint.sh` should print
+  `adr-lint: OK` and `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`. Both
+  ship wired into the hook and the CI templates.
 
 ## Working a task under the quality gate
 
 Every substantive task runs through the same gate. The steps below are the
 required order. Each step links to the section that gives its mechanics, and
-states any rule that has no section of its own.
+states any rule that has no section of its own. **Before step 1, an issue is open
+for the task** — see [Issue-first workflow](#issue-first-workflow).
 
 1. **Isolate.** Do the work in a per-task git worktree under `‹worktree dir›/<task>`,
    branched off `origin/main` — see [Starting a task](#starting-a-task). Never
@@ -111,6 +121,18 @@ states any rule that has no section of its own.
 8. **Close out in the same PR.** Tick the acceptance boxes, write the verdict,
    and move the ticket from backlog to completed — see
    [Completing a task](#completing-a-task). Then take the next logical task.
+
+## Issue-first workflow
+
+Before a task reaches step 1 of the gate, an **issue is open for it** — one
+actionable, demoable goal per issue. The change then lands through a pull request
+whose body links that issue (`Closes`/`Refs #N`), while the task ID stays in the
+commit subject, so the two namespaces coexist. The full rules — R1–R11, and the
+honest table of what is enforced where — live in
+[`issue-workflow.md`](issue-workflow.md); the decision is
+[ADR-0003](adr/0003-adopt-issue-first-workflow.md). The kit is forge-free, so an
+"issue" is a ticket in whatever forge you use, and forge-specific issue/PR
+templates ship inert under [`templates/`](templates/).
 
 ## Reviewing until findings decay
 
@@ -187,6 +209,44 @@ The mechanics — the ID scheme, how to add a document, how to correct one — a
 [`facts/README.md`](facts/README.md). A project with no external customer skips
 this section and the [`facts/`](facts/) directory entirely.
 
+## Product requirements
+
+Requirements live as **Product Requirements Documents (PRDs)** under
+[`prd/`](prd/). A PRD is **Layer 2** of the [Customer facts](#customer-facts) rule:
+each requirement is written *from* a raw `F-NNNN` fact and cites it, so a
+requirement can always be traced back to the customer's words. Every requirement
+carries a stable `REQ-NNN`/`NFR-NNN` ID, a MoSCoW priority, and a phase, and the
+convention is enforced by [`prd/prd-lint.sh`](prd/prd-lint.sh). Copy
+[`prd/template.md`](prd/template.md) for each new PRD; the mechanics and the ID
+scheme are in [`prd/README.md`](prd/README.md), and the decision is
+[ADR-0002](adr/0002-record-product-requirements.md). A project with no external
+customer, or one too small to track requirements, skips this section and the
+[`prd/`](prd/) directory.
+
+## Requirements traceability
+
+The kit's documents form one traceable line, from the customer's words to the test
+that proves them:
+
+    fact (F-NNNN#n) → requirement (REQ/NFR) → guardrail → ADR → task (‹task-ID›) → test
+
+Each link already has a home — [`facts/`](facts/) holds the fact, [`prd/`](prd/)
+the requirement, [`guardrails.md`](guardrails.md) the pitfall, [`adr/`](adr/) the
+decision, [`tasks/`](tasks/) the task, and the test suite the test — and a PRD's
+[traceability matrix](prd/README.md) is where the whole line is written down for
+one requirement. Two rules keep the last link honest:
+
+- **Test-driven, strict.** Write the failing test first, watch it fail for the
+  right reason, then write the code that makes it pass — see [Testing](#testing).
+  It is the default order, not an afterthought.
+- **Test freeze.** Once a fresh context confirms the tests (after the
+  [review rounds](#reviewing-until-findings-decay) settle), they are frozen. A
+  frozen test that later fails opens a bug sub-issue; it is not weakened to make
+  new code pass.
+
+The full workflow around this — plan on the issue, then red, then green — is R8
+and R9 of the [issue-first workflow](issue-workflow.md).
+
 ## Glossary
 
 Any change that adds a new term, renames an existing one, or changes what a term
@@ -259,11 +319,15 @@ pass against the fix — otherwise it is not proof that the bug is gone.
 Tests run through `‹test runner›`.
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
-the kit ships one test of its own conventions: [`adr/adr-lint.sh`](adr/adr-lint.sh)
-lints [`adr/`](adr/) against the [ADR](#architecture-decision-records) rules —
-filenames, sequential numbering, required sections, the index, and cross-links.
-It reads only Markdown, so it needs no toolchain and can be the project's first
-test, before any product code exists. It runs in the
+the kit ships two tests of its own conventions:
+[`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
+[ADR](#architecture-decision-records) rules — filenames, sequential numbering,
+required sections, the index, and cross-links — and
+[`prd/prd-lint.sh`](prd/prd-lint.sh) lints [`prd/`](prd/) against the
+[PRD](#product-requirements) rules — requirement IDs, a resolvable cited fact per
+requirement, MoSCoW and phase, and the traceability matrix. They read only
+Markdown, so they need no toolchain and can be the project's first tests, before
+any product code exists. They run in the
 [`pre-commit`](#git-hooks) hook and in [CI](#continuous-integration-optional). Add
 a discipline test whenever a convention is worth enforcing automatically rather
 than by review; wire each one into both the hook and CI.
@@ -272,8 +336,9 @@ than by review; wire each one into both the hook and CI.
 
 CI runs this whole gate automatically on every change, so it is enforced by the
 forge rather than by memory. It is the **authority**: its checks — the
-[ADR linter](#testing), your `‹test runner›`, lint, a secret scan, and the
-[commit-format](#commit-messages) check — are the ones you make *required* before
+[ADR linter](#testing), the [PRD linter](#testing), your `‹test runner›`, lint, a
+secret scan, and the [commit-format](#commit-messages) check — are the ones you
+make *required* before
 a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
 
 It is optional because the kit is forge-free. Ready-to-copy templates for GitHub
@@ -296,8 +361,9 @@ Two hooks ship with the kit:
 
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
-- **`pre-commit`** — runs the [ADR linter](#testing), then the `‹lint›`,
-  `‹test runner›` (fast subset), and `‹secret-scan›` steps you fill in for your
+- **`pre-commit`** — runs the [ADR linter](#testing) and the [PRD linter](#testing),
+  then the `‹lint›`, `‹test runner›` (fast subset), and `‹secret-scan›` steps you
+  fill in for your
   stack. Keep it cheap-first; the full suite belongs in
   [CI](#continuous-integration-optional).
 
