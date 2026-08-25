@@ -15,6 +15,8 @@
 #
 # Fact rule: a requirement must cite at least one F-NNNN token that resolves to a
 # file in the facts dir. Phase values are project-defined and NOT hardcoded here.
+# A PRD with no requirement-like rows at all (e.g. an unfilled skeleton whose rows
+# are still ‹placeholders›) fails — a real PRD states at least one requirement.
 #
 # How to adapt: the checks mirror docs/prd/template.md and README.md. If you
 # change the template (a column, the MoSCoW set), change the matching check here
@@ -82,11 +84,12 @@ for path in $prd_files; do
 		}
 		return 0
 	}
-	BEGIN { nreq = 0; nmat = 0 }
+	BEGIN { nreq = 0; nmat = 0; reqlike = 0 }
 	/^[ \t]*\|/ {
 		split_row($0)
 		if (n == 0 || is_sep()) next
 		id = cell[1]
+		if (id ~ /^(REQ|NFR)-/) reqlike = 1
 		if (id ~ /^(REQ|NFR)-[0-9]{3}$/) {
 			if (n == 5) {
 				if (id in seen) { print "FAIL  " fname ": duplicate requirement id " id; ec=1 }
@@ -112,6 +115,9 @@ for path in $prd_files; do
 		next
 	}
 	END {
+		if (nreq == 0 && reqlike == 0) {
+			print "FAIL  " fname ": no REQ/NFR requirement rows found (an unfilled PRD skeleton?)"; ec=1
+		}
 		if (nmat > 0 || nreq > 0) {
 			for (i = 1; i <= nreq; i++) rset[reqids[i]] = 1
 			for (i = 1; i <= nmat; i++) mset[matids[i]] = 1

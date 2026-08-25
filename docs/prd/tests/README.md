@@ -18,5 +18,6 @@ kit's own green state.
 | `bad-wont-phase` | FAIL, exit 1 | a `Won't` requirement whose phase is not `—` |
 | `bad-malformed-id` | FAIL, exit 1 | a requirement-like row with a malformed ID |
 | `bad-matrix-mismatch` | FAIL, exit 1 | a matrix listing an ID that is not a requirement |
+| `bad-empty` | FAIL, exit 1 | an unfilled skeleton with no real requirement rows |
 
 Run one: `sh docs/prd/prd-lint.sh docs/prd/tests/good`

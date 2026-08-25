@@ -53,9 +53,9 @@ The decision to keep requirements this way is recorded in
 ## The linter enforces these rules
 
 [`prd-lint.sh`](prd-lint.sh) checks every `PRD-*.md` in this directory against the
-conventions above — filename shape, unique `REQ`/`NFR` IDs, a resolvable cited
-fact per requirement, an allowed MoSCoW value, the `Won't ⇒ Phase —` rule, and a
-§12 matrix whose ID set equals the requirement set. It reads only Markdown, so
+conventions above — filename shape, at least one requirement, unique `REQ`/`NFR`
+IDs, a resolvable cited fact per requirement, an allowed MoSCoW value, the
+`Won't ⇒ Phase —` rule, and a §12 matrix whose ID set equals the requirement set. It reads only Markdown, so
 `sh docs/prd/prd-lint.sh` runs anywhere with no toolchain, and it is green on a
 fresh kit (no PRDs yet). It is wired into the
 [`pre-commit` hook](../engineering-discipline.md#git-hooks) and
