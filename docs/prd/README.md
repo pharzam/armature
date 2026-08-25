@@ -67,8 +67,9 @@ checks to its `‹test runner›`.
 
 ## Index
 
-| PRD                                        | Title       | Status |
-| ------------------------------------------ | ----------- | ------ |
-| ‹[PRD-0001](PRD-0001-slug.md)›             | ‹title›     | ‹Draft› |
+| PRD | Title | Status |
+| --- | ----- | ------ |
 
-<!-- Add one row per PRD as you write them. Keep the newest at the bottom. -->
+<!-- Add one row per PRD as you write it (newest at the bottom), for example:
+     | PRD-0001 | Short title | Accepted | -->
+
