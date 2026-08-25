@@ -34,6 +34,14 @@ jobs:
       # Concrete and ready — the ADR linter needs no toolchain.
       - run: sh docs/adr/adr-lint.sh
 
+  prd-lint:
+    name: prd-lint (docs/prd discipline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — the PRD linter needs no toolchain.
+      - run: sh docs/prd/prd-lint.sh
+
   lint:
     name: lint (‹your linter/formatter›)
     runs-on: ubuntu-latest

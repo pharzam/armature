@@ -3,7 +3,7 @@
 # pre-commit — run the cheap quality-gate checks before a commit is recorded,
 # so a violation is caught here rather than in CI (docs/ci/) or review.
 #
-# It runs the ADR linter out of the box (docs-only, no toolchain needed). The
+# It runs the ADR and PRD linters out of the box (docs-only, no toolchain needed). The
 # lint / test / secret-scan steps are ‹…› placeholders you fill for your stack —
 # keep them cheap-first, so a failure stops the expensive checks. This hook is
 # inert until you run `git config core.hooksPath .githooks` (see .githooks/README.md).
@@ -17,6 +17,11 @@ set -e
 # 1. ADR discipline — keeps docs/adr/ honest (see docs/adr/adr-lint.sh).
 if [ -f docs/adr/adr-lint.sh ]; then
 	sh docs/adr/adr-lint.sh
+fi
+
+# 1b. PRD discipline — keeps docs/prd/ honest (see docs/prd/prd-lint.sh).
+if [ -f docs/prd/prd-lint.sh ]; then
+	sh docs/prd/prd-lint.sh
 fi
 
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
