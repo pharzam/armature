@@ -42,13 +42,16 @@ the frame that gives a thing its strength.
 |-------|---------------|
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate and every working practice. |
+| [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R11): the ticket policy the gate assumes. |
 | [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary the other docs assume. |
 | [`docs/guardrails.md`](docs/guardrails.md) | Known pitfalls, pre-registered pass/fail rules, and validation. |
 | [`docs/adr/`](docs/adr/) | Architecture Decision Records — the *why* behind structural choices — plus [`adr-lint.sh`](docs/adr/adr-lint.sh), the discipline test that keeps them honest. |
 | [`docs/facts/`](docs/facts/) | Raw customer facts kept as immutable evidence, and the citation convention that derives requirements from them. |
+| [`docs/prd/`](docs/prd/) | Product Requirements Documents derived from the facts, plus [`prd-lint.sh`](docs/prd/prd-lint.sh), the discipline test that keeps them honest. |
 | [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md). |
 | [`.githooks/`](.githooks/) | Git hooks that enforce the cheap gate locally — a commit-message check and a pre-commit runner. Install with `git config core.hooksPath .githooks`. |
 | [`docs/ci/`](docs/ci/) | Optional CI templates (GitHub Actions and GitLab CI) that run the same gate on every PR. Inert until you copy one into place. |
+| [`docs/templates/`](docs/templates/) | Optional, inert GitHub/GitLab issue and PR templates that embody the issue-first workflow. Inert until you copy them into place. |
 
 ## Using it as a template
 
@@ -82,7 +85,8 @@ To stand up a new project:
    `git config core.hooksPath .githooks`, fill their `‹…›` steps, and — if you use
    GitHub or GitLab — activate CI by copying a template from
    [`docs/ci/`](docs/ci/) into place. This makes the quality gate self-enforcing;
-   the [ADR linter](docs/adr/adr-lint.sh) runs green out of the box.
+   the [ADR linter](docs/adr/adr-lint.sh) and [PRD linter](docs/prd/prd-lint.sh)
+   run green out of the box.
 4. Search for `‹` to find everything still unfilled; delete every "How to adapt" note
    when the real content is in.
 5. Grow it — each new practice gets its own short section, with a fuller reference
