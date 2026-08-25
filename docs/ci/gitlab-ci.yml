@@ -26,6 +26,12 @@ adr-lint:
   script:
     - sh docs/adr/adr-lint.sh   # concrete and ready — no toolchain needed
 
+prd-lint:
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  script:
+    - sh docs/prd/prd-lint.sh   # concrete and ready — no toolchain needed
+
 lint:
   stage: check
   image: "‹your toolchain image›"

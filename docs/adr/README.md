@@ -36,5 +36,7 @@ this template's shape, change the linter in the same change — the two must agr
 | ADR                                             | Title                         | Status   |
 | ----------------------------------------------- | ----------------------------- | -------- |
 | [0001](0001-record-architecture-decisions.md)   | Record architecture decisions | Accepted |
+| [0002](0002-record-product-requirements.md)     | Record product requirements as PRDs | Accepted |
+| [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->

@@ -36,11 +36,13 @@ branch + "pipelines must succeed").
 | Job | What it checks | Ready or adapt? |
 |-----|----------------|-----------------|
 | `adr-lint` | `docs/adr/` discipline, via [`adr-lint.sh`](../adr/adr-lint.sh). | Ready as-is. |
+| `prd-lint` | `docs/prd/` discipline, via [`prd-lint.sh`](../prd/prd-lint.sh). | Ready as-is. |
 | `lint` | Your formatter/linter. | Fill `‹…›`. |
 | `tests` | Your `‹test runner›`. | Fill `‹…›`. |
 | `secrets` | Secret scan over full history. | Fill `‹…›`. |
 | PR title | Conventional Commits on the PR title (GitHub only). | Ready as-is. |
 
 Delete any job your project does not need. If you add a discipline test beyond
-the ADR linter, wire it into both a CI job and the
-[`pre-commit`](../../.githooks/pre-commit) hook.
+these — as the [PRD linter](../prd/prd-lint.sh) does — wire it into both a CI job
+and the [`pre-commit`](../../.githooks/pre-commit) hook, the way `adr-lint` and
+`prd-lint` are.

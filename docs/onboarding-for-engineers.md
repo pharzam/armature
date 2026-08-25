@@ -70,14 +70,17 @@ Consequences you will meet immediately, and which are not negotiable:
 | [`engineering-discipline.md`](engineering-discipline.md) | **How we work**: branches, worktrees, commits, tests, reviews, ADRs. Read before your first commit. |
 | [`glossary.md`](glossary.md) | The shared vocabulary. Skim it; come back constantly. |
 | [`facts/`](facts/) | Facts collected from the customer, stored as-is as immutable evidence. Derived requirements cite them by `F-NNNN` ID. |
+| [`prd/`](prd/) | Product Requirements Documents, derived from the facts; each `REQ`/`NFR` cites an `F-NNNN` fact. |
+| [`issue-workflow.md`](issue-workflow.md) | The issue-first rules (R1–R11): the ticket policy the gate assumes. |
 | [`tasks/backlog.md`](tasks/backlog.md) | What to work on next. |
 
 ### What to read next, in order
 
 1. [`engineering-discipline.md`](engineering-discipline.md) — how we work.
-2. [`glossary.md`](glossary.md) — skim, then reference.
-3. [`guardrails.md`](guardrails.md) — the pitfalls and the frozen numbers.
-4. [`tasks/backlog.md`](tasks/backlog.md) — what needs doing.
+2. [`issue-workflow.md`](issue-workflow.md) — the issue-first rules the gate assumes.
+3. [`glossary.md`](glossary.md) — skim, then reference.
+4. [`guardrails.md`](guardrails.md) — the pitfalls and the frozen numbers.
+5. [`tasks/backlog.md`](tasks/backlog.md) — what needs doing.
 
 ### Where the project stands
 
