@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-5w9k** — Ship the mandated review procedures as runnable, inert prompt assets under `docs/review/`: one per review lens plus the R12 plan review ([#18](https://github.com/pharzam/armature/issues/18))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
