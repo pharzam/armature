@@ -31,8 +31,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-7h2v** — Make the kit obey its own rules: remove the stale worktree, prune the six merged branches, gitignore the worktree directory, and fix the broken `pr-link-lint` link ([#23](https://github.com/pharzam/armature/issues/23))
-
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
