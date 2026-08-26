@@ -35,7 +35,8 @@ fi
 # ‹end-to-end test command›   || exit 1   # usually CI only — enable a smoke subset if cheap
 
 # 4. Security scan (staged changes) — a fast secret scan here; the full scan
-#    (dependency, static analysis) runs in CI. See docs/tests/security-checklist.md.
-# ‹security scanner› || exit 1
+#    (dependency, static analysis) runs in CI. ‹security test command› drives your
+#    ‹security scanner›. See docs/tests/security-checklist.md.
+# ‹security test command› || exit 1
 
 exit 0

@@ -36,6 +36,11 @@ authority.
 | 3. End-to-end (E2E) | a whole user path works | the running system, front to back | slowest | CI (optionally a smoke subset in the hook) |
 | Discipline | the process stays honest | repo files, no product toolchain | fast | hook + CI |
 
+The three numbered rungs — unit, integration, end-to-end — are the **product-test
+levels** you tag by level and run cheap-first. **Discipline** tests are a separate,
+process-level track (they lint the repo's own conventions); the table lists them for
+the full picture, but they are not one of the tagged product levels.
+
 ## 1. Unit tests
 
 A unit test exercises **one component in isolation** — the smallest piece of
@@ -85,11 +90,12 @@ a person, not asserted by a command, so it is not a rung of the automated ladder
 
 A discipline test lints the **process rather than the product**: it checks the
 repo's own conventions and needs no product toolchain, so it can be the project's
-first test, before any product code exists. The kit ships three —
-[`adr-lint.sh`](../adr/adr-lint.sh), [`prd-lint.sh`](../prd/prd-lint.sh), and
-[`pr-link-lint.sh`](../ci/pr-link-lint.sh) — and they already run in the hook and
-CI. Add one whenever a convention is worth enforcing by machine rather than by
-review.
+first test, before any product code exists. The kit ships three:
+[`adr-lint.sh`](../adr/adr-lint.sh) and [`prd-lint.sh`](../prd/prd-lint.sh) read
+repo files and run in both the hook and CI, while
+[`pr-link-lint.sh`](../ci/pr-link-lint.sh) reads the pull-request body — a forge
+artifact absent at commit time — so it runs in CI only. Add one whenever a
+convention is worth enforcing by machine rather than by review.
 
 ## Security tests sit alongside the ladder
 
@@ -97,9 +103,9 @@ Security checks are not a fourth rung but a parallel track that runs at hook and
 CI time — a secret scan, a dependency scan, and static analysis at minimum. They
 have their own command placeholder and their own checklist:
 
-- **Command:** `‹security test command›` (the scan step), wired behind
-  `‹security scanner›` in the [hook](../../.githooks/pre-commit) and
-  [CI](../ci/).
+- **Command:** `‹security test command›` runs the scans — a fast subset in the
+  [hook](../../.githooks/pre-commit), the full set in [CI](../ci/) — and
+  `‹security scanner›` names the tool it drives.
 - **Checklist:** [`security-checklist.md`](security-checklist.md).
 
 ## The placeholders this section uses

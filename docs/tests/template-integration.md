@@ -69,6 +69,9 @@ test ‹name: the workflow, in plain words, e.g. "saves a record and reads it ba
 - [ ] Slower than a unit test is expected; a fast subset runs in the commit
   hook, and the full set runs in CI.
 
-The [test levels](test-levels.md) document defines what "integration" means
-against the other levels; the [traceability template](traceability-template.md)
-is where you record what this test proves.
+## See also
+
+- [`test-levels.md`](test-levels.md) — where the integration level sits in the
+  ladder, and the command placeholders this file uses.
+- [`traceability-template.md`](traceability-template.md) — where you record what
+  this test proves.

@@ -15,15 +15,15 @@ result.
 
 ## In plain terms
 
-> A UAT scenario is a short story — given this starting point, when a person
-> does this, then this should happen — that a real person reads, tries, and
+> A user-acceptance scenario is a short story — given this starting point, when a
+> person does this, then this should happen — that a real person reads, tries, and
 > either accepts or rejects. It proves the system does what was asked, not just
 > what the code was told to do.
 
 ## The pattern
 
 - **Write it in plain Given/When/Then.** Given the starting state, when the
-  operator does something, then a visible outcome follows. No code, no
+  user does something, then a visible outcome follows. No code, no
   internal jargon — a stakeholder who has never read the system's code should
   be able to follow every step.
 - **It rides the same path an E2E test automates.** A UAT scenario is not a new
@@ -44,7 +44,7 @@ result.
 Scenario: ‹title›
 
 Given ‹starting state›
-When ‹the operator does …›
+When ‹the user does …›
 Then ‹the visible outcome›
 
 Accepted by ‹person› on ‹date›

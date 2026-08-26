@@ -56,6 +56,7 @@ Lives under: ‹test directory›
 - [ ] Finds things by a stable interface — no brittle selectors, no
       fixed-time waits.
 - [ ] Bounded by `‹test timeout›`, so a hang fails rather than stalls.
+- [ ] Tagged `e2e`, so the level can run on its own.
 - [ ] Names the requirement it covers via a
       [traceability](traceability-template.md) row.
 - [ ] Runs in CI (and, if it is a smoke test, in the local hook too).

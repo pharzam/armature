@@ -58,7 +58,9 @@ Three kinds of thing need your input. Do all three, then delete this section.
 of their own:
 
 - `‹test runner›` — how tests run in your stack (the command and any rule, for
-  example "no external test framework").
+  example "no external test framework"); the per-level commands
+  (`‹unit test command›`, `‹integration test command›`, …) are defined in
+  [`tests/test-levels.md`](tests/test-levels.md).
 - `‹evidence store›` — where you commit run outputs, logs, or results (for
   example `runs/` or `artifacts/`).
 - `‹task-ID scheme›` — how you tag a task (for example `T-` plus four random
@@ -74,8 +76,11 @@ memory:
   [commit format](#commit-messages), and the `pre-commit` hook runs the
   [ADR linter](#testing) and the [PRD linter](#testing) plus the fast gate you
   fill in. See [Git hooks](#git-hooks).
-- **Fill the hook and CI `‹…›` steps** for your stack (`‹lint›`, `‹test runner›`,
-  `‹secret-scan›`), then, if you use GitHub or GitLab, **activate CI** by copying
+- **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
+  commands from [`tests/test-levels.md`](tests/test-levels.md)
+  (`‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`),
+  and the `‹security scanner›` scan — then, if you use GitHub or GitLab, **activate
+  CI** by copying
   the matching template from [`docs/ci/`](ci/) into place — see
   [Continuous integration](#continuous-integration-optional). CI is optional but
   recommended; it is the authority the hooks give you fast feedback against.
@@ -331,7 +336,8 @@ that ties a test to what it proves — live in their own section,
 **Four test levels, run cheap-first.** Tests sit on a fixed ladder — **unit**,
 **integration**, **end-to-end (E2E)** — plus the process-level **discipline**
 tests, defined in [`tests/test-levels.md`](tests/test-levels.md). The cheap levels
-run in the [`pre-commit` hook](#git-hooks); the whole ladder runs in
+— unit and integration, with an optional end-to-end smoke subset — run in the
+[`pre-commit` hook](#git-hooks); the whole ladder runs in
 [CI](#continuous-integration-optional). Each level has its own command placeholder
 — `‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`,
 and `‹security test command›` for the parallel security track — with
@@ -385,9 +391,9 @@ each one into the hook and CI wherever its input is available.
 CI runs this whole gate automatically on every change, so it is enforced by the
 forge rather than by memory. It is the **authority**: its checks — the
 [ADR linter](#testing), the [PRD linter](#testing), the
-[PR-link check](#testing), your `‹test runner›`, lint, a secret scan, and the
-[commit-format](#commit-messages) check — are the ones you make *required* before
-a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
+[PR-link check](#testing), the [test levels](#testing), lint, a security scan, and
+the [commit-format](#commit-messages) check — are the ones you make *required*
+before a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
 
 It is optional because the kit is forge-free. Ready-to-copy templates for GitHub
 Actions and GitLab CI live in [`docs/ci/`](ci/), inert until you copy one into
@@ -410,10 +416,10 @@ Two hooks ship with the kit:
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
 - **`pre-commit`** — runs the [ADR linter](#testing) and the [PRD linter](#testing),
-  then the `‹lint›`, `‹test runner›` (fast subset), and `‹secret-scan›` steps you
-  fill in for your
-  stack. Keep it cheap-first; the full suite belongs in
-  [CI](#continuous-integration-optional).
+  then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
+  `‹integration test command›`), and the `‹security scanner›` step you fill in for
+  your stack. Keep it cheap-first; the full suite — the end-to-end level and the
+  full security scan — belongs in [CI](#continuous-integration-optional).
 
 [`.githooks/README.md`](../.githooks/README.md) has the details and the optional
 [`pre-commit` framework](https://pre-commit.com) alternative.

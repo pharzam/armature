@@ -77,8 +77,8 @@ jobs:
         with:
           fetch-depth: 0   # full history, so the scan sees every commit
       - name: secret scan
-        run: "‹security scanner›"   # e.g. a scan for committed credentials
+        run: "‹security test command›"   # e.g. a scan for committed credentials
       - name: dependency scan
-        run: "‹security scanner›"   # e.g. a scan for known-vulnerable dependencies
+        run: "‹security test command›"   # e.g. a scan for known-vulnerable dependencies
       - name: static analysis
-        run: "‹security scanner›"   # e.g. an insecure-pattern scan without running the code
+        run: "‹security test command›"   # e.g. an insecure-pattern scan without running the code

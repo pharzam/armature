@@ -55,10 +55,14 @@ test ‹name: the behaviour, in plain words, e.g. "rejects a negative amount"›
 - [ ] Does not depend on another test's state or order.
 - [ ] Deterministic — touches no real file, network, or clock; every
   dependency is a stand-in.
+- [ ] Tagged `unit`, so the level can run on its own.
 - [ ] Names the requirement it covers, via a
   [traceability](traceability-template.md) row.
 - [ ] Fast enough to run in the commit hook, alongside every other unit test.
 
-The [test levels](test-levels.md) document defines what "unit" means against
-the other levels; the [traceability template](traceability-template.md) is
-where you record what this test proves.
+## See also
+
+- [`test-levels.md`](test-levels.md) — where the unit level sits in the ladder, and
+  the command placeholders this file uses.
+- [`traceability-template.md`](traceability-template.md) — where you record what
+  this test proves.

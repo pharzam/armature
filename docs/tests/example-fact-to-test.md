@@ -5,7 +5,11 @@ One concrete walk down the kit's traceability line, so the abstract chain in
 it. It follows a single requirement from the customer's words all the way to the
 test that proves it, using only Armature conventions.
 
-    fact (F-0001#1) → requirement (REQ-001) → guardrail → task (T-ab12) → test
+    fact (F-0001#1) → requirement (REQ-001) → guardrail → ADR → task (T-ab12) → test
+
+This example needs no architecturally-significant decision, so the **ADR** link is
+empty (`—`, as the [row at the end](#5-the-traceability-row-the-line-written-down)
+shows); every other link is filled.
 
 > **How to adapt this file.** This is an **illustrative** example — the "order"
 > domain below is a stand-in, not part of the kit. Replace it with one real line

@@ -38,12 +38,13 @@ Like the [ADR and PRD linters](../engineering-discipline.md#testing), the
 security checks are wired into two layers, cheap-first:
 
 - The fast subset — a secret scan on staged changes, and a static-analysis
-  subset where it is fast enough — runs behind `‹security scanner›` in the
+  subset where it is fast enough — runs via `‹security test command›` in the
   [`pre-commit` hook](../../.githooks/pre-commit), before a commit is recorded.
-- The full set — all three checks, run in full — runs behind `‹security
-  scanner›` in [CI](../ci/), via `‹security test command›`, as the authority.
+- The full set — all three checks, run in full — runs via `‹security test command›`
+  in [CI](../ci/), as the authority.
 
-Both layers are inert until the `‹…›` steps are filled for your stack.
+`‹security scanner›` names the tool both layers drive. Both are inert until the
+`‹…›` steps are filled for your stack.
 
 ## A pre-registered bar
 
@@ -63,6 +64,6 @@ in the guardrails.
 ## Add your own
 
 This is a minimum, not a ceiling. Add a row for any other weakness class your
-project needs checked — for example a license scan, a container-image scan, or
+project needs checked — for example a licence scan, a container-image scan, or
 an infrastructure-as-code scan — as its own `‹…›` check, tool, and pass
 condition.
