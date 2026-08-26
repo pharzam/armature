@@ -91,6 +91,7 @@ run_set docs/adr/adr-lint.sh       docs/adr/tests
 run_set docs/prd/prd-lint.sh       docs/prd/tests
 run_set docs/tasks/backlog-lint.sh docs/tasks/tests
 run_set docs/ci/pr-link-lint.sh    docs/ci/tests/pr-link
+run_set docs/glossary-lint.sh      docs/tests/glossary-lint
 
 # --- the runner's own sanity check -----------------------------------------
 # Zero cases means the walk broke, not that everything passed. A green with no

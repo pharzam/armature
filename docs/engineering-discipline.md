@@ -435,10 +435,11 @@ forge artifact absent at commit time — so it runs in CI only. Add a discipline
 whenever a convention is worth enforcing automatically rather than by review; wire
 each one into the hook and CI wherever its input is available.
 
-**The discipline tests have tests of their own.** Each linter ships fixtures under
-`tests/` beside it — a `good` case it must accept and `bad-*` cases it must
+**The discipline tests have tests of their own.** Each linter ships fixtures in a
+`tests/` directory — a `good` case it must accept and `bad-*` cases it must
 reject — and [`tests/discipline-tests.sh`](tests/discipline-tests.sh) runs every
-fixture against every linter, in the hook and in CI. Without that runner the
+fixture against every linter, in the hook and in CI. A linter is driven by one
+argument naming the case, so a fixture set needs no per-linter glue. Without that runner the
 fixtures are documentation: nothing fails when a linter regresses, and a linter
 that silently stops checking is the
 [test that passes for the wrong reason](guardrails.md) sitting inside the gate.

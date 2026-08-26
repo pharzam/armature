@@ -1,0 +1,6 @@
+# Glossary
+
+| Term | Abbr. | Description | Example |
+|------|-------|-------------|---------|
+| Sample Term | `SMP` | A fixture term, so the scan has something defined to find. | The SMP value. |
+| Sample Term | `SMP` | A duplicated row. | Again. |
