@@ -40,6 +40,10 @@ Three kinds of thing need your input. Do all three, then delete this section.
   Skip this if your project tracks no requirements. Start at
   [`prd/README.md`](prd/README.md); copy [`prd/template.md`](prd/template.md) for
   each new record.
+- [`tests/`](tests/) — your testing conventions: the levels, a pattern per level,
+  the security, scaling, and DoD checklists, and the traceability that ties a test
+  to a requirement. Start at [`tests/README.md`](tests/README.md); the product
+  tests themselves go in the repo-root [`tests/`](../tests/) drop-in.
 - [`glossary.md`](glossary.md) — your shared-vocabulary document.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.
@@ -54,7 +58,9 @@ Three kinds of thing need your input. Do all three, then delete this section.
 of their own:
 
 - `‹test runner›` — how tests run in your stack (the command and any rule, for
-  example "no external test framework").
+  example "no external test framework"); the per-level commands
+  (`‹unit test command›`, `‹integration test command›`, …) are defined in
+  [`tests/test-levels.md`](tests/test-levels.md).
 - `‹evidence store›` — where you commit run outputs, logs, or results (for
   example `runs/` or `artifacts/`).
 - `‹task-ID scheme›` — how you tag a task (for example `T-` plus four random
@@ -70,8 +76,11 @@ memory:
   [commit format](#commit-messages), and the `pre-commit` hook runs the
   [ADR linter](#testing) and the [PRD linter](#testing) plus the fast gate you
   fill in. See [Git hooks](#git-hooks).
-- **Fill the hook and CI `‹…›` steps** for your stack (`‹lint›`, `‹test runner›`,
-  `‹secret-scan›`), then, if you use GitHub or GitLab, **activate CI** by copying
+- **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
+  commands from [`tests/test-levels.md`](tests/test-levels.md)
+  (`‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`),
+  and the `‹security scanner›` scan — then, if you use GitHub or GitLab, **activate
+  CI** by copying
   the matching template from [`docs/ci/`](ci/) into place — see
   [Continuous integration](#continuous-integration-optional). CI is optional but
   recommended; it is the authority the hooks give you fast feedback against.
@@ -318,6 +327,48 @@ pass against the fix — otherwise it is not proof that the bug is gone.
 
 Tests run through `‹test runner›`.
 
+The full testing conventions — the levels, a pattern to write each kind, the
+security, scaling, and Definition-of-Done (DoD) checklists, and the traceability
+that ties a test to what it proves — live in their own section,
+[`tests/`](tests/README.md). The rules below are the *must*; that section is the
+*how*.
+
+**Four test levels, run cheap-first.** Tests sit on a fixed ladder — **unit**,
+**integration**, **end-to-end (E2E)** — plus the process-level **discipline**
+tests, defined in [`tests/test-levels.md`](tests/test-levels.md). The cheap levels
+— unit and integration, with an optional end-to-end smoke subset — run in the
+[`pre-commit` hook](#git-hooks); the whole ladder runs in
+[CI](#continuous-integration-optional). Each level has its own command placeholder
+— `‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`,
+and `‹security test command›` for the parallel security track — with
+`‹test timeout›` bounding a hanging test and `‹test directory›` naming where the
+product tests live (the repo-root [`tests/`](../tests/) drop-in).
+
+**Coverage, stated as rules:**
+
+- Every component has a **unit** test.
+- Every interface or workflow has an **integration** test.
+- Every user-facing scenario has an **end-to-end** test, plus a
+  [UAT](tests/template-uat.md) scenario wherever a human sign-off is required.
+- Every [PRD](prd/) requirement (`REQ`/`NFR`) and every **Definition of Done
+  (DoD)** item is covered by at least one test, tracked by a
+  [traceability](tests/traceability-template.md) row — see
+  [`tests/dod-checklist.md`](tests/dod-checklist.md).
+
+**Old tests do not get weakened.** New work must not make an existing test fail
+silently. If an old test fails, there are exactly three honest moves: **fix the
+code** so it passes again; **update the requirement** the test encodes, with a
+written reason (a new PRD change-log entry or an issue) and a test changed to match
+the new requirement; or **retire the test** deliberately, with a reason, once the
+behaviour it guarded is gone. Never weaken or delete a passing old test just to make
+new code pass — that is the [test-freeze](#requirements-traceability) rule (R9), and
+a frozen test that later fails opens a bug sub-issue.
+
+**Tests scale with the project.** Keep every test independent, deterministic, fast
+enough for the hook or CI, tagged by level (so one level can run alone), and resting
+on stable interfaces — no brittle selectors or timing. The full list is
+[`tests/scaling-checklist.md`](tests/scaling-checklist.md).
+
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
 the kit ships three tests of its own conventions:
 [`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
@@ -340,9 +391,9 @@ each one into the hook and CI wherever its input is available.
 CI runs this whole gate automatically on every change, so it is enforced by the
 forge rather than by memory. It is the **authority**: its checks — the
 [ADR linter](#testing), the [PRD linter](#testing), the
-[PR-link check](#testing), your `‹test runner›`, lint, a secret scan, and the
-[commit-format](#commit-messages) check — are the ones you make *required* before
-a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
+[PR-link check](#testing), the [test levels](#testing), lint, a security scan, and
+the [commit-format](#commit-messages) check — are the ones you make *required*
+before a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
 
 It is optional because the kit is forge-free. Ready-to-copy templates for GitHub
 Actions and GitLab CI live in [`docs/ci/`](ci/), inert until you copy one into
@@ -365,10 +416,10 @@ Two hooks ship with the kit:
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
 - **`pre-commit`** — runs the [ADR linter](#testing) and the [PRD linter](#testing),
-  then the `‹lint›`, `‹test runner›` (fast subset), and `‹secret-scan›` steps you
-  fill in for your
-  stack. Keep it cheap-first; the full suite belongs in
-  [CI](#continuous-integration-optional).
+  then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
+  `‹integration test command›`), and the `‹security scanner›` step you fill in for
+  your stack. Keep it cheap-first; the full suite — the end-to-end level and the
+  full security scan — belongs in [CI](#continuous-integration-optional).
 
 [`.githooks/README.md`](../.githooks/README.md) has the details and the optional
 [`pre-commit` framework](https://pre-commit.com) alternative.

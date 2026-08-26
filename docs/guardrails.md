@@ -48,6 +48,34 @@ kind of thing that goes here:›`
 - ❌ `‹pitfall 3 — e.g. an environment or scale difference between test and
   production›`
 
+### Testing pitfalls (kit-wide — keep these)
+
+These traps are not domain-specific: they hurt every project's test suite, so the
+kit ships them filled. Keep them, and add your own above.
+
+- ❌ **Testing after the code.** A test written to fit code that already "works"
+  tends to encode the code's bugs as expected behaviour. The check: write the test
+  first and watch it fail for the right reason
+  ([strict TDD](engineering-discipline.md#requirements-traceability)).
+- ❌ **Tests that depend on external state.** A test that reads a shared database, a
+  live network, the wall clock, or another test's leftovers passes or fails for
+  reasons unrelated to the code. The check: isolate and control every dependency,
+  with a fresh fixture per run — see
+  [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
+- ❌ **Tests that pass for the wrong reason.** A test that asserts nothing, asserts
+  the wrong thing, or never actually exercises the path reports a safety that is not
+  there — worse than no test. The check: confirm the test fails when the behaviour
+  is broken; the red step is the proof.
+- ❌ **Stale tests after a requirement changes.** When a requirement changes but its
+  test does not, the suite now guards the old behaviour and blocks the new. The
+  check: the [old-tests conflict rule](engineering-discipline.md#testing) — fix the
+  code, update the requirement with a written reason, or retire the test; never
+  weaken a passing old test.
+- ❌ **Tests that slow down as the project grows.** A suite that creeps past the
+  hook's patience gets skipped, and a skipped gate is no gate. The check: keep the
+  cheap levels fast and cheap-first, push slow ones to CI, and bound each with
+  `‹test timeout›` — see [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
+
 ## 3. Validation — how you check you are not fooling yourself
 
 A result is **untrusted** until it passes the checks below, and the pass is a
@@ -65,7 +93,8 @@ cheap enough to wire into CI; which run once per change of a given kind›`.
 
 **The automated gate is this validation layer, mechanized.** The cheap, always-on
 checks — the [ADR linter](engineering-discipline.md#testing), the
-[PRD linter](engineering-discipline.md#testing), `‹test runner›`, lint, a secret
+[PRD linter](engineering-discipline.md#testing), the
+[test levels](engineering-discipline.md#testing), lint, a security
 scan, and the [commit-format](engineering-discipline.md#commit-messages)
 check — run in the [`pre-commit` hook](engineering-discipline.md#git-hooks) for
 fast local feedback and in [CI](engineering-discipline.md#continuous-integration-optional)

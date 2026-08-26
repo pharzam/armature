@@ -4,9 +4,10 @@
 # so a violation is caught here rather than in CI (docs/ci/) or review.
 #
 # It runs the ADR and PRD linters out of the box (docs-only, no toolchain needed). The
-# lint / test / secret-scan steps are ‹…› placeholders you fill for your stack —
-# keep them cheap-first, so a failure stops the expensive checks. This hook is
-# inert until you run `git config core.hooksPath .githooks` (see .githooks/README.md).
+# lint, test-level, and security steps are ‹…› placeholders you fill for your stack —
+# keep them cheap-first (unit before integration before end-to-end), so a failure
+# stops the expensive checks; see docs/tests/test-levels.md. This hook is inert until
+# you run `git config core.hooksPath .githooks` (see .githooks/README.md).
 #
 # How to adapt: replace each ‹…› with your project's command and uncomment the
 # line. Delete any step you do not use. Run only the fast subset here; the full
@@ -27,10 +28,16 @@ fi
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
 # ‹your-linter› || exit 1
 
-# 3. Tests (fast subset) — ‹test runner, e.g. the unit-test command›
-# ‹your-test-runner› || exit 1
+# 3. Tests, cheap → expensive — run the fast levels here; leave the slow ones to
+#    CI. Fill each ‹…› with your stack's command (see docs/tests/test-levels.md).
+# ‹unit test command›         || exit 1   # fastest — run on every commit
+# ‹integration test command›  || exit 1   # must be the fast subset; the full set in CI
+# ‹end-to-end test command›   || exit 1   # usually CI only — enable a smoke subset if cheap
 
-# 4. Secret scan (staged changes) — ‹secret-scan command, e.g. gitleaks protect --staged›
-# ‹your-secret-scanner› || exit 1
+# 4. Security scan (staged changes) — the fast subset here: a secret scan, plus a
+#    static-analysis subset where it stays fast; the full set (dependency scan,
+#    static analysis) runs in CI. ‹security test command› drives your
+#    ‹security scanner›. See docs/tests/security-checklist.md.
+# ‹security test command› || exit 1
 
 exit 0

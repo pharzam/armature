@@ -51,20 +51,36 @@ jobs:
       - run: "‹lint command, e.g. a formatter --check plus a linter›"
 
   tests:
-    name: tests (‹test runner›)
+    name: tests (unit → integration → e2e)
     runs-on: ubuntu-latest
+    # The test ladder, cheap → expensive. The hook runs the cheap levels; CI runs
+    # the whole ladder. See docs/tests/test-levels.md. Fill each ‹…› for your stack.
     steps:
       - uses: actions/checkout@v4
       # ‹set up your toolchain here›
-      - run: "‹test runner command›"
+      - name: unit
+        run: "‹unit test command›"
+      - name: integration
+        run: "‹integration test command›"
+      - name: end-to-end
+        run: "‹end-to-end test command›"   # long-running — bounded by ‹test timeout›
 
-  secrets:
-    name: secrets (‹secret scanner›)
+  security:
+    name: security (‹security scanner›)
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # The security track — secret, dependency, and static-analysis scans over the
+    # full history. Each step takes its own ‹security test command›, or fill all
+    # three with one multi-scan command; ‹security scanner› names the tool.
+    # See docs/tests/security-checklist.md for the checks and pass conditions.
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # full history, so the scan sees every commit
-      - run: "‹secret-scan command over full history, e.g. a pinned gitleaks image›"
+      - name: secret scan
+        run: "‹security test command›"   # e.g. a scan for committed credentials
+      - name: dependency scan
+        run: "‹security test command›"   # e.g. a scan for known-vulnerable dependencies
+      - name: static analysis
+        run: "‹security test command›"   # e.g. an insecure-pattern scan without running the code
