@@ -48,6 +48,8 @@ the frame that gives a thing its strength.
 | [`docs/adr/`](docs/adr/) | Architecture Decision Records — the *why* behind structural choices — plus [`adr-lint.sh`](docs/adr/adr-lint.sh), the discipline test that keeps them honest. |
 | [`docs/facts/`](docs/facts/) | Raw customer facts kept as immutable evidence, and the citation convention that derives requirements from them. |
 | [`docs/prd/`](docs/prd/) | Product Requirements Documents derived from the facts, plus [`prd-lint.sh`](docs/prd/prd-lint.sh), the discipline test that keeps them honest. |
+| [`docs/tests/`](docs/tests/) | The testing conventions — the test levels, a pattern per level, the security, scaling, and Definition-of-Done checklists, and test-to-requirement traceability. |
+| [`tests/`](tests/) | The repo-root drop-in where an adopter's product tests live. Empty in the kit (it has no product), kept in git by a `.gitkeep`. |
 | [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md). |
 | [`.githooks/`](.githooks/) | Git hooks that enforce the cheap gate locally — a commit-message check and a pre-commit runner. Install with `git config core.hooksPath .githooks`. |
 | [`docs/ci/`](docs/ci/) | Optional CI templates (GitHub Actions and GitLab CI) that run the same gate on every PR. Inert until you copy one into place. |

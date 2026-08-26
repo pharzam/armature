@@ -40,6 +40,10 @@ Three kinds of thing need your input. Do all three, then delete this section.
   Skip this if your project tracks no requirements. Start at
   [`prd/README.md`](prd/README.md); copy [`prd/template.md`](prd/template.md) for
   each new record.
+- [`tests/`](tests/) — your testing conventions: the levels, a pattern per level,
+  the security, scaling, and DoD checklists, and the traceability that ties a test
+  to a requirement. Start at [`tests/README.md`](tests/README.md); the product
+  tests themselves go in the repo-root [`tests/`](../tests/) drop-in.
 - [`glossary.md`](glossary.md) — your shared-vocabulary document.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.
@@ -317,6 +321,47 @@ once the code already "works". A bug fix's test must fail against the old code a
 pass against the fix — otherwise it is not proof that the bug is gone.
 
 Tests run through `‹test runner›`.
+
+The full testing conventions — the levels, a pattern to write each kind, the
+security, scaling, and Definition-of-Done (DoD) checklists, and the traceability
+that ties a test to what it proves — live in their own section,
+[`tests/`](tests/README.md). The rules below are the *must*; that section is the
+*how*.
+
+**Four test levels, run cheap-first.** Tests sit on a fixed ladder — **unit**,
+**integration**, **end-to-end (E2E)** — plus the process-level **discipline**
+tests, defined in [`tests/test-levels.md`](tests/test-levels.md). The cheap levels
+run in the [`pre-commit` hook](#git-hooks); the whole ladder runs in
+[CI](#continuous-integration-optional). Each level has its own command placeholder
+— `‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`,
+and `‹security test command›` for the parallel security track — with
+`‹test timeout›` bounding a hanging test and `‹test directory›` naming where the
+product tests live (the repo-root [`tests/`](../tests/) drop-in).
+
+**Coverage, stated as rules:**
+
+- Every component has a **unit** test.
+- Every interface or workflow has an **integration** test.
+- Every user-facing scenario has an **end-to-end** test, plus a
+  [UAT](tests/template-uat.md) scenario wherever a human sign-off is required.
+- Every [PRD](prd/) requirement (`REQ`/`NFR`) and every **Definition of Done
+  (DoD)** item is covered by at least one test, tracked by a
+  [traceability](tests/traceability-template.md) row — see
+  [`tests/dod-checklist.md`](tests/dod-checklist.md).
+
+**Old tests do not get weakened.** New work must not make an existing test fail
+silently. If an old test fails, there are exactly three honest moves: **fix the
+code** so it passes again; **update the requirement** the test encodes, with a
+written reason (a new PRD change-log entry or an issue) and a test changed to match
+the new requirement; or **retire the test** deliberately, with a reason, once the
+behaviour it guarded is gone. Never weaken or delete a passing old test just to make
+new code pass — that is the [test-freeze](#requirements-traceability) rule (R9), and
+a frozen test that later fails opens a bug sub-issue.
+
+**Tests scale with the project.** Keep every test independent, deterministic, fast
+enough for the hook or CI, tagged by level (so one level can run alone), and resting
+on stable interfaces — no brittle selectors or timing. The full list is
+[`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
 the kit ships three tests of its own conventions:
