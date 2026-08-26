@@ -1,0 +1,30 @@
+# PR links an issue — R1 (OPTIONAL template, GitHub Actions).
+#
+# INERT here on purpose. To activate:
+#   cp docs/ci/github-actions-pr-link.yml .github/workflows/pr-link.yml
+#
+# Enforces docs/issue-workflow.md (R1) on the PR body: a pull request must link
+# its issue (Closes / Fixes / Resolves / Refs / Part of #N). This lives in its
+# OWN workflow, not in ci.yml, because the body exists only on a pull_request
+# event — ci.yml also runs on push, where there is no PR body to check. Ready
+# as-is — no ‹…› to fill. Make it a required check on your default branch.
+
+name: PR links an issue (R1)
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  pr-link:
+    name: pr-link (PR body links an issue)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read          # read the linter from the checkout; the body comes from the event
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the PR body links an issue
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        # Concrete and ready — the linter needs no toolchain.
+        run: printf '%s' "$PR_BODY" | sh docs/ci/pr-link-lint.sh

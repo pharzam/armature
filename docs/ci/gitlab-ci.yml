@@ -32,6 +32,15 @@ prd-lint:
   script:
     - sh docs/prd/prd-lint.sh   # concrete and ready — no toolchain needed
 
+mr-link:                   # R1 — the MR description must link an issue
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  rules:                   # the description exists only on a merge-request pipeline
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    # concrete and ready — reads the MR description GitLab puts in the environment
+    - printf '%s' "$CI_MERGE_REQUEST_DESCRIPTION" | sh docs/ci/pr-link-lint.sh
+
 lint:
   stage: check
   image: "‹your toolchain image›"
