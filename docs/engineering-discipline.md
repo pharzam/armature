@@ -93,7 +93,10 @@ memory:
 Every substantive task runs through the same gate. The steps below are the
 required order. Each step links to the section that gives its mechanics, and
 states any rule that has no section of its own. **Before step 1, an issue is open
-for the task** — see [Issue-first workflow](#issue-first-workflow).
+for the task** — see [Issue-first workflow](#issue-first-workflow) — and the work is
+sliced into an ordered, DoD-covering, test-first plan, reviewed once and recorded
+on the issue
+([R12](issue-workflow.md#r12--slice-and-prioritize)).
 
 1. **Isolate.** Do the work in a per-task git worktree under `‹worktree dir›/<task>`,
    branched off `origin/main` — see [Starting a task](#starting-a-task). Never
