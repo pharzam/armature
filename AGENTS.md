@@ -71,13 +71,13 @@ by number in a review or a commit.
 | **R1** Issue first | No commit without an open issue. The pull-request body links it: `Closes #N` closes it, `Refs #N` does not. |
 | **R2** Duplicate check | Search open **and** closed issues first. Related work becomes a child issue, not a duplicate. |
 | **R3** Best practice only | Take the proven standard over a custom build. Record the chosen option **and the rejected ones** — an ADR if architecturally significant, else an issue comment. |
-| **R4** No workarounds | A workaround needs two operators' written approval, or — on a solo project — one dated self-review comment that states why it is unavoidable. Either way it gets its own removal issue. |
+| **R4** No workarounds | A workaround needs two operators' written approval, or — on a solo project — one dated self-review comment that states why it is unavoidable. Either way it gets its own removal issue. **You are never the second operator:** a model approving a workaround it proposed is one operator, not two. |
 | **R5** Deterministic over LLM | Prefer a script, linter, type check, or CI gate to a model's judgement. Choosing the model anyway is recorded on the issue with its reason. |
 | **R6** Agents talk through the issue | Never ask another agent directly. Comment on the in-progress issue, with a severity and an expected response time. |
 | **R7** Decision transparency | Before the commit that carries it out, comment the action chosen, why, and the tradeoffs. |
 | **R8** Red, then green | Plan on the issue. Write the tests. Watch them fail for the right reason. Then write code until they pass. |
 | **R9** Test freeze | Once a fresh context confirms the tests, they are frozen. A frozen test that later fails opens a **bug sub-issue** — it is not edited. |
-| **R10** Sync with governance | Keep discipline, ADRs, guardrails, glossary, and the requirements convention in step. A conflict between them **stops work**. |
+| **R10** Sync with governance | Keep **this file**, discipline, ADRs, guardrails, glossary, and the requirements convention in step — a rule change edits this summary in the same change. A conflict between them **stops work**. |
 | **R11** Single-goal issues | One issue is one actionable, demoable goal. Larger work is a parent issue with child issues. |
 | **R12** Slice and prioritize | Before the first test, write an ordered, Definition-of-Done-covering plan — one domain per slice, the **test slice first**, each slice passing this gate alone. Review it once, record it on the issue. |
 
@@ -102,8 +102,11 @@ Any change that adds a term, renames one, or changes what one means updates
 [`docs/glossary.md`](docs/glossary.md) in the same change.
 
 **Enforced:** every abbreviation that appears in committed Markdown has a glossary
-row — Term, Abbr., Description, Example. General-English forms (`e.g.`, `i.e.`,
-`etc.`, `vs.`) are exempt until they carry a project-specific meaning.
+row — Term, Abbr., Description, Example. Two kinds are exempt: general-English
+forms (`e.g.`, `i.e.`, `etc.`, `vs.`), and the formats and protocols any software
+reader knows (`HTML`, `URL`, `JSON`). `docs/glossary-lint.sh` holds that exempt
+list. Either exemption ends the moment the form carries a project-specific
+meaning.
 
 **Aspiration, not enforced:** the same courtesy in conversation. No machine reads
 a conversation, so this one rests on the operator rather than a gate.
