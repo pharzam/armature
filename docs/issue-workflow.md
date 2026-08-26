@@ -7,8 +7,9 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 ## In plain terms
 
 > No change starts without an open issue, and every change lands through a pull
-> request that links back to it. One issue is one goal. Decisions are written down
-> where the next person — human or agent — can find them.
+> request that links back to it. One issue is one goal. Bigger work is sliced into
+> ordered, test-first steps, and the plan is checked once before building begins.
+> Decisions are written down where the next person — human or agent — can find them.
 
 > **How to adapt this file.** This is a generic policy. The kit is **forge-free**,
 > so an *issue* here means a tracked ticket in whatever forge you use (or none),
@@ -115,6 +116,40 @@ becomes a parent issue with child sub-issues, each independently completable. Th
 mirrors the kit's [commit-granularity](engineering-discipline.md#commit-granularity)
 rule, one level up: a task you cannot demo in one step is really several tasks.
 
+## R12 — Slice and prioritize
+
+Before the first test, turn the issue into an **ordered plan**: the steps of work
+that together satisfy the issue's Definition of Done (DoD), each scoped to one
+domain, each able to pass the
+[quality gate](engineering-discipline.md#working-a-task-under-the-quality-gate) on
+its own.
+
+- **Cover the DoD.** Every step maps to a DoD item or an acceptance criterion. A
+  DoD item with no step is a gap; a step with no DoD item is scope creep. The
+  [DoD checklist](tests/dod-checklist.md) is where that coverage is checked off.
+- **Order by dependency and TDD.** Put the steps in the order they must happen. The
+  **test work is its own step, and it comes first** — writing the tests is the red
+  half of [R8](#r8--test-driven-strict-red-then-green), so the test slice outranks
+  the code that makes it pass. Foundational and blocking steps precede the steps
+  that depend on them.
+- **Slice by domain.** One concern per step — for example a test slice, a datastore
+  slice, an interface slice, a docs slice. A step too big to demo on its own is a
+  child sub-issue under [R11](#r11--single-goal-issues), not a step.
+- **One gate per slice.** Every sliced sub-task passes the same
+  [quality gate](engineering-discipline.md#working-a-task-under-the-quality-gate);
+  slicing is never a shortcut around discipline.
+- **Review the plan once, then record it.** The ordered plan gets **one round of
+  independent review and a reviewer's confirmation** before building begins. This
+  is a review of the *plan* — lighter than, and separate from, the uncapped
+  [code review rounds](engineering-discipline.md#reviewing-until-findings-decay)
+  that come after the code works. **Comment the plan and the confirmation on the
+  issue**, so the next context sees both the plan and that it was checked.
+
+R12 makes [R8](#r8--test-driven-strict-red-then-green)'s "plan first" concrete: R8
+says a plan goes on the issue before the first test; R12 says what that plan is — an
+ordered, DoD-covering, test-first slicing — and that it is reviewed once and
+recorded before the red/green cycle begins.
+
 ## What is enforced where
 
 A rule is only as real as what enforces it. This table is honest about which rules
@@ -128,6 +163,7 @@ kit already ships the green rows.
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
+| Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in
