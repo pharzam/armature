@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-4v7h** — Correct three places where `AGENTS.md` contradicts the rules it summarises, including an R4 loophole and an R10 line that omits `AGENTS.md` itself ([#31](https://github.com/pharzam/armature/issues/31))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
