@@ -71,7 +71,7 @@ Consequences you will meet immediately, and which are not negotiable:
 | [`glossary.md`](glossary.md) | The shared vocabulary. Skim it; come back constantly. |
 | [`facts/`](facts/) | Facts collected from the customer, stored as-is as immutable evidence. Derived requirements cite them by `F-NNNN` ID. |
 | [`prd/`](prd/) | Product Requirements Documents, derived from the facts; each `REQ`/`NFR` cites an `F-NNNN` fact. |
-| [`issue-workflow.md`](issue-workflow.md) | The issue-first rules (R1–R11): the ticket policy the gate assumes. |
+| [`issue-workflow.md`](issue-workflow.md) | The issue-first rules (R1–R12): the ticket policy the gate assumes. |
 | [`tasks/backlog.md`](tasks/backlog.md) | What to work on next. |
 
 ### What to read next, in order
