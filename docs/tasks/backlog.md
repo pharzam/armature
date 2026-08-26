@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-8j4m** — Add `backlog-lint.sh` and `discipline-tests.sh` — the runner that finally executes every linter's fixtures — plus fixtures for the ADR and backlog linters ([#19](https://github.com/pharzam/armature/issues/19))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
