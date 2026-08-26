@@ -31,8 +31,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-2f6r** — Ship a root `AGENTS.md` (under 1,500 words) as the agent entry point, with a `CLAUDE.md` pointer and [ADR-0004](../adr/0004-ship-a-root-agents-file.md) recording the decision and its drift risk ([#17](https://github.com/pharzam/armature/issues/17))
-
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
