@@ -50,13 +50,20 @@ lint:
 tests:
   stage: check
   image: "‹your toolchain image›"
+  # The test ladder, cheap → expensive (see docs/tests/test-levels.md). The hook
+  # runs the cheap levels; CI runs the whole ladder. Fill each ‹…› for your stack.
   script:
-    - "‹test runner command›"
+    - "‹unit test command›"
+    - "‹integration test command›"
+    - "‹end-to-end test command›"   # long-running — bounded by ‹test timeout›
 
-secrets:
+security:                  # secret, dependency, and static-analysis scans
   stage: check
-  image: "‹secret scanner image, e.g. a pinned gitleaks image›"
+  image: "‹security scanner image›"
   variables:
     GIT_DEPTH: 0           # full history, so the scan sees every commit
+  # See docs/tests/security-checklist.md. Fill ‹security scanner› for your stack.
   script:
-    - "‹secret-scan command over full history›"
+    - "‹security scanner›"   # secret scan
+    - "‹security scanner›"   # dependency scan
+    - "‹security scanner›"   # static analysis

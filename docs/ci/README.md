@@ -39,8 +39,8 @@ branch + "pipelines must succeed").
 | `adr-lint` | `docs/adr/` discipline, via [`adr-lint.sh`](../adr/adr-lint.sh). | Ready as-is. |
 | `prd-lint` | `docs/prd/` discipline, via [`prd-lint.sh`](../prd/prd-lint.sh). | Ready as-is. |
 | `lint` | Your formatter/linter. | Fill `‹…›`. |
-| `tests` | Your `‹test runner›`. | Fill `‹…›`. |
-| `secrets` | Secret scan over full history. | Fill `‹…›`. |
+| `tests` | The test ladder, cheap → expensive — unit → integration → end-to-end (see [`test-levels.md`](../tests/test-levels.md)). | Fill each `‹…›`. |
+| `security` | Secret, dependency, and static-analysis scans over full history, behind `‹security scanner›` (see [`security-checklist.md`](../tests/security-checklist.md)). | Fill `‹…›`. |
 | PR title | Conventional Commits on the PR title (GitHub only). | Ready as-is. |
 | PR link | The PR body links an issue (R1), via [`pr-link-lint.sh`](pr-link-lint.sh). Its own PR-event workflow (GitHub); an `mr-link` job (GitLab). | Ready as-is. |
 
