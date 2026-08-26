@@ -50,6 +50,22 @@ jobs:
       # Concrete and ready — the glossary linter needs no toolchain.
       - run: sh docs/glossary-lint.sh
 
+  backlog-lint:
+    name: backlog-lint (docs/tasks discipline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — the backlog linter needs no toolchain.
+      - run: sh docs/tasks/backlog-lint.sh
+
+  discipline-tests:
+    name: discipline-tests (the linters' own fixtures)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — runs every linter against every fixture.
+      - run: sh docs/tests/discipline-tests.sh
+
   lint:
     name: lint (‹your linter/formatter›)
     runs-on: ubuntu-latest

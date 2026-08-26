@@ -38,6 +38,18 @@ glossary-lint:
   script:
     - sh docs/glossary-lint.sh  # concrete and ready — no toolchain needed
 
+backlog-lint:
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  script:
+    - sh docs/tasks/backlog-lint.sh   # concrete and ready — no toolchain needed
+
+discipline-tests:
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  script:
+    - sh docs/tests/discipline-tests.sh  # every linter against every fixture
+
 mr-link:                   # R1 — the MR description must link an issue
   stage: check
   image: alpine:3          # any image with POSIX sh + grep/awk/sed

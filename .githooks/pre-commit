@@ -31,6 +31,18 @@ if [ -f docs/glossary-lint.sh ]; then
 	sh docs/glossary-lint.sh
 fi
 
+# 1d. Backlog discipline — one line per task, stable ids, never in both files
+#     (see docs/tasks/backlog-lint.sh).
+if [ -f docs/tasks/backlog-lint.sh ]; then
+	sh docs/tasks/backlog-lint.sh
+fi
+
+# 1e. The linters' own tests — every fixture, every linter. Without this the
+#     fixtures are documentation rather than tests (docs/tests/discipline-tests.sh).
+if [ -f docs/tests/discipline-tests.sh ]; then
+	sh docs/tests/discipline-tests.sh
+fi
+
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
 # ‹your-linter› || exit 1
 
