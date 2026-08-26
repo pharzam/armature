@@ -44,6 +44,9 @@ Three kinds of thing need your input. Do all three, then delete this section.
   the security, scaling, and DoD checklists, and the traceability that ties a test
   to a requirement. Start at [`tests/README.md`](tests/README.md); the product
   tests themselves go in the repo-root [`tests/`](../tests/) drop-in.
+- [`review/`](review/) — the review-lens prompts for gate step 5 and the R12 plan
+  review. Fill the one `‹…›` in [`review/correctness.md`](review/correctness.md)
+  with the failure modes that have actually hurt this project.
 - [`glossary.md`](glossary.md) — your shared-vocabulary document.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.
@@ -152,15 +155,30 @@ templates ship inert under [`templates/`](templates/).
 After the code works, run rounds of independent blind reviews. Each reviewer is
 fresh — it does not see your reasoning — and each round applies a different lens:
 
-- correctness and failure modes — `‹name the failure modes that hurt you most,
-  for example data leakage, race conditions, off-by-one, unhandled errors›`,
-- guardrails and acceptance criteria,
-- clean and simple,
-- adversarial bug-hunt.
+- [correctness and failure modes](review/correctness.md) — `‹name the failure modes
+  that hurt you most, for example data leakage, race conditions, off-by-one,
+  unhandled errors›`,
+- [guardrails and acceptance criteria](review/guardrails.md),
+- [clean and simple](review/simple.md),
+- [adversarial bug-hunt](review/adversarial.md).
 
 Fix every real finding. Keep the rounds running until one round finds nothing
 material. One pass is never enough. Each round catches a different class of
 error.
+
+**Each lens ships as a prompt you can hand straight to a reviewer.** They live in
+[`review/`](review/), alongside [`review/plan.md`](review/plan.md) for the single
+[R12](issue-workflow.md#r12--slice-and-prioritize) plan review. They are inert —
+copy one into wherever your agent runner reads prompts from, or paste it into a
+fresh session. This is [R5](issue-workflow.md#r5--deterministic-over-llm-based)
+applied to the kit itself: a procedure that can be an artifact should not be a
+memory rebuilt from prose on every task.
+
+**Record what the rounds found.** The plan review's verdict goes on the issue, next
+to the plan. The code rounds and their findings go with the task's evidence under
+`‹evidence store›` — see [Honesty and evidence](#honesty-and-evidence). A review
+whose findings are not written down cannot be checked, and the next round repeats
+its work.
 
 ## Review before a costly or irreversible action
 
