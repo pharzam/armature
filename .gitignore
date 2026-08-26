@@ -1,2 +1,14 @@
 # Obsidian: local editor config, not project content
 .obsidian/
+
+# Per-task git worktrees. docs/engineering-discipline.md §"Starting a task"
+# requires the ‹worktree dir› to be gitignored, because a worktree checked out
+# inside the repository is another copy of the tree, never project content.
+# Set yours here — these two are the defaults this kit and its agents use.
+.worktree/
+.claude/worktrees/
+
+# Agent tooling: local state only. The shared half — for example a settings file
+# a team commits on purpose — stays tracked, so this ignores the local half
+# rather than the whole directory.
+.claude/settings.local.json
