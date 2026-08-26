@@ -81,7 +81,9 @@ memory:
   clone. This turns on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
   [commit format](#commit-messages), and the `pre-commit` hook runs the
   [ADR linter](#testing), the [PRD linter](#testing), and the
-  [glossary linter](#testing), plus the fast gate you fill in. See [Git hooks](#git-hooks).
+  [glossary linter](#testing), the [backlog linter](#testing), and the
+  [discipline-test runner](#testing), plus the fast gate you fill in. See
+  [Git hooks](#git-hooks).
 - **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
   commands from [`tests/test-levels.md`](tests/test-levels.md)
   (`‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`),
@@ -92,8 +94,10 @@ memory:
   recommended; it is the authority the hooks give you fast feedback against.
 - **Confirm the discipline linters run** — `sh docs/adr/adr-lint.sh` should print
   `adr-lint: OK`, `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`, and
-  `sh docs/glossary-lint.sh` should print `glossary-lint: OK`. All three ship wired
-  into the hook and the CI templates.
+  `sh docs/glossary-lint.sh` should print `glossary-lint: OK`. Then
+  `sh docs/tasks/backlog-lint.sh` should print `backlog-lint: OK`, and
+  `sh docs/tests/discipline-tests.sh` — the linters' own tests — should print
+  `discipline-tests: OK`. All ship wired into the hook and the CI templates.
 
 ## Working a task under the quality gate
 
@@ -409,7 +413,7 @@ on stable interfaces — no brittle selectors or timing. The full list is
 [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
-the kit ships four tests of its own conventions:
+the kit ships five tests of its own conventions:
 [`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
 [ADR](#architecture-decision-records) rules — filenames, sequential numbering,
 required sections, the index, and cross-links —
@@ -419,14 +423,26 @@ requirement, MoSCoW and phase, and the traceability matrix — and
 [`glossary-lint.sh`](glossary-lint.sh) lints [`glossary.md`](glossary.md) against
 the [Glossary](#glossary) rules — the table shape, duplicate or empty rows, and an
 entry for every abbreviation used in committed Markdown — and
+[`tasks/backlog-lint.sh`](tasks/backlog-lint.sh) lints [`tasks/`](tasks/) against
+the one-line-per-task rule, stable ids, and the rule that a task is never both
+"Now" and done — and
 [`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull request's body links
 its issue ([R1](issue-workflow.md#r1--issue-first)). They read only text, so they
 need no toolchain and can be the project's first tests, before any product code
-exists. The three that lint repo files run in the [`pre-commit`](#git-hooks) hook and
+exists. The four that lint repo files run in the [`pre-commit`](#git-hooks) hook and
 in [CI](#continuous-integration-optional); the PR-link check reads the PR body — a
 forge artifact absent at commit time — so it runs in CI only. Add a discipline test
 whenever a convention is worth enforcing automatically rather than by review; wire
 each one into the hook and CI wherever its input is available.
+
+**The discipline tests have tests of their own.** Each linter ships fixtures under
+`tests/` beside it — a `good` case it must accept and `bad-*` cases it must
+reject — and [`tests/discipline-tests.sh`](tests/discipline-tests.sh) runs every
+fixture against every linter, in the hook and in CI. Without that runner the
+fixtures are documentation: nothing fails when a linter regresses, and a linter
+that silently stops checking is the
+[test that passes for the wrong reason](guardrails.md) sitting inside the gate.
+A new linter arrives with its fixtures and a row in the runner's manifest.
 
 ## Continuous integration (optional)
 
@@ -458,7 +474,8 @@ Two hooks ship with the kit:
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
 - **`pre-commit`** — runs the [ADR linter](#testing), the [PRD linter](#testing),
-  and the [glossary linter](#testing), then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
+  the [glossary linter](#testing), the [backlog linter](#testing), and the
+  [discipline-test runner](#testing), then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
   `‹integration test command›`), and the `‹security scanner›` step you fill in for
   your stack. Keep it cheap-first; the full suite — the end-to-end level and the
   full security scan — belongs in [CI](#continuous-integration-optional).

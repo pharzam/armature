@@ -181,6 +181,8 @@ kit already ships the green rows.
 | Every abbreviation in **committed Markdown** has a glossary row | [Glossary](engineering-discipline.md#glossary) | [`pre-commit`](../.githooks/pre-commit) | [`glossary-lint`](ci/) | — | Enforced |
 | The same, in conversation | [Glossary](engineering-discipline.md#glossary) | — | — | — | Aspiration — no machine can read a conversation |
 | A workaround carries approval and its own removal issue | R4 | — | — | — | Written rule until wired |
+| One line per task; a task is never both "Now" and done | [Backlog](tasks/backlog.md) | [`pre-commit`](../.githooks/pre-commit) | [`backlog-lint`](ci/) | — | Enforced |
+| Every discipline linter still catches what it claims to | [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`discipline-tests`](ci/) | — | Enforced |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in
