@@ -19,6 +19,7 @@ into the place it expects.
 mkdir -p .github/workflows
 cp docs/ci/github-actions-ci.yml       .github/workflows/ci.yml
 cp docs/ci/github-actions-pr-title.yml .github/workflows/pr-title.yml   # optional
+cp docs/ci/github-actions-pr-link.yml  .github/workflows/pr-link.yml    # optional
 ```
 
 **GitLab CI:**
@@ -41,8 +42,11 @@ branch + "pipelines must succeed").
 | `tests` | Your `‹test runner›`. | Fill `‹…›`. |
 | `secrets` | Secret scan over full history. | Fill `‹…›`. |
 | PR title | Conventional Commits on the PR title (GitHub only). | Ready as-is. |
+| PR link | The PR body links an issue (R1), via [`pr-link-lint.sh`](pr-link-lint.sh). Its own PR-event workflow (GitHub); an `mr-link` job (GitLab). | Ready as-is. |
 
-Delete any job your project does not need. If you add a discipline test beyond
-these — as the [PRD linter](../prd/prd-lint.sh) does — wire it into both a CI job
-and the [`pre-commit`](../../.githooks/pre-commit) hook, the way `adr-lint` and
-`prd-lint` are.
+Delete any job your project does not need. If you add a discipline test that lints
+files in the repo — as the [PRD linter](../prd/prd-lint.sh) does — wire it into
+both a CI job and the [`pre-commit`](../../.githooks/pre-commit) hook, the way
+`adr-lint` and `prd-lint` are. A check whose input is a forge artifact, not a repo
+file — like [`pr-link-lint.sh`](pr-link-lint.sh), which reads the PR body — has no
+local hook to run in and lives in CI only.
