@@ -44,6 +44,7 @@ ships no product tests — only these patterns for an adopter to fill.
 | [`dod-checklist.md`](dod-checklist.md) | How to verify every Definition of Done (DoD) item has test coverage. |
 | [`traceability-template.md`](traceability-template.md) | The format linking a test to a requirement, guardrail, or ADR. |
 | [`example-fact-to-test.md`](example-fact-to-test.md) | A worked path: fact → requirement → guardrail → test, in kit conventions. |
+| [`discipline-tests.sh`](discipline-tests.sh) | The runner for the discipline linters' own fixtures — every `good`/`bad-*` case, every linter. The one executable in this section. |
 
 ## How the pieces fit
 

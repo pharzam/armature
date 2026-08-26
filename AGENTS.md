@@ -115,10 +115,14 @@ git config core.hooksPath .githooks   # once per clone — turns the hooks on
 sh docs/adr/adr-lint.sh               # -> adr-lint: OK
 sh docs/prd/prd-lint.sh               # -> prd-lint: OK
 sh docs/glossary-lint.sh              # -> glossary-lint: OK
+sh docs/tasks/backlog-lint.sh         # -> backlog-lint: OK
+sh docs/tests/discipline-tests.sh     # -> discipline-tests: OK (the linters' own tests)
 ```
 
-The hooks then run the linters before each commit, refuse a non-conforming commit
-subject, and refuse a direct push to `main`.
+The hooks then run all of these before each commit, refuse a non-conforming commit
+subject, and refuse a direct push to `main`. Expect the glossary linter to stop you
+the first time you use an abbreviation the glossary does not carry — add the row,
+do not work around it.
 
 ## The values an adopter fills
 

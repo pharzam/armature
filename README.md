@@ -55,7 +55,7 @@ gate and R1–R12 in under 1,500 words. Humans, start below.
 | [`docs/review/`](docs/review/) | The review-lens prompts for gate step 5, plus the R12 plan review — inert, ready to hand to a reviewer. |
 | [`docs/tests/`](docs/tests/) | The testing conventions — the test levels, a pattern per level, the security, scaling, and Definition-of-Done checklists, and test-to-requirement traceability. |
 | [`tests/`](tests/) | The repo-root drop-in where an adopter's product tests live. Empty in the kit (it has no product), kept in git by a `.gitkeep`. |
-| [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md). |
+| [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md) — plus [`backlog-lint.sh`](docs/tasks/backlog-lint.sh), the discipline test that keeps them one line per task and never in both. |
 | [`.githooks/`](.githooks/) | Git hooks that enforce the cheap gate locally — a commit-message check and a pre-commit runner. Install with `git config core.hooksPath .githooks`. |
 | [`docs/ci/`](docs/ci/) | Optional CI templates (GitHub Actions and GitLab CI) that run the same gate on every PR. Inert until you copy one into place. |
 | [`docs/templates/`](docs/templates/) | Optional, inert GitHub/GitLab issue and PR templates that embody the issue-first workflow. Inert until you copy them into place. |
