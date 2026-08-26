@@ -20,11 +20,14 @@
 # Exit status: 0 = a linked issue was found, 1 = none (or a bad argument).
 #
 # What counts as a link:
-#   keyword : Close(s|d) | Fix(es|ed) | Resolve(s|d) | Ref(s) | Part of
+#   keyword : Close(s|d) | Fix(es|ed) | Resolve(s|ed) | Ref(s) | Part of
 #   ref     : #123  ·  owner/repo#123  ·  a full issue/MR URL ending in /123
 # A concrete numeric id is required, so the template's `#N` placeholder and an
-# example inside an <!-- HTML comment --> are both rejected. Closing vs. linking
-# (Closes vs. Refs/Part of) is the author's call per R1 — both satisfy the gate.
+# example inside an <!-- HTML comment --> are both rejected. The id must also END
+# at a delimiter (whitespace, punctuation, end of line) — `#123abc` or a URL
+# ending in `/123abc` is not a reference to issue 123 and fails. Closing vs.
+# linking (Closes vs. Refs/Part of) is the author's call per R1 — both satisfy
+# the gate.
 #
 # How to adapt: the keywords mirror the table in docs/issue-workflow.md (R1). If
 # you change that table, change this pattern in the SAME change — the linter and
@@ -55,9 +58,15 @@ stripped=$(printf '%s' "$body" | awk '
 	}')
 
 kw='(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed)|refs?|part of)'
-ref='(#[0-9]+|[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9._-]+#[0-9]+|https?://[^ ]+/[0-9]+)'
+# After the id only a delimiter may follow: whitespace, punctuation, or end of
+# line. Letters/digits continue the id (123abc), `-`/`_` start a slug
+# (123-placeholder), `/` continues a URL path (/123/comments), `#` runs refs
+# together (#123#456) — none of those is a boundary, so all of them fail.
+sep="(\$|[^0-9A-Za-z_/#-])"
+ref="(#[0-9]+|[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9._-]+#[0-9]+|https?://[^ ]+/[0-9]+)"
+pat="(^|[^A-Za-z])${kw}[[:space:]]+${ref}${sep}"
 
-if printf '%s' "$stripped" | grep -Eiq "(^|[^A-Za-z])${kw}[[:space:]]+${ref}"; then
+if printf '%s' "$stripped" | grep -Eiq "${pat}"; then
 	printf 'pr-link-lint: OK\n'
 	exit 0
 fi

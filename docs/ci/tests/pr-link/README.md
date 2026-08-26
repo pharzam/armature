@@ -16,6 +16,10 @@ reads these files, so the fixtures never affect a real check.
 | `bad-none` | FAIL, exit 1 | a body with no linked issue |
 | `bad-comment-only` | FAIL, exit 1 | an issue reference only inside an HTML comment |
 | `bad-placeholder` | FAIL, exit 1 | the unfilled template's `#N` placeholder |
+| `bad-id-suffix-letters` | FAIL, exit 1 | `Closes #123abc` — the id does not end at a delimiter |
+| `bad-id-suffix-hyphen` | FAIL, exit 1 | `Refs #123-placeholder` — `-` continues into a slug |
+| `bad-id-suffix-crossrepo` | FAIL, exit 1 | `Closes owner/repo#123abc` — same rule, cross-repo form |
+| `bad-id-suffix-url` | FAIL, exit 1 | a URL ending in `/123abc`, not `/123` |
 
 Run one:
 
