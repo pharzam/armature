@@ -71,7 +71,9 @@ jobs:
     permissions:
       contents: read
     # The security track — secret, dependency, and static-analysis scans over the
-    # full history. See docs/tests/security-checklist.md. Fill ‹security scanner›.
+    # full history. Each step takes its own ‹security test command›, or fill all
+    # three with one multi-scan command; ‹security scanner› names the tool.
+    # See docs/tests/security-checklist.md for the checks and pass conditions.
     steps:
       - uses: actions/checkout@v4
         with:

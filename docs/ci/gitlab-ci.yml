@@ -62,8 +62,9 @@ security:                  # secret, dependency, and static-analysis scans
   image: "‹security scanner image›"
   variables:
     GIT_DEPTH: 0           # full history, so the scan sees every commit
-  # See docs/tests/security-checklist.md. ‹security test command› drives your
-  # ‹security scanner›; fill both for your stack.
+  # Each script line takes its own ‹security test command›, or fill all three
+  # with one multi-scan command; ‹security scanner› names the tool (image below).
+  # See docs/tests/security-checklist.md for the checks and pass conditions.
   script:
     - "‹security test command›"   # secret scan
     - "‹security test command›"   # dependency scan

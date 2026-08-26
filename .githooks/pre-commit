@@ -31,11 +31,12 @@ fi
 # 3. Tests, cheap → expensive — run the fast levels here; leave the slow ones to
 #    CI. Fill each ‹…› with your stack's command (see docs/tests/test-levels.md).
 # ‹unit test command›         || exit 1   # fastest — run on every commit
-# ‹integration test command›  || exit 1   # a fast subset here; the full set in CI
+# ‹integration test command›  || exit 1   # must be the fast subset; the full set in CI
 # ‹end-to-end test command›   || exit 1   # usually CI only — enable a smoke subset if cheap
 
-# 4. Security scan (staged changes) — a fast secret scan here; the full scan
-#    (dependency, static analysis) runs in CI. ‹security test command› drives your
+# 4. Security scan (staged changes) — the fast subset here: a secret scan, plus a
+#    static-analysis subset where it stays fast; the full set (dependency scan,
+#    static analysis) runs in CI. ‹security test command› drives your
 #    ‹security scanner›. See docs/tests/security-checklist.md.
 # ‹security test command› || exit 1
 
