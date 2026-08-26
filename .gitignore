@@ -1,2 +1,7 @@
 # Obsidian: local editor config, not project content
 .obsidian/
+
+# Agent tooling, and the per-task worktrees created under it. Local, not project
+# content. docs/engineering-discipline.md §"Starting a task" requires the
+# ‹worktree dir› to be gitignored — if yours is not .claude/, add it here too.
+.claude/
