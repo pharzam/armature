@@ -61,11 +61,18 @@ strip_comments() {
 			}
 			print line
 		}
+		# Ending still inside a comment means the rest of the file was silently
+		# discarded. That is a defect in the document, and reporting OK after it
+		# would be the "test that passes for the wrong reason" from guardrails.md
+		# — the linter would have checked nothing and said so cheerfully.
+		END { if (incomment) exit 3 }
 	' "$1"
 }
 
-strip_comments "$backlog"   > "$tmp/backlog.txt"
-strip_comments "$completed" > "$tmp/completed.txt"
+strip_comments "$backlog"   > "$tmp/backlog.txt" \
+	|| err "$(basename "$backlog"): an HTML comment is opened and never closed — everything after it would be ignored"
+strip_comments "$completed" > "$tmp/completed.txt" \
+	|| err "$(basename "$completed"): an HTML comment is opened and never closed — everything after it would be ignored"
 
 # --- 1. backlog.md — one line per task under ## Now and ## Next -------------
 awk -v fname="$(basename "$backlog")" '
