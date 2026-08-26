@@ -49,7 +49,7 @@ Three kinds of thing need your input. Do all three, then delete this section.
   document a new engineer reads.
 - [`tasks/backlog.md`](tasks/backlog.md) and
   [`tasks/completed.md`](tasks/completed.md) — your task index.
-- [`issue-workflow.md`](issue-workflow.md) — the issue-first rules (R1–R11), the
+- [`issue-workflow.md`](issue-workflow.md) — the issue-first rules (R1–R12), the
   ticket policy the gate assumes.
 - [`templates/`](templates/) — inert forge issue/PR templates; copy into place
   only if you adopt that forge.
@@ -139,7 +139,7 @@ on the issue
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
 actionable, demoable goal per issue. The change then lands through a pull request
 whose body links that issue (`Closes`/`Refs #N`), while the task ID stays in the
-commit subject, so the two namespaces coexist. The full rules — R1–R11, and the
+commit subject, so the two namespaces coexist. The full rules — R1–R12, and the
 honest table of what is enforced where — live in
 [`issue-workflow.md`](issue-workflow.md); the decision is
 [ADR-0003](adr/0003-adopt-issue-first-workflow.md). The kit is forge-free, so an

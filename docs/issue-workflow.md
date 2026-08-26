@@ -20,7 +20,7 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 > this note. The decision to work this way is [ADR-0003](adr/0003-adopt-issue-first-workflow.md).
 
 These rules bind **every operator — each human and each LLM coding agent.** They
-are numbered R1–R11 so a review or a commit can cite one by number.
+are numbered R1–R12 so a review or a commit can cite one by number.
 
 ## R1 — Issue first
 
