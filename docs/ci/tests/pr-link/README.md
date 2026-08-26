@@ -1,6 +1,6 @@
 # pr-link-lint self-tests
 
-These are fixtures for [`../pr-link-lint.sh`](../pr-link-lint.sh), **not** example
+These are fixtures for [`../../pr-link-lint.sh`](../../pr-link-lint.sh), **not** example
 PR bodies to fill in. Each file is a whole PR/MR body; the linter is pointed at
 one and asked whether it links an issue (R1).
 
