@@ -29,6 +29,9 @@ the frame that gives a thing its strength.
 
 ## Start here
 
+**If you are an AI coding agent, read [`AGENTS.md`](AGENTS.md) first** — the whole
+gate and R1–R12 in under 1,500 words. Humans, start below.
+
 1. **[`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md)** — read this first
    (~30 min). It states the [Problem statement](docs/onboarding-for-engineers.md#1-problem-statement)
    and teaches the project's vocabulary.
@@ -40,6 +43,7 @@ the frame that gives a thing its strength.
 
 | Piece | What it holds |
 |-------|---------------|
+| [`AGENTS.md`](AGENTS.md) | The agent entry point: the gate and R1–R12 compressed, under 1,500 words. [`CLAUDE.md`](CLAUDE.md) points to it. |
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate and every working practice. |
 | [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R11): the ticket policy the gate assumes. |

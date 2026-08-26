@@ -149,6 +149,7 @@ while IFS= read -r f; do
 			line = $0
 			gsub(/https?:\/\/[^ )>]*/, " ", line)   # URLs are not prose
 			gsub(/`[^`]*`/, " ", line)              # inline code is not prose
+			gsub(/\]\([^)]*\)/, "] ", line)         # a link target is a path, not prose
 			while (match(line, /[A-Z][A-Z0-9]+/)) {
 				tok   = substr(line, RSTART, RLENGTH)
 				before = (RSTART > 1) ? substr(line, RSTART - 1, 1) : " "
@@ -159,6 +160,10 @@ while IFS= read -r f; do
 				# pronunciation guide ("AR-mə-chər"): not an abbreviation in prose.
 				if (before ~ /[A-Za-z0-9_-]/) continue
 				if (after == "-" || after == "_") continue
+				# A filename, not an abbreviation: AGENTS.md, CLAUDE.md, README.md.
+				# The all-caps stem of a file is named by its extension, not defined
+				# in a glossary.
+				if (after == "." && next2 ~ /[a-z]/) continue
 				# A plural ("PRDs") still names the abbreviation; any other
 				# lower-case tail means it was part of a longer word.
 				if (after ~ /[a-z]/ && !(after == "s" && next2 !~ /[A-Za-z0-9]/)) continue

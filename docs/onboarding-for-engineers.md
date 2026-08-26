@@ -67,6 +67,7 @@ Consequences you will meet immediately, and which are not negotiable:
 | Path | What |
 |------|------|
 | `‹path›` | `‹what lives there›` |
+| [`AGENTS.md`](../AGENTS.md) | The agent entry point: the same rules as below, compressed. Useful to humans as a refresher. |
 | [`engineering-discipline.md`](engineering-discipline.md) | **How we work**: branches, worktrees, commits, tests, reviews, ADRs. Read before your first commit. |
 | [`glossary.md`](glossary.md) | The shared vocabulary. Skim it; come back constantly. |
 | [`facts/`](facts/) | Facts collected from the customer, stored as-is as immutable evidence. Derived requirements cite them by `F-NNNN` ID. |

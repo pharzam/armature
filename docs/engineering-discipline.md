@@ -47,6 +47,9 @@ Three kinds of thing need your input. Do all three, then delete this section.
 - [`review/`](review/) — the review-lens prompts for gate step 5 and the R12 plan
   review. Fill the one `‹…›` in [`review/correctness.md`](review/correctness.md)
   with the failure modes that have actually hurt this project.
+- [`../AGENTS.md`](../AGENTS.md) — the agent entry point. It summarises this
+  document and [`issue-workflow.md`](issue-workflow.md), so a change to either
+  edits it too ([ADR-0004](adr/0004-ship-a-root-agents-file.md)).
 - [`glossary.md`](glossary.md) — your shared-vocabulary document.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.

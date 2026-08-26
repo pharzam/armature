@@ -115,6 +115,8 @@ scoped to the failure — the failure is the signal, not the test's fault.
 ## R10 — Sync with governance
 
 These rules are not standalone. Keep them synchronized with
+[`AGENTS.md`](../AGENTS.md) — which summarises them, so a rule change edits it in
+the same change —
 [`engineering-discipline.md`](engineering-discipline.md), the [ADRs](adr/),
 [`guardrails.md`](guardrails.md), [`glossary.md`](glossary.md), and the
 [PRD convention](prd/README.md). A conflict between them stops work: open a
