@@ -43,7 +43,7 @@ the frame that gives a thing its strength.
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate and every working practice. |
 | [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R11): the ticket policy the gate assumes. |
-| [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary the other docs assume. |
+| [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary the other docs assume, plus [`glossary-lint.sh`](docs/glossary-lint.sh), the discipline test that keeps every abbreviation defined. |
 | [`docs/guardrails.md`](docs/guardrails.md) | Known pitfalls, pre-registered pass/fail rules, and validation. |
 | [`docs/adr/`](docs/adr/) | Architecture Decision Records — the *why* behind structural choices — plus [`adr-lint.sh`](docs/adr/adr-lint.sh), the discipline test that keeps them honest. |
 | [`docs/facts/`](docs/facts/) | Raw customer facts kept as immutable evidence, and the citation convention that derives requirements from them. |
@@ -87,8 +87,8 @@ To stand up a new project:
    `git config core.hooksPath .githooks`, fill their `‹…›` steps, and — if you use
    GitHub or GitLab — activate CI by copying a template from
    [`docs/ci/`](docs/ci/) into place. This makes the quality gate self-enforcing;
-   the [ADR linter](docs/adr/adr-lint.sh) and [PRD linter](docs/prd/prd-lint.sh)
-   run green out of the box.
+   the [ADR linter](docs/adr/adr-lint.sh), [PRD linter](docs/prd/prd-lint.sh), and
+   [glossary linter](docs/glossary-lint.sh) run green out of the box.
 4. Search for `‹` to find everything still unfilled; delete every "How to adapt" note
    when the real content is in.
 5. Grow it — each new practice gets its own short section, with a fuller reference

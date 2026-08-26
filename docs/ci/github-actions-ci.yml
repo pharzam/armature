@@ -42,6 +42,14 @@ jobs:
       # Concrete and ready — the PRD linter needs no toolchain.
       - run: sh docs/prd/prd-lint.sh
 
+  glossary-lint:
+    name: glossary-lint (docs/glossary.md discipline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — the glossary linter needs no toolchain.
+      - run: sh docs/glossary-lint.sh
+
   lint:
     name: lint (‹your linter/formatter›)
     runs-on: ubuntu-latest

@@ -32,6 +32,12 @@ prd-lint:
   script:
     - sh docs/prd/prd-lint.sh   # concrete and ready — no toolchain needed
 
+glossary-lint:
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  script:
+    - sh docs/glossary-lint.sh  # concrete and ready — no toolchain needed
+
 mr-link:                   # R1 — the MR description must link an issue
   stage: check
   image: alpine:3          # any image with POSIX sh + grep/awk/sed

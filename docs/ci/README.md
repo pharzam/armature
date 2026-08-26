@@ -38,6 +38,7 @@ branch + "pipelines must succeed").
 |-----|----------------|-----------------|
 | `adr-lint` | `docs/adr/` discipline, via [`adr-lint.sh`](../adr/adr-lint.sh). | Ready as-is. |
 | `prd-lint` | `docs/prd/` discipline, via [`prd-lint.sh`](../prd/prd-lint.sh). | Ready as-is. |
+| `glossary-lint` | `docs/glossary.md` discipline — table shape, and a row for every abbreviation used in committed Markdown — via [`glossary-lint.sh`](../glossary-lint.sh). | Ready as-is. |
 | `lint` | Your formatter/linter. | Fill `‹…›`. |
 | `tests` | The test ladder, cheap → expensive — unit → integration → end-to-end (see [`test-levels.md`](../tests/test-levels.md)). | Fill each `‹…›`. |
 | `security` | Secret, dependency, and static-analysis scans over full history, behind `‹security scanner›` (see [`security-checklist.md`](../tests/security-checklist.md)). | Fill `‹…›`. |
@@ -47,6 +48,6 @@ branch + "pipelines must succeed").
 Delete any job your project does not need. If you add a discipline test that lints
 files in the repo — as the [PRD linter](../prd/prd-lint.sh) does — wire it into
 both a CI job and the [`pre-commit`](../../.githooks/pre-commit) hook, the way
-`adr-lint` and `prd-lint` are. A check whose input is a forge artifact, not a repo
+`adr-lint`, `prd-lint`, and `glossary-lint` are. A check whose input is a forge artifact, not a repo
 file — like [`pr-link-lint.sh`](pr-link-lint.sh), which reads the PR body — has no
 local hook to run in and lives in CI only.
