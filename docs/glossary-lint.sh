@@ -46,9 +46,28 @@ set -u
 LC_ALL=C
 export LC_ALL
 
+# A git hook exports GIT_DIR, GIT_INDEX_FILE, and GIT_WORK_TREE. With those set,
+# `git ls-files` run from a subdirectory lists the WHOLE repository using
+# root-relative paths instead of that subdirectory's files — so this linter would
+# answer differently inside the pre-commit hook than outside it, which is the last
+# thing a gate should do. Clearing them makes git rediscover the repository from
+# the current directory, exactly as it does on the command line. The staged index
+# is still what git reads, so a pre-commit run still sees what is about to land.
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE
+
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-glossary=${1:-$script_dir/glossary.md}
-scan_root=${2:-$(dirname "$script_dir")}
+
+# Two call shapes. A single DIRECTORY argument means "the glossary and the files
+# to scan both live here" — that one-argument form is what
+# docs/tests/discipline-tests.sh uses, so this linter is driven exactly like every
+# other one. Otherwise: an explicit glossary path, and an explicit scan root.
+if [ -d "${1:-}" ]; then
+	glossary=$1/glossary.md
+	scan_root=$1
+else
+	glossary=${1:-$script_dir/glossary.md}
+	scan_root=${2:-$(dirname "$script_dir")}
+fi
 
 fail=0
 err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
@@ -129,7 +148,15 @@ printf '%s\n' "$STOPLIST" | tr ' ' '\n' | sed '/^$/d' | tr 'a-z' 'A-Z' | sort -u
 # Skip fenced code blocks and inline URLs: a YAML key or a path is not prose.
 ( cd "$scan_root" 2>/dev/null && git ls-files '*.md' 2>/dev/null ) > "$tmp/files" || :
 if [ ! -s "$tmp/files" ]; then
-	# Not a git checkout (or no Markdown): nothing to scan, table checks stand.
+	# No *committed* Markdown is a legitimate state — the rule's scope is what is
+	# committed, and a fresh checkout may hold none. Markdown sitting on disk but
+	# untracked is NOT legitimate: the scan would cover nothing and report OK,
+	# which is the exact failure this linter exists to prevent. It is also the
+	# easy mistake — adding a file and forgetting to stage it before running.
+	if find "$scan_root" -name '*.md' -type f 2>/dev/null | head -n1 | grep -q .; then
+		err "$scan_root holds Markdown that git does not track — the scan would cover nothing. Stage the files first (git add), then re-run."
+		exit 1
+	fi
 	[ "$fail" -eq 0 ] && { printf 'glossary-lint: OK\n'; exit 0; } || exit 1
 fi
 
@@ -170,11 +197,27 @@ while IFS= read -r f; do
 				printf "%s\t%s\n", tok, fname
 			}
 		}
+		# Ending still inside a fence means the rest of the file was skipped. A
+		# silent skip that still reports OK is the "test that passes for the wrong
+		# reason" from guardrails.md — the same defect as the multibyte abort this
+		# script already guards against, arriving one file at a time instead of
+		# all at once.
+		END { if (infence) printf "__UNCLOSED_FENCE__\t%s\n", fname }
 	' "$scan_root/$f"
 done < "$tmp/files" | sort -u > "$tmp/used"
 
+# An unterminated code fence: report the file, and do not let the sentinel leak
+# into the token set.
+unclosed=$(awk -F'\t' '$1 == "__UNCLOSED_FENCE__" { print $2 }' "$tmp/used" | sort -u)
+if [ -n "$unclosed" ]; then
+	printf '%s\n' "$unclosed" | while IFS= read -r _f; do
+		[ -n "$_f" ] && printf 'FAIL  %s: a code fence is opened and never closed — everything after it was skipped\n' "$_f" >&2
+	done
+	fail=1
+fi
+
 # Rule references (R1 … R12) are pointers, not abbreviations.
-cut -f1 "$tmp/used" | sort -u | grep -Ev '^R[0-9]+$' > "$tmp/used.tokens"
+cut -f1 "$tmp/used" | sort -u | grep -Ev '^R[0-9]+$|^__UNCLOSED_FENCE__$' > "$tmp/used.tokens"
 
 # Self-check: a repository of Markdown always contains some abbreviation. Zero
 # means the scan broke, not that the documents are clean — fail loudly rather
