@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-4mk7** — Add a hardened, domain-free test-section scaffold (`docs/tests/`, root `tests/`, rule + hook/CI wiring) ([#12](https://github.com/pharzam/armature/issues/12))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
