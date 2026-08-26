@@ -15,7 +15,7 @@
 
 set -e
 
-# 1. ADR discipline — keeps docs/adr/ honest (see docs/adr/adr-lint.sh).
+# 1a. ADR discipline — keeps docs/adr/ honest (see docs/adr/adr-lint.sh).
 if [ -f docs/adr/adr-lint.sh ]; then
 	sh docs/adr/adr-lint.sh
 fi
@@ -23,6 +23,12 @@ fi
 # 1b. PRD discipline — keeps docs/prd/ honest (see docs/prd/prd-lint.sh).
 if [ -f docs/prd/prd-lint.sh ]; then
 	sh docs/prd/prd-lint.sh
+fi
+
+# 1c. Glossary discipline — every abbreviation in committed Markdown has a row
+#     (see docs/glossary-lint.sh and engineering-discipline.md §"Glossary").
+if [ -f docs/glossary-lint.sh ]; then
+	sh docs/glossary-lint.sh
 fi
 
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›

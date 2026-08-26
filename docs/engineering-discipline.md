@@ -74,8 +74,8 @@ memory:
 - **Install the git hooks** — run `git config core.hooksPath .githooks` once per
   clone. This turns on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
   [commit format](#commit-messages), and the `pre-commit` hook runs the
-  [ADR linter](#testing) and the [PRD linter](#testing) plus the fast gate you
-  fill in. See [Git hooks](#git-hooks).
+  [ADR linter](#testing), the [PRD linter](#testing), and the
+  [glossary linter](#testing), plus the fast gate you fill in. See [Git hooks](#git-hooks).
 - **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
   commands from [`tests/test-levels.md`](tests/test-levels.md)
   (`‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`),
@@ -85,8 +85,9 @@ memory:
   [Continuous integration](#continuous-integration-optional). CI is optional but
   recommended; it is the authority the hooks give you fast feedback against.
 - **Confirm the discipline linters run** — `sh docs/adr/adr-lint.sh` should print
-  `adr-lint: OK` and `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`. Both
-  ship wired into the hook and the CI templates.
+  `adr-lint: OK`, `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`, and
+  `sh docs/glossary-lint.sh` should print `glossary-lint: OK`. All three ship wired
+  into the hook and the CI templates.
 
 ## Working a task under the quality gate
 
@@ -268,19 +269,33 @@ the quick-reference table. A rename that the glossary does not reflect leaves th
 rest of the docs inconsistent with themselves, which is exactly what the glossary
 exists to prevent.
 
-**No undefined abbreviation.** Every abbreviation that appears in any conversation,
-context, prompt, reply, or response must have an entry in [`glossary.md`](glossary.md).
-If an abbreviation is not yet defined there, the same turn that uses it adds it — the
-full row: Term, Abbr., Description, and Example. This rule binds **all LLMs and all
-human operators** working in this project; it is not optional, and "the reader will
-know what it means" is not a substitute for the entry. An abbreviation that is used
-but never defined is the exact gap the glossary exists to close, one turn at a time.
+**No undefined abbreviation.** Every abbreviation needs an entry in
+[`glossary.md`](glossary.md) — the full row: Term, Abbr., Description, and Example.
+The rule has two halves, and this document is honest about what backs each. This
+binds **all LLMs and all human operators**; "the reader will know what it means" is
+not a substitute for the entry.
+
+**Enforced — committed Markdown.** Every abbreviation in a committed Markdown file
+has a row, checked by [`glossary-lint.sh`](glossary-lint.sh) in the
+[`pre-commit` hook](#git-hooks) and in [CI](#continuous-integration-optional). A
+commit that introduces an abbreviation without defining it fails. This is the half a
+machine can read, so this is the half that is a gate.
+
+**Aspiration — everywhere else.** The same courtesy in a conversation, a prompt, or
+a reply: if you use an abbreviation the glossary does not carry, add it in the same
+turn. No program can read a conversation, so nothing enforces this, and the kit does
+not pretend otherwise. A rule with no machine behind it drifts — which is exactly how
+`CLI`, `TUI`, and `GUI` came to sit undefined inside the very document that states
+the rule, until the linter above was written and found them.
 
 The one boundary: general-English abbreviations — for example `e.g.`, `i.e.`, `etc.`,
-`vs.` — are exempt, because they are already shared vocabulary. The exemption ends the
-moment such a form carries a project-specific meaning; then it is a term like any
-other and needs its row. When in doubt, add the entry: a glossary with one line too
-many costs a reader a glance, while a missing line costs them the meaning.
+`vs.` — are exempt, because they are already shared vocabulary. So are the formats and
+protocols any software reader knows, such as `HTML`, `URL`, and `JSON`;
+[`glossary-lint.sh`](glossary-lint.sh) holds that list, and it stays short, because
+every entry on it is a word some reader will not know. The exemption ends the moment
+such a form carries a project-specific meaning; then it is a term like any other and
+needs its row. When in doubt, add the entry: a glossary with one line too many costs
+a reader a glance, while a missing line costs them the meaning.
 
 ## Plain-language summaries
 
@@ -373,17 +388,20 @@ on stable interfaces — no brittle selectors or timing. The full list is
 [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
-the kit ships three tests of its own conventions:
+the kit ships four tests of its own conventions:
 [`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
 [ADR](#architecture-decision-records) rules — filenames, sequential numbering,
 required sections, the index, and cross-links —
 [`prd/prd-lint.sh`](prd/prd-lint.sh) lints [`prd/`](prd/) against the
 [PRD](#product-requirements) rules — requirement IDs, a resolvable cited fact per
 requirement, MoSCoW and phase, and the traceability matrix — and
+[`glossary-lint.sh`](glossary-lint.sh) lints [`glossary.md`](glossary.md) against
+the [Glossary](#glossary) rules — the table shape, duplicate or empty rows, and an
+entry for every abbreviation used in committed Markdown — and
 [`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull request's body links
 its issue ([R1](issue-workflow.md#r1--issue-first)). They read only text, so they
 need no toolchain and can be the project's first tests, before any product code
-exists. The two that lint repo files run in the [`pre-commit`](#git-hooks) hook and
+exists. The three that lint repo files run in the [`pre-commit`](#git-hooks) hook and
 in [CI](#continuous-integration-optional); the PR-link check reads the PR body — a
 forge artifact absent at commit time — so it runs in CI only. Add a discipline test
 whenever a convention is worth enforcing automatically rather than by review; wire
@@ -393,8 +411,8 @@ each one into the hook and CI wherever its input is available.
 
 CI runs this whole gate automatically on every change, so it is enforced by the
 forge rather than by memory. It is the **authority**: its checks — the
-[ADR linter](#testing), the [PRD linter](#testing), the
-[PR-link check](#testing), the [test levels](#testing), lint, a security scan, and
+[ADR linter](#testing), the [PRD linter](#testing), the [glossary linter](#testing),
+the [PR-link check](#testing), the [test levels](#testing), lint, a security scan, and
 the [commit-format](#commit-messages) check — are the ones you make *required*
 before a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
 
@@ -418,8 +436,8 @@ Two hooks ship with the kit:
 
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
-- **`pre-commit`** — runs the [ADR linter](#testing) and the [PRD linter](#testing),
-  then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
+- **`pre-commit`** — runs the [ADR linter](#testing), the [PRD linter](#testing),
+  and the [glossary linter](#testing), then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
   `‹integration test command›`), and the `‹security scanner›` step you fill in for
   your stack. Keep it cheap-first; the full suite — the end-to-end level and the
   full security scan — belongs in [CI](#continuous-integration-optional).

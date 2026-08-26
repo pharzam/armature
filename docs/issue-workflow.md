@@ -57,10 +57,22 @@ will re-open.
 
 ## R4 — No workarounds
 
-A workaround is never the default. If one is genuinely unavoidable, it needs the
-written approval of **two different operators** on the issue, and it is logged as
-technical debt with its **own removal issue**. A workaround with no removal issue
-is a permanent defect wearing a temporary label.
+A workaround is never the default. If one is genuinely unavoidable, it is logged as
+technical debt with its **own removal issue**. A workaround with no removal issue is
+a permanent defect wearing a temporary label.
+
+**Who approves it depends on how many operators the project has.**
+
+- **Two or more operators:** the written approval of **two different operators** on
+  the issue. The second pair of eyes is the check.
+- **A solo operator** — one person, with or without agents: a dated self-review
+  comment on the issue stating the workaround, why it is unavoidable, what was tried
+  instead, and what would have to change to remove it. Writing it down is the check,
+  because there is no second operator to be one.
+
+The solo form is deliberately weaker, and it is not a loophole. The removal issue is
+mandatory either way, and **an agent is never the second operator** — a model
+approving a workaround it proposed is one operator, not two.
 
 ## R5 — Deterministic over LLM-based
 
@@ -164,6 +176,9 @@ kit already ships the green rows.
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |
+| Every abbreviation in **committed Markdown** has a glossary row | [Glossary](engineering-discipline.md#glossary) | [`pre-commit`](../.githooks/pre-commit) | [`glossary-lint`](ci/) | — | Enforced |
+| The same, in conversation | [Glossary](engineering-discipline.md#glossary) | — | — | — | Aspiration — no machine can read a conversation |
+| A workaround carries approval and its own removal issue | R4 | — | — | — | Written rule until wired |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in
