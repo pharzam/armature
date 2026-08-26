@@ -31,8 +31,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-3q8d** — Make the "no undefined abbreviation" rule real: split it into an enforced half (committed Markdown, checked by `glossary-lint.sh`) and a labelled aspiration, define the four abbreviations the kit already used undefined, and give R4 a solo-operator form ([#21](https://github.com/pharzam/armature/issues/21))
-
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
