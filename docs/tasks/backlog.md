@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-9p4c** — Add R12 (slice and prioritize) to the issue-first workflow ([#14](https://github.com/pharzam/armature/issues/14))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
