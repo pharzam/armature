@@ -31,8 +31,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-6b3n** — Fix both new linters reporting OK after an unclosed comment or code fence silently hid the rest of a file, and give `glossary-lint` the single-directory mode that lets the fixture runner drive it ([#29](https://github.com/pharzam/armature/issues/29))
-
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
