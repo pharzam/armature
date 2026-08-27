@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-5r2q** — Clear the review debt: run the independent review rounds that gate step 5 requires over the seven pull requests which reached `main` with a self-review only ([#33](https://github.com/pharzam/armature/issues/33))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
