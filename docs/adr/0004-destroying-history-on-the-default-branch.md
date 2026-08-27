@@ -11,8 +11,7 @@ Accepted
 > Removing or rewriting commits on the published default branch is the one
 > change no pull request can express, and no later review can undo. It stays
 > allowed, under five conditions, and a second person must agree first —
-> except when undoing a prior destruction that is still the branch's current
-> state. It also does not do what people expect: on most hosted git services
+> except when undoing a prior destruction that took only away and still stands. It also does not do what people expect: on most hosted git services
 > anything that ever appeared in a pull request stays fetchable afterwards, so
 > if a credential leaked, revoke it — removing the commit is not what ends the
 > exposure.
@@ -109,8 +108,8 @@ was and why nothing was lifted. Condition 5 can only follow it: for (a) and
 (b) the evidence does not exist until the act has happened, and (c) is grouped
 with them so the post-act record is complete in one place.
 
-**A repair waives condition 2, and only while the destruction is still the
-branch's current state.** Undoing a *prior destruction of history on the
+**A repair waives condition 2, and only while the branch still stands exactly
+where that act left it and that act took only away.** Undoing a *prior destruction of history on the
 default branch* — restoring the tip the branch held immediately before that
 act — is a repair, and needs no second operator. Once anything has landed on
 top, or the destroying act itself introduced content, undoing it discards work
