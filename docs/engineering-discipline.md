@@ -181,12 +181,10 @@ is not a substitute for the review. A smoke run exercises the plumbing, not the
 correctness of the result that the action exists to produce.
 
 **Destroying history on the default branch** is the most irreversible action in
-this kit, and the one no pull request can express: a pull request proposes commits
-onto a branch, while a reset, a rewrite or a deletion takes them away. It is
-permitted only under the five conditions in
-[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) — one of which is the written
-approval of a second operator who is a person. Restoring the branch to a tip it
-previously held is a *repair*, not a destruction, and is not covered.
+this kit, and the one no pull request can express. It is permitted only under the
+conditions in [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which
+govern it in full — including which acts count, and the one narrow case (undoing a
+*prior* destruction) that does not.
 
 ## Honesty and evidence
 
