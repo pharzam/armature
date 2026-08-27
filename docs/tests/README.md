@@ -44,7 +44,8 @@ ships no product tests — only these patterns for an adopter to fill.
 | [`dod-checklist.md`](dod-checklist.md) | How to verify every Definition of Done (DoD) item has test coverage. |
 | [`traceability-template.md`](traceability-template.md) | The format linking a test to a requirement, guardrail, or ADR. |
 | [`example-fact-to-test.md`](example-fact-to-test.md) | A worked path: fact → requirement → guardrail → test, in kit conventions. |
-| [`discipline-tests.sh`](discipline-tests.sh) | The runner for the discipline linters' own fixtures — every `good`/`bad-*` case, every linter. The one executable in this section. |
+| [`discipline-tests.sh`](discipline-tests.sh) | The runner for the discipline linters' own fixtures — every `good`/`bad-*` case, every linter. Each `bad-*` case must produce the message named in its sibling `<name>.expect`, because exit status alone cannot tell "caught the defect" from "could not open the file". |
+| [`runner-selftest.sh`](runner-selftest.sh) | The runner's own tests. It mutates a copy of the tree in each way that once made the runner report a pass it had not earned — a gutted fixture, a deleted linter, a missing fixture root, a renamed fixture, an empty `bad-*` directory — and asserts that the runner now rejects every one. Runs in CI, not in the hook: about ten seconds. |
 
 ## How the pieces fit
 
