@@ -26,24 +26,25 @@ changed, and `adr/README.md` reserves amendment for a decision that still holds.
 
 ## The 2026-08-27 reset, scored against the five conditions
 
-Written by the operator who performed the reset it scores.
+Written by the operator who performed the reset it scores. Issue timestamps are from each issue's own timeline; the repository events feed reports some of them one or two seconds later.
 
 | Time (UTC) | Event |
 |---|---|
 | 10:08:11 | `main` reset locally (`git reflog show main`) |
 | 10:11:26 | a branch ruleset named `main` is created, already disabled — see below |
+| 10:14:25 | `backup/pre-r12-reset-999765f` pushed — the default branch's tip preserved, before anything was destroyed |
 | 10:18:03 | force-pushed to the remote (`PushEvent refs/heads/main`) |
 | 10:41:02 | the record written on #16, opening **"Status: main was reset."** — past tense |
-| 10:46:25–10:46:51 | **twelve further issues closed as completed** (#19, #20, #22, #33–#41) over deliverables `main` no longer held |
-| 11:46–11:47 | the eighteen affected issues reopened |
+| 10:46:24–10:46:51 | **twelve further issues closed as completed** (#19, #20, #22, #33–#41) over deliverables `main` no longer held |
+| 11:46:56–11:47:38 | the eighteen affected issues reopened |
 
 | Condition | Score |
 |---|---|
 | 1 — *"An open issue states the goal in the operator's own words, and why no revert, fix-forward, or new branch reaches it."* | **Not met.** Nothing was written anywhere before the act. The goal and the reason are real and were recorded 23 minutes after the push; the condition is about *when*. |
 | 2 — *"A second operator approves in writing, and that operator is a person."* | **Not met.** Self-approved. |
-| 3 — *"Everything about to be lost is preserved first."* | **Partly.** `backup/pre-r12-reset-999765f` held the default branch's tip, correctly. Two unmerged tips that were not ancestors of it were not: `fix/t-3k8w-runner-asserts-reason` happened to be on the remote already, and `chore/t-5r2q-review-debt` existed on one machine only and was pushed to `backup/pre-r12-reset-t-5r2q` at 11:46:30Z, 88 minutes after the push. It survived by luck. No tags existed. Condition 3 now anchors the sweep to condition 1's issue or the act, whichever set is larger; here condition 1's issue never existed, so the anchor falls back to the act and the score is unchanged. |
+| 3 — *"Everything about to be lost is preserved first."* | **Partly.** `backup/pre-r12-reset-999765f` held the default branch's tip, correctly. Two unmerged tips that were not ancestors of it were not: `fix/t-3k8w-runner-asserts-reason` happened to be on the remote already, and `chore/t-5r2q-review-debt` existed on one machine only and was pushed to `backup/pre-r12-reset-t-5r2q` at 11:46:30Z, 88 minutes after the push. It survived by luck. No tags existed. Condition 3 now sweeps the refs as they stood when condition 1's issue opened *and* as they stand at the act, together; here condition 1's issue never existed, so only the act-time set applies and the score is unchanged. |
 | 4 — *"Any lock on the branch is lifted deliberately and restored afterwards, checked field by field against a record of its full configuration made before lifting."* | **Not met.** A documented lock existed, it was lifted around the act, and it was restored; nobody recorded either, and no field-by-field check ran. See below. |
-| 5 — *"(a) every issue whose deliverable is now gone returns to open with the evidence; (b) the issue from condition 1 records what was destroyed and where the backup is; and (c) it records who approved."* | **(a) Not met.** The test is *before other work resumes*, and work resumed 28 minutes after the push in the wrong direction: twelve further issues were closed as completed over deliverables that had just been destroyed. The reopens began at 11:46:58Z, 60 minutes after those closes. **(b) Not met** — condition 1's issue never existed, so it has no subject. The 10:41 comment does record what was destroyed and names the backup branch, which is the substance. **(c) Not met**, there being no approver. |
+| 5 — *"(a) every issue whose deliverable is now gone returns to open with the evidence; (b) the issue from condition 1 records what was destroyed and where the backup is; and (c) it records who approved."* | **(a) Not met.** The test is *before other work resumes*, and work resumed 28 minutes after the push in the wrong direction: twelve further issues were closed as completed over deliverables that had just been destroyed. The reopens began at 11:46:56Z, 60 minutes after those closes. **(b) Not met** — condition 1's issue never existed, so it has no subject. The 10:41 comment does record what was destroyed and names the backup branch, which is the substance. **(c) Not met**, there being no approver. |
 
 **Nought of five fully met, one partly.**
 
