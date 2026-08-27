@@ -55,7 +55,7 @@ pass=0
 fail=0
 noted=0
 step=0
-total=18
+total=22
 
 # Make a fresh copy of the tree the runner needs, and echo its path.
 #
@@ -97,7 +97,11 @@ check() {
 
 	# This adoption does not have the thing the scenario mutates. Not a failure —
 	# see "EACH SCENARIO NAMES A FIXTURE FROM THE RUNNER'S MANIFEST" above.
-	if [ -n "$_needs" ] && [ ! -e "$_dir/$_needs" ]; then
+	#
+	# Asked of the REPOSITORY, not of "$_dir": the scenario has already applied its
+	# mutation to the copy, and several mutations are deletions, so asking the copy
+	# would report every such scenario as not applicable and skip it.
+	if [ -n "$_needs" ] && [ ! -e "$repo_root/$_needs" ] && [ ! -L "$repo_root/$_needs" ]; then
 		noted=$((noted + 1))
 		printf 'NOTE  %s: this adoption has no %s — not applicable\n' "$_name" "$_needs" >&2
 		return 0
@@ -150,25 +154,25 @@ fi
 d=$(fresh_copy gutted-fixture)
 rm -f "$d"/docs/tasks/tests/bad-dup-id/*.md
 check "a bad-* fixture whose input files are deleted" "$d" reject \
-	"is an empty bad-* directory" docs/tasks/tests
+	"is an empty bad-* directory" docs/tasks/tests/bad-dup-id
 
 # --- scenario 3: a linter is deleted ----------------------------------------
 d=$(fresh_copy missing-linter)
 rm -f "$d/docs/glossary-lint.sh"
 check "a linter script that is gone" "$d" reject \
-	"docs/glossary-lint.sh is not present" docs/tests/glossary-lint
+	"docs/glossary-lint.sh is not present" docs/glossary-lint.sh
 
 # --- scenario 4: a whole fixture root is deleted ----------------------------
 d=$(fresh_copy missing-fixture-root)
 rm -rf "$d/docs/prd/tests"
 check "a fixture root that is gone" "$d" reject \
-	"has no fixtures at docs/prd/tests" docs/prd/prd-lint.sh
+	"has no fixtures at docs/prd/tests" docs/prd/tests
 
 # --- scenario 5: a fixture is renamed out of the convention -----------------
 d=$(fresh_copy renamed-fixture)
 mv "$d/docs/adr/tests/bad-status" "$d/docs/adr/tests/bad_status"
 check "a fixture renamed out of the good*/bad-* convention" "$d" reject \
-	"matches neither good* nor bad-*"
+	"matches neither good* nor bad-*" docs/adr/tests/bad-status
 
 # --- scenario 6: a fixture renamed to a dotfile -----------------------------
 # The glob `"$root"/*` never matches a dotfile, so this one disappeared in
@@ -176,14 +180,14 @@ check "a fixture renamed out of the good*/bad-* convention" "$d" reject \
 d=$(fresh_copy dotfile-fixture)
 mv "$d/docs/adr/tests/bad-status" "$d/docs/adr/tests/.bad-status"
 check "a fixture renamed to a dotfile" "$d" reject \
-	"matches neither good* nor bad-*"
+	"matches neither good* nor bad-*" docs/adr/tests/bad-status
 
 # --- scenario 7: a fixture replaced by a broken symlink ---------------------
 d=$(fresh_copy broken-symlink)
 rm -rf "$d/docs/adr/tests/bad-status"
 ln -s /nonexistent-target "$d/docs/adr/tests/bad-status"
 check "a fixture replaced by a broken symlink" "$d" reject \
-	"ADR directory not found: docs/adr/tests/bad-status"
+	"ADR directory not found: docs/adr/tests/bad-status" docs/adr/tests/bad-status
 
 # --- scenario 8: a fixture is deleted outright ------------------------------
 # Nothing in the walk can see a deletion: the entry is simply not in the glob.
@@ -191,7 +195,7 @@ check "a fixture replaced by a broken symlink" "$d" reject \
 d=$(fresh_copy deleted-fixture)
 rm -rf "$d/docs/adr/tests/bad-status"
 check "a bad-* fixture deleted outright" "$d" reject \
-	"has no fixture beside it"
+	"has no fixture beside it" docs/adr/tests/bad-status.expect
 
 # --- scenario 9: every good* fixture deleted --------------------------------
 # A linter is two claims — it rejects what is wrong AND accepts what is right.
@@ -201,7 +205,7 @@ rm -rf "$d"/docs/adr/tests/good "$d"/docs/prd/tests/good "$d"/docs/tasks/tests/g
 	"$d"/docs/tests/glossary-lint/good
 rm -f "$d"/docs/ci/tests/pr-link/good-*.md
 check "every good* fixture deleted" "$d" reject \
-	"nothing checks that the linter accepts valid input"
+	"nothing checks that the linter accepts valid input" docs/adr/tests/good
 
 # --- scenario 10: an empty bad-* directory ----------------------------------
 # Given an .expect quoting the linter's "cannot open input" message, this used to
@@ -210,7 +214,7 @@ d=$(fresh_copy empty-bad-fixture)
 mkdir -p "$d/docs/adr/tests/bad-empty-dir"
 printf 'missing docs/adr/tests/bad-empty-dir/README.md\n' > "$d/docs/adr/tests/bad-empty-dir.expect"
 check "an empty bad-* directory with a crafted expectation" "$d" reject \
-	"is an empty bad-* directory"
+	"is an empty bad-* directory" docs/adr/tests
 
 # --- scenario 11: a blank line in an .expect file ---------------------------
 # `grep -f` reads one pattern per line and an empty line matches everything, so
@@ -223,7 +227,7 @@ check "an empty bad-* directory with a crafted expectation" "$d" reject \
 d=$(fresh_copy blank-line-expect)
 printf "Status 'Maybe' is not one of\n\n" > "$d/docs/adr/tests/bad-status.expect"
 check "a blank line in an .expect file" "$d" reject \
-	"must hold exactly one non-blank line"
+	"must hold exactly one non-blank line" docs/adr/tests/bad-status.expect
 
 # --- scenario 12: SKIP_SETS as a glob ---------------------------------------
 # An unquoted expansion was pathname-expanded, so one plausible pattern skipped
@@ -248,13 +252,13 @@ fi
 d=$(fresh_copy wrong-message-expect)
 printf 'THIS-MESSAGE-NEVER-APPEARS-ANYWHERE\n' > "$d/docs/adr/tests/bad-status.expect"
 check "an .expect naming a message no linter emits" "$d" reject \
-	"was rejected, but not for its own reason"
+	"was rejected, but not for its own reason" docs/adr/tests/bad-status.expect
 
 # --- scenario 14: an .expect deleted, the fixture left intact ---------------
 d=$(fresh_copy missing-expect)
 rm -f "$d/docs/adr/tests/bad-status.expect"
 check "a bad-* fixture whose .expect is deleted" "$d" reject \
-	"a bad-* fixture must state the message it expects"
+	"a bad-* fixture must state the message it expects" docs/adr/tests/bad-status.expect
 
 # --- scenario 15: a linter that rejects valid input -------------------------
 # The exit-status half of the contract. Neutering the comparison used to leave
@@ -263,13 +267,13 @@ d=$(fresh_copy linter-rejects-good)
 cp "$d/docs/adr/adr-lint.sh" "$d/docs/adr/real-adr-lint.sh"
 printf '#!/bin/sh\nsh docs/adr/real-adr-lint.sh "$@" >/dev/null 2>&1\nexit 1\n' > "$d/docs/adr/adr-lint.sh"
 check "a linter that rejects valid input" "$d" reject \
-	"exit 1, expected 0"
+	"exit 1, expected 0" docs/adr/adr-lint.sh
 
 # --- scenario 16: every bad-* fixture in a set deleted ----------------------
 d=$(fresh_copy no-bad-fixtures)
 rm -rf "$d"/docs/tests/glossary-lint/bad-*
 check "every bad-* fixture in a set deleted" "$d" reject \
-	"has no bad-* fixture" docs/glossary-lint.sh
+	"has no bad-* fixture" docs/tests/glossary-lint
 
 # --- scenario 17: a case added, so a count goes UP --------------------------
 # The pinned counts are the guarantee that covers mechanisms nobody thought of,
@@ -277,14 +281,58 @@ check "every bad-* fixture in a set deleted" "$d" reject \
 d=$(fresh_copy extra-fixture)
 cp -R "$d/docs/adr/tests/good" "$d/docs/adr/tests/good-2"
 check "an extra fixture that makes a count go up" "$d" reject \
-	"holds 2 good* fixtures, expected 1"
+	"holds 2 good* fixtures, expected 1" docs/adr/tests/good
+
+# --- scenario 19: a bad-* fixture deleted WITH its .expect ------------------
+# The orphan loop has nothing to find and both floors are satisfied, so the
+# pinned bad-* count is the only guard left — and nothing tested it.
+d=$(fresh_copy deleted-with-expect)
+rm -rf "$d/docs/adr/tests/bad-numbering" "$d/docs/adr/tests/bad-numbering.expect"
+check "a bad-* fixture deleted together with its .expect" "$d" reject \
+	"holds 4 bad-* fixtures, expected 5" docs/adr/tests/bad-numbering
+
+# --- scenario 20: a one-character .expect -----------------------------------
+d=$(fresh_copy short-expect)
+printf 'a\n' > "$d/docs/adr/tests/bad-status.expect"
+check "an .expect too short to be evidence" "$d" reject \
+	"must hold exactly one non-blank line of at least 8 characters" \
+	docs/adr/tests/bad-status.expect
+
+# --- scenario 21: an .expect quoting a "cannot read the input" message ------
+# The regression test for the sharpest defect in this whole change: an .expect
+# naming a message the linter also gives for a missing file passes every other
+# guard, and the rule it names can then be deleted from the linter entirely.
+d=$(fresh_copy cannot-read-expect)
+printf '(the ADR index)\n' > "$d/docs/adr/tests/bad-status.expect"
+rm -f "$d/docs/adr/tests/bad-status/README.md"
+check "an .expect quoting a cannot-read-the-input message" "$d" reject \
+	"names a message this linter also gives when it cannot read its input" \
+	docs/adr/tests/bad-status.expect
+
+# --- scenario 22: the manifest ignoring a real fixture ----------------------
+d=$(fresh_copy ignore-a-fixture)
+python3 - "$d/docs/tests/discipline-tests.sh" <<'EOF' 2>/dev/null || \
+	sed -i.bak "s|run_set docs/adr/adr-lint.sh       docs/adr/tests           ''      1 5|run_set docs/adr/adr-lint.sh       docs/adr/tests           'bad-numbering'      1 4|" "$d/docs/tests/discipline-tests.sh"
+import sys
+p = sys.argv[1]
+s = open(p).read()
+s = s.replace("run_set docs/adr/adr-lint.sh       docs/adr/tests           ''      1 5",
+              "run_set docs/adr/adr-lint.sh       docs/adr/tests           'bad-numbering'      1 4", 1)
+open(p, "w").write(s)
+EOF
+check "the manifest ignoring a real fixture" "$d" reject \
+	"which is a fixture name" docs/adr/tests/bad-numbering
 
 # --- scenario 18: SKIP_SETS naming every linter -----------------------------
 # An adopter cannot opt out of the whole gate and still get a green.
 d=$(fresh_copy skip-everything)
 step=$((step + 1))
 printf '  [%d/%d] SKIP_SETS naming every linter\n' "$step" "$total" >&2
-if SKIP_SETS='docs/adr/adr-lint.sh docs/prd/prd-lint.sh docs/tasks/backlog-lint.sh docs/ci/pr-link-lint.sh docs/glossary-lint.sh' \
+# Read the linters out of the manifest rather than repeating them here: with
+# literals this scenario went red for any adopter who dropped any linter, because
+# SKIP_SETS then named something the manifest did not have.
+_all_linters=$(grep '^run_set ' "$d/docs/tests/discipline-tests.sh" | awk '{print $2}' | tr '\n' ' ')
+if SKIP_SETS="$_all_linters" \
 	sh "$d/docs/tests/discipline-tests.sh" "$d" >"$tmp/out" 2>"$tmp/err"; then
 	fail=$((fail + 1))
 	printf 'FAIL  SKIP_SETS naming every linter: the runner reported a pass\n' >&2
@@ -306,6 +354,16 @@ if [ "$fail" -eq 0 ]; then
 	printf 'runner-selftest: OK (%d scenarios' "$pass"
 	[ "$noted" -gt 0 ] && printf ', %d not applicable to this adoption' "$noted"
 	printf ')\n'
+	# A "not applicable" is legitimate for an adopter who dropped a linter, and a
+	# silent hole for anyone else: a typo in a scenario's requirement would turn it
+	# into a permanent NOTE with a green exit. The kit ships all five linters, so
+	# any skip here is a defect in this file.
+	if [ "$noted" -gt 0 ] && [ -f "$repo_root/docs/glossary-lint.sh" ] \
+		&& [ -f "$repo_root/docs/prd/prd-lint.sh" ] && [ -f "$repo_root/docs/adr/adr-lint.sh" ]; then
+		printf 'FAIL  %d scenario(s) were skipped on a complete kit — a requirement names the wrong path\n' \
+			"$noted" >&2
+		exit 1
+	fi
 	exit 0
 fi
 

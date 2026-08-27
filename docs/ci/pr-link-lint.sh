@@ -88,8 +88,11 @@ fi
 #    unfilled. The stripped body must hold nothing link-shaped, or this probe
 #    would win over probe 3 and misreport: an author who leaves the
 #    `<!-- Closes #N -->` guidance in place AND writes a malformed line below it
-#    would be told the comment is the problem, when the suffix is.
-if ! printf '%s' "$stripped" | grep -Eiq "(^|[^A-Za-z])${kw}[[:space:]]" \
+#    would be told the comment is the problem, when the suffix is. The test is for
+#    a keyword followed by something REFERENCE-SHAPED, not for the keyword alone:
+#    an ordinary "fix" or "resolves" in prose would otherwise route every body
+#    here to probe 4 and give the wrong advice.
+if ! printf '%s' "$stripped" | grep -Eiq "(^|[^A-Za-z])${kw}[[:space:]]+${ref}" \
 	&& printf '%s' "$body" | grep -Eiq "${pat}"; then
 	printf 'FAIL  pr-link-lint: the only issue link is inside an HTML comment (R1).\n' >&2
 	printf '      A reference in <!-- ... --> is guidance, not a link. Put it in the body.\n' >&2

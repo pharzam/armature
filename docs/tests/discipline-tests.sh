@@ -105,19 +105,26 @@ expect_pattern() {
 	# line moved the bar from "matches any message" to "matches any message
 	# containing one common character" — an .expect holding `a` still matched the
 	# linter's "cannot open" output, so a rule deleted from a linter still passed.
-	# Two guards: long enough to be a quotation, and demonstrably not a match for
-	# the ways a linter reports that it could not read its input.
 	[ "${#_p}" -ge 8 ] || return 1
-	for _canned in \
-		'FAIL  missing input file (the index)' \
-		'FAIL  glossary not found: some/path' \
-		'FAIL  ADR directory not found: some/path' \
-		'No such file or directory' \
-		'cannot open some/path'
-	do
-		printf '%s\n' "$_canned" | grep -qF -e "$_p" && return 1
-	done
 	printf '%s\n' "$_p"
+}
+
+# What does this linter say when it cannot read its input at all?
+#
+# DERIVED, NOT ENUMERATED. A hard-coded list of such messages was tried and was
+# wrong twice over: it named two of the seven phrasings the five linters actually
+# use, and it lived in this file while the messages live in five others, so it
+# could go stale silently and gave an adopter's own linter no protection at all.
+# Asking each linter directly costs two runs per set and cannot go stale.
+#
+# Both shapes are probed, because they produce different messages: a target that
+# does not exist ("ADR directory not found"), and one that exists but is empty
+# ("missing .../README.md (the ADR index)") — which is what a gutted fixture
+# looks like, and therefore the one that matters most.
+cannot_read_output() {
+	_probe=$(mktemp -d) || return 1
+	{ sh "$1" "$_probe" 2>&1; sh "$1" "$_probe/definitely-not-there" 2>&1; }
+	rm -rf "$_probe"
 }
 
 # Run one fixture and check both halves of what its name promises.
@@ -174,8 +181,18 @@ run_case() {
 	if [ -z "$_pat" ]; then
 		fail=$((fail + 1))
 		printf 'FAIL  %s must hold exactly one non-blank line of at least 8 characters\n' "$_expect" >&2
-		printf '      that does not also match a "cannot read the input" message. A blank, a\n' >&2
-		printf '      single character, or a generic phrase is not evidence that a rule ran.\n' >&2
+		printf '      A blank line, or a single common character, matches almost any message.\n' >&2
+		return 0
+	fi
+
+	# An expectation that also matches "I could not read my input" is not evidence
+	# that a rule ran: gut the fixture and the case still passes. The messages are
+	# asked of the linter itself rather than listed here — see cannot_read_output.
+	if printf '%s\n' "$_cannot_read" | grep -qF -e "$_pat"; then
+		fail=$((fail + 1))
+		printf 'FAIL  %s names a message this linter also gives when it cannot read its input\n' "$_expect" >&2
+		printf '      pattern: %s\n' "$_pat" >&2
+		printf '      Quote the rule the fixture is named for, not the failure to open a file.\n' >&2
 		return 0
 	fi
 
@@ -222,6 +239,7 @@ run_set() {
 	_cases=0
 	_good=0
 	_bad=0
+	_cannot_read=$(cannot_read_output "$_linter")
 
 	# Dotfiles are globbed deliberately: a fixture renamed to `.bad-status`
 	# vanished from `"$_root"/*` in silence. `[ -e ] || [ -L ]` keeps a broken
@@ -313,7 +331,22 @@ run_set() {
 			fail=$((fail + 1))
 			printf 'FAIL  %s: the manifest ignores "%s", which is not in that directory\n' "$_root" "$_i" >&2
 			set -f
+			continue
 		fi
+		# Existence was the wrong test. Hiding a REAL fixture needs the entry to
+		# exist, so an existence check passes by construction on exactly the input
+		# it was meant to catch — it rejected a typo, which was never the hazard.
+		# The field exists for a shared input directory and nothing else, so what
+		# it must not be able to name is a case.
+		case "$_i" in
+			good*|bad-*)
+				set +f
+				fail=$((fail + 1))
+				printf 'FAIL  %s: the manifest ignores "%s", which is a fixture name — a case cannot be ignored\n' \
+					"$_root" "$_i" >&2
+				set -f
+				;;
+		esac
 	done
 	set +f
 }
