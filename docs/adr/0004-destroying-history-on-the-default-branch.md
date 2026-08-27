@@ -8,13 +8,13 @@ Accepted
 
 ## In plain terms
 
-> Removing or rewriting commits on the default branch is the one change no pull
-> request can express, and the one nobody can undo. It stays allowed, under five
-> conditions, and a second person must agree first — except when undoing a prior
-> destruction. It also does not do what
-> people expect: on most hosted git services anything that ever appeared in a
-> pull request stays fetchable afterwards, so if a credential leaked, revoke it —
-> removing the commit is not what ends the exposure.
+> Removing or rewriting commits on the default branch is the one change no
+> pull request can express, and no later review can undo. It stays allowed,
+> under five conditions, and a second person must agree first — except when
+> undoing a prior destruction. It also does not do what people expect: on most
+> hosted git services anything that ever appeared in a pull request stays
+> fetchable afterwards, so if a credential leaked, revoke it — removing the
+> commit is not what ends the exposure.
 
 ## Context
 
@@ -117,7 +117,8 @@ descendant of the current tip, so the repair lands through a pull request like
 any other work and this record does not except it from that — but it is still a
 repair, and conditions 1, 3, 4 and 5 still apply to it. A repair that cannot be
 expressed as a pull request — after a rewrite, which leaves no descendant
-relationship at all, or once work has landed on top — sits outside the
+relationship at all; once work has landed on top; or after a branch or tag
+deletion, which no pull request is shaped to restore — sits outside the
 pull-request rule.
 
 We rejected forbidding destruction outright — it is sometimes correct — though
@@ -139,8 +140,8 @@ approval authority but nothing about preserving history.
   answer is to get a second person, not to proceed alone.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
-  advisory, never runs for a web editor or an API write, and does not look at
-  tags at all — so of the four acts above, only the tag act passes it in
+  advisory, is inert on a fresh clone until `core.hooksPath` is set, never runs
+  for a web editor or an API write, and does not look at tags at all — so of the four acts above, only the tag act passes it in
   silence. A lock on the branch, where the remote offers one, blocks the act
   from every client and says nothing about who approved. See [what is enforced
   where](../issue-workflow.md#what-is-enforced-where).
