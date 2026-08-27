@@ -7,8 +7,7 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 ## In plain terms
 
 > No change starts without an open issue, and every change lands through a pull
-> request that links back to it — except destroying **or restoring** history on the
-> default branch, which no pull request can express and which
+> request that links back to it — except destroying history on the default branch, and the rare repair that cannot be expressed as one, which
 > [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs separately. One issue is one goal. Bigger work is sliced into
 > ordered, test-first steps, and the plan is checked once before building begins.
 > Decisions are written down where the next person — human or agent — can find them.
@@ -161,7 +160,7 @@ kit already ships the green rows.
 | Concern | Written rule | Local hook | CI | Branch protection | Status |
 | ------- | ------------ | ---------- | -- | ----------------- | ------ |
 | Land only via a PR (never a direct push to the default branch) | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
-| Destroy history on the default branch — the one exception | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and blind to tags | — | ‹blocks the act where you configure it; says nothing about who approved› | Written rule only — nothing checks the five conditions |
+| Destroy history on the default branch, and any repair no pull request can express | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and blind to tags | — | ‹blocks the act where you configure it; says nothing about who approved› | Written rule only — nothing checks the five conditions |
 | Conventional Commits | [Commit messages](engineering-discipline.md#commit-messages) | [`commit-msg`](../.githooks/commit-msg) | [`pr-title`](ci/github-actions-pr-title.yml) | — | Enforced |
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |

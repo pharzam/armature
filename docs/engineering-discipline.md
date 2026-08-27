@@ -138,8 +138,7 @@ on the issue
 
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
 actionable, demoable goal per issue. The change then lands through a pull request
-whose body links that issue (`Closes`/`Refs #N`) — the one exception being a
-destruction of history, which no pull request can express, and which
+whose body links that issue (`Closes`/`Refs #N`) — the exception being destroying history on the default branch, and the rare repair that cannot be expressed as one, which
 [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs, while the task ID stays in the
 commit subject, so the two namespaces coexist. The full rules — R1–R12, and the
 honest table of what is enforced where — live in
@@ -184,8 +183,9 @@ correctness of the result that the action exists to produce.
 this kit, and the one no pull request can express. It is permitted only under the
 conditions in [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which
 govern it in full — including which acts count, and the one narrow case (undoing a
-*prior* destruction) that is treated differently. Both are outside the
-pull-request rule, because neither can be expressed as one.
+*prior* destruction) that is treated differently. A destruction is outside the
+pull-request rule because none can be expressed as one; a repair is outside it only
+when it is not a fast-forward.
 
 ## Honesty and evidence
 

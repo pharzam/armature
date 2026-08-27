@@ -11,8 +11,8 @@ Accepted
 > Removing or rewriting commits on the default branch is the one change no pull
 > request can express, and the one nobody can undo. It stays allowed, under five
 > conditions, and a second person must agree first. It also does not do what
-> people expect: on most hosted forges anything that ever appeared in a pull
-> request stays fetchable afterwards, so if a credential leaked, revoke it —
+> people expect: on most hosted git services anything that ever appeared in a
+> pull request stays fetchable afterwards, so if a credential leaked, revoke it —
 > removing the commit is not what ends the exposure.
 
 ## Context
@@ -56,7 +56,9 @@ housekeeping, and this record does not govern it.
    person, the path is closed.
 3. **Everything about to be lost is preserved first** — the default branch's tip,
    every unmerged branch tip that is not an ancestor of it, and every tag pointing
-   into what will be discarded. Branch tips go to the remote as
+   into what will be discarded, **as those refs stood when condition 1's issue was
+   opened**. Anchoring the sweep there is what stops it being emptied by deleting
+   the branches first. Branch tips go to the remote as
    `backup/pre-<reason>-<short-sha>`, one per tip; a tag is preserved **as a tag**,
    because a branch reference cannot carry an annotated tag's name, message, or
    signature. **Exception:** when the content
@@ -72,16 +74,23 @@ housekeeping, and this record does not govern it.
    records what was destroyed and where the backup is; and (c) it records who
    approved.
 
-**Repair is not destruction, and waives only condition 2.** Undoing a *prior
-destruction of history on the default branch* — restoring the tip the branch held
-immediately before that act, and losing only commits that act created — is a
-repair, and needs no second operator. Conditions 1, 3, 4 and 5 still apply: a
-repair discards everything landed since the act it undoes, which is the moment a
-backup matters most. Its issue names the act being undone — by issue number, backup
-reference, or the discarded tip's own identifier from any durable source — because
-the reflog that would otherwise prove it expires and the actor can erase it. The
-first two exist only where the destruction followed this record; a repair is most
-often needed where it did not. No other work qualifies, however it is labelled.
+**A repair waives condition 2, and nothing else.** Undoing a *prior destruction of
+history on the default branch* — restoring the tip the branch held immediately
+before that act — is a repair, and needs no second operator. Conditions 1, 3, 4 and
+5 still apply, and 5(c) is satisfied by recording that the act was a repair. A
+repair discards whatever landed after the destruction it undoes, which is why the
+backup still matters. Its issue names the act being undone — by issue number,
+backup reference, or the discarded tip's own identifier from any durable source —
+because the reflog that would otherwise prove it expires and the actor can erase
+it. The first two exist only where the destruction followed this record; a repair
+is most often needed where it did not.
+
+**A repair that is a fast-forward is an ordinary change.** Where nothing has landed
+since the destruction, the tip being restored is a descendant of the current tip,
+so the repair lands through a pull request like any other work and this record does
+not except it from that. Only a repair that cannot be expressed as a pull request —
+after a rewrite, or once work has landed on top of the destruction — sits outside
+the pull-request rule.
 
 We rejected forbidding destruction outright — it is sometimes correct — though
 condition 2 closes the path on a solo project regardless. We rejected
@@ -106,7 +115,8 @@ approval authority but nothing about preserving history.
   what they wanted, which makes them the two most likely to be skipped. The lift
   without the restore is the quieter failure: it leaves the branch unprotected and
   nothing announces it.
-- Deleting an **unmerged** branch is not covered here. This record does not say
-  whether it may be done; that stays open.
+- Deleting an **unmerged** branch is ordinary housekeeping and is not covered here,
+  except that condition 3 preserves the tips as they stood when condition 1's issue
+  opened, so deleting them first does not shrink what must be preserved.
 - Nothing here covers the backups condition 3 creates once condition 1's issue
   closes; say in that issue when they may go.
