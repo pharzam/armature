@@ -84,9 +84,13 @@ fi
 # The probes run most-specific first. Each answers "what did the author most
 # likely do wrong", not "what did the regular expression fail to match".
 
-# 1. A link exists, but only inside an HTML comment — the guidance in the
-#    template, left unfilled.
-if printf '%s' "$body" | grep -Eiq "${pat}"; then
+# 1. A link exists, but ONLY inside an HTML comment — the template guidance left
+#    unfilled. The stripped body must hold nothing link-shaped, or this probe
+#    would win over probe 3 and misreport: an author who leaves the
+#    `<!-- Closes #N -->` guidance in place AND writes a malformed line below it
+#    would be told the comment is the problem, when the suffix is.
+if ! printf '%s' "$stripped" | grep -Eiq "(^|[^A-Za-z])${kw}[[:space:]]" \
+	&& printf '%s' "$body" | grep -Eiq "${pat}"; then
 	printf 'FAIL  pr-link-lint: the only issue link is inside an HTML comment (R1).\n' >&2
 	printf '      A reference in <!-- ... --> is guidance, not a link. Put it in the body.\n' >&2
 # 2. The template placeholder is still there: a keyword followed by a literal

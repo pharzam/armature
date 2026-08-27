@@ -28,6 +28,13 @@
 # How to adapt: add a scenario whenever you find another way the runner could
 # report a pass it did not earn. A scenario is a mutation, the expectation
 # (reject/accept), and the message that must appear.
+#
+# EACH SCENARIO NAMES A FIXTURE FROM THE RUNNER'S MANIFEST. Armature is a
+# template, and an adopter who keeps no PRD practice deletes docs/prd/ and its
+# manifest row — which the runner explicitly invites. A scenario whose target no
+# longer exists is reported as "not applicable" rather than as a failure, because
+# a red meta-gate on a correctly adapted kit teaches an adopter to switch the
+# gate off. If you remove a linter, the scenarios that used it will say so.
 
 set -u
 LC_ALL=C
@@ -46,8 +53,9 @@ trap 'rm -rf "$tmp"' EXIT INT TERM
 
 pass=0
 fail=0
+noted=0
 step=0
-total=12
+total=18
 
 # Make a fresh copy of the tree the runner needs, and echo its path.
 #
@@ -83,9 +91,17 @@ fresh_copy() {
 # whole run takes about ten seconds. Gate step 4 says anything that can run that
 # long shows which step it is on, so each scenario announces itself first.
 check() {
-	_name=$1; _dir=$2; _want=$3; _msg=${4:-}
+	_name=$1; _dir=$2; _want=$3; _msg=${4:-}; _needs=${5:-}
 	step=$((step + 1))
 	printf '  [%d/%d] %s\n' "$step" "$total" "$_name" >&2
+
+	# This adoption does not have the thing the scenario mutates. Not a failure —
+	# see "EACH SCENARIO NAMES A FIXTURE FROM THE RUNNER'S MANIFEST" above.
+	if [ -n "$_needs" ] && [ ! -e "$_dir/$_needs" ]; then
+		noted=$((noted + 1))
+		printf 'NOTE  %s: this adoption has no %s — not applicable\n' "$_name" "$_needs" >&2
+		return 0
+	fi
 
 	sh "$_dir/docs/tests/discipline-tests.sh" "$_dir" >"$tmp/out" 2>"$tmp/err"
 	_got=$?
@@ -134,19 +150,19 @@ fi
 d=$(fresh_copy gutted-fixture)
 rm -f "$d"/docs/tasks/tests/bad-dup-id/*.md
 check "a bad-* fixture whose input files are deleted" "$d" reject \
-	"is an empty bad-* directory"
+	"is an empty bad-* directory" docs/tasks/tests
 
 # --- scenario 3: a linter is deleted ----------------------------------------
 d=$(fresh_copy missing-linter)
 rm -f "$d/docs/glossary-lint.sh"
 check "a linter script that is gone" "$d" reject \
-	"docs/glossary-lint.sh is not present"
+	"docs/glossary-lint.sh is not present" docs/tests/glossary-lint
 
 # --- scenario 4: a whole fixture root is deleted ----------------------------
 d=$(fresh_copy missing-fixture-root)
 rm -rf "$d/docs/prd/tests"
 check "a fixture root that is gone" "$d" reject \
-	"has no fixtures at docs/prd/tests"
+	"has no fixtures at docs/prd/tests" docs/prd/prd-lint.sh
 
 # --- scenario 5: a fixture is renamed out of the convention -----------------
 d=$(fresh_copy renamed-fixture)
@@ -167,7 +183,7 @@ d=$(fresh_copy broken-symlink)
 rm -rf "$d/docs/adr/tests/bad-status"
 ln -s /nonexistent-target "$d/docs/adr/tests/bad-status"
 check "a fixture replaced by a broken symlink" "$d" reject \
-	"docs/adr/tests"
+	"ADR directory not found: docs/adr/tests/bad-status"
 
 # --- scenario 8: a fixture is deleted outright ------------------------------
 # Nothing in the walk can see a deletion: the entry is simply not in the glob.
@@ -225,6 +241,61 @@ else
 	printf '  [%d/%d] SKIP_SETS given a glob\n' "$step" "$total" >&2
 fi
 
+# --- scenario 13: an .expect that names a message no linter emits -----------
+# THE headline capability of this change, and until now nothing tested it. With
+# the comparison neutered, all twelve earlier scenarios stayed green while every
+# .expect named a message that never appears.
+d=$(fresh_copy wrong-message-expect)
+printf 'THIS-MESSAGE-NEVER-APPEARS-ANYWHERE\n' > "$d/docs/adr/tests/bad-status.expect"
+check "an .expect naming a message no linter emits" "$d" reject \
+	"was rejected, but not for its own reason"
+
+# --- scenario 14: an .expect deleted, the fixture left intact ---------------
+d=$(fresh_copy missing-expect)
+rm -f "$d/docs/adr/tests/bad-status.expect"
+check "a bad-* fixture whose .expect is deleted" "$d" reject \
+	"a bad-* fixture must state the message it expects"
+
+# --- scenario 15: a linter that rejects valid input -------------------------
+# The exit-status half of the contract. Neutering the comparison used to leave
+# every scenario green while a linter failed everything put to it.
+d=$(fresh_copy linter-rejects-good)
+cp "$d/docs/adr/adr-lint.sh" "$d/docs/adr/real-adr-lint.sh"
+printf '#!/bin/sh\nsh docs/adr/real-adr-lint.sh "$@" >/dev/null 2>&1\nexit 1\n' > "$d/docs/adr/adr-lint.sh"
+check "a linter that rejects valid input" "$d" reject \
+	"exit 1, expected 0"
+
+# --- scenario 16: every bad-* fixture in a set deleted ----------------------
+d=$(fresh_copy no-bad-fixtures)
+rm -rf "$d"/docs/tests/glossary-lint/bad-*
+check "every bad-* fixture in a set deleted" "$d" reject \
+	"has no bad-* fixture" docs/glossary-lint.sh
+
+# --- scenario 17: a case added, so a count goes UP --------------------------
+# The pinned counts are the guarantee that covers mechanisms nobody thought of,
+# and they were the least-covered lines in the runner.
+d=$(fresh_copy extra-fixture)
+cp -R "$d/docs/adr/tests/good" "$d/docs/adr/tests/good-2"
+check "an extra fixture that makes a count go up" "$d" reject \
+	"holds 2 good* fixtures, expected 1"
+
+# --- scenario 18: SKIP_SETS naming every linter -----------------------------
+# An adopter cannot opt out of the whole gate and still get a green.
+d=$(fresh_copy skip-everything)
+step=$((step + 1))
+printf '  [%d/%d] SKIP_SETS naming every linter\n' "$step" "$total" >&2
+if SKIP_SETS='docs/adr/adr-lint.sh docs/prd/prd-lint.sh docs/tasks/backlog-lint.sh docs/ci/pr-link-lint.sh docs/glossary-lint.sh' \
+	sh "$d/docs/tests/discipline-tests.sh" "$d" >"$tmp/out" 2>"$tmp/err"; then
+	fail=$((fail + 1))
+	printf 'FAIL  SKIP_SETS naming every linter: the runner reported a pass\n' >&2
+elif grep -qF -e 'no fixture cases ran at all' "$tmp/out" "$tmp/err"; then
+	pass=$((pass + 1))
+else
+	fail=$((fail + 1))
+	printf 'FAIL  SKIP_SETS naming every linter: rejected, but not for that reason\n' >&2
+	printf '      got: %s\n' "$(cat "$tmp/out" "$tmp/err" | tr '\n' ' ')" >&2
+fi
+
 # --- report ------------------------------------------------------------------
 if [ "$((pass + fail))" -eq 0 ]; then
 	printf 'FAIL  no scenarios ran at all — this self-test is broken\n' >&2
@@ -232,7 +303,9 @@ if [ "$((pass + fail))" -eq 0 ]; then
 fi
 
 if [ "$fail" -eq 0 ]; then
-	printf 'runner-selftest: OK (%d scenarios)\n' "$pass"
+	printf 'runner-selftest: OK (%d scenarios' "$pass"
+	[ "$noted" -gt 0 ] && printf ', %d not applicable to this adoption' "$noted"
+	printf ')\n'
 	exit 0
 fi
 

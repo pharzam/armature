@@ -53,7 +53,7 @@
 #
 # How to adapt: add a row to the manifest below when you add a linter, and update
 # a row's count when you add a fixture. A row is
-#   run_set <linter> <fixture root> <entries to ignore> <expected case count>
+#   run_set <linter> <fixture root> <entries to ignore> <good count> <bad count>
 
 set -u
 LC_ALL=C
@@ -99,7 +99,25 @@ expect_pattern() {
 	_nonblank=$(tr -d '\r' < "$1" | grep -c '[^[:space:]]' 2>/dev/null || printf '0')
 	[ "$_nonblank" -eq 1 ] || return 1
 	[ "$_lines" -le 1 ] || return 1
-	tr -d '\r' < "$1" | grep '[^[:space:]]'
+	_p=$(tr -d '\r' < "$1" | grep '[^[:space:]]')
+
+	# The pattern must be EVIDENCE, not merely non-blank. Requiring one non-blank
+	# line moved the bar from "matches any message" to "matches any message
+	# containing one common character" — an .expect holding `a` still matched the
+	# linter's "cannot open" output, so a rule deleted from a linter still passed.
+	# Two guards: long enough to be a quotation, and demonstrably not a match for
+	# the ways a linter reports that it could not read its input.
+	[ "${#_p}" -ge 8 ] || return 1
+	for _canned in \
+		'FAIL  missing input file (the index)' \
+		'FAIL  glossary not found: some/path' \
+		'FAIL  ADR directory not found: some/path' \
+		'No such file or directory' \
+		'cannot open some/path'
+	do
+		printf '%s\n' "$_canned" | grep -qF -e "$_p" && return 1
+	done
+	printf '%s\n' "$_p"
 }
 
 # Run one fixture and check both halves of what its name promises.
@@ -155,8 +173,9 @@ run_case() {
 	_pat=$(expect_pattern "$_expect")
 	if [ -z "$_pat" ]; then
 		fail=$((fail + 1))
-		printf 'FAIL  %s must hold exactly one non-blank line and nothing else\n' "$_expect" >&2
-		printf '      An empty or blank pattern would match every message, including "file not found".\n' >&2
+		printf 'FAIL  %s must hold exactly one non-blank line of at least 8 characters\n' "$_expect" >&2
+		printf '      that does not also match a "cannot read the input" message. A blank, a\n' >&2
+		printf '      single character, or a generic phrase is not evidence that a rule ran.\n' >&2
 		return 0
 	fi
 
@@ -175,7 +194,8 @@ run_set() {
 	_linter=$1
 	_root=$2
 	_ignore=${3:-}
-	_expected=${4:-0}
+	_want_good=${4:-0}
+	_want_bad=${5:-0}
 
 	known_linters="$known_linters $_linter"
 
@@ -199,7 +219,7 @@ run_set() {
 		return 0
 	fi
 
-	_before=$((pass + fail))
+	_cases=0
 	_good=0
 	_bad=0
 
@@ -213,21 +233,28 @@ run_set() {
 
 		# Not cases, and never were: the index README, the expectation files, and
 		# whatever this row declares as shared input.
+		# Not cases, and never were. The dot-entries are here because globbing
+		# dotfiles (to catch `mv bad-status .bad-status`) also catches everything
+		# a normal editor, Finder or git workflow leaves behind — and this runner
+		# is in the pre-commit hook, so a stray .DS_Store blocked every commit.
 		case "$_base" in
-			README.md|*.expect) continue ;;
+			README.md|*.expect|.DS_Store|.gitkeep|.gitignore|.gitattributes) continue ;;
+			.*.sw?|*~|*.orig|*.rej) continue ;;
 		esac
 		_is_ignored=0
+		set -f
 		for _i in $_ignore; do
 			[ "$_i" = "$_base" ] && _is_ignored=1
 		done
+		set +f
 		[ "$_is_ignored" -eq 1 ] && continue
 
 		# Anything else must be a case. An entry that matches neither convention
 		# used to be dropped in silence, so a renamed fixture stopped testing
 		# anything and the count quietly fell.
 		case "${_base%.md}" in
-			good*) _good=$((_good + 1)); run_case "$_linter" "$_entry" ;;
-			bad-*) _bad=$((_bad + 1));   run_case "$_linter" "$_entry" ;;
+			good*) _good=$((_good + 1)); _cases=$((_cases + 1)); run_case "$_linter" "$_entry" ;;
+			bad-*) _bad=$((_bad + 1));   _cases=$((_cases + 1)); run_case "$_linter" "$_entry" ;;
 			*)
 				fail=$((fail + 1))
 				printf 'FAIL  %s matches neither good* nor bad-* — it would never run\n' "$_entry" >&2
@@ -246,13 +273,23 @@ run_set() {
 		fi
 	done
 
-	_ran=$((pass + fail - _before))
-
-	# The count is the guarantee that covers the mechanisms nobody thought of.
-	if [ "$_expected" -gt 0 ] && [ "$_ran" -ne "$_expected" ]; then
+	# The counts are the guarantee that covers the mechanisms nobody thought of.
+	# They are pinned SEPARATELY for good* and bad-*: a single total lets any
+	# addition offset any removal, so deleting a bad-* fixture and adding a
+	# duplicate good* one kept the total at 37 and the rule untested.
+	#
+	# The counts are of CASES FOUND, not of pass/fail outcomes — an orphaned
+	# .expect is a failure of the set, not an extra case, and counting it as one
+	# produced "yielded 7 cases, expected 6" for a fixture that was replaced.
+	if [ "$_want_good" -gt 0 ] && [ "$_good" -ne "$_want_good" ]; then
 		fail=$((fail + 1))
-		printf 'FAIL  %s yielded %d cases, expected %d — a case appeared or disappeared\n' \
-			"$_root" "$_ran" "$_expected" >&2
+		printf 'FAIL  %s holds %d good* fixtures, expected %d — one appeared or disappeared\n' \
+			"$_root" "$_good" "$_want_good" >&2
+	fi
+	if [ "$_want_bad" -gt 0 ] && [ "$_bad" -ne "$_want_bad" ]; then
+		fail=$((fail + 1))
+		printf 'FAIL  %s holds %d bad-* fixtures, expected %d — one appeared or disappeared\n' \
+			"$_root" "$_bad" "$_want_bad" >&2
 	fi
 
 	# A linter is two claims: it rejects what is wrong AND accepts what is right.
@@ -265,15 +302,29 @@ run_set() {
 		fail=$((fail + 1))
 		printf 'FAIL  %s has no bad-* fixture — nothing checks that the linter rejects anything\n' "$_root" >&2
 	fi
+
+	# An ignore entry that names nothing is an unvalidated neutraliser: it would
+	# silently accept a typo, and could hide a fixture by naming it. SKIP_SETS
+	# gained this check; the third manifest field needs the same one.
+	set -f
+	for _i in $_ignore; do
+		if [ ! -e "$_root/$_i" ]; then
+			set +f
+			fail=$((fail + 1))
+			printf 'FAIL  %s: the manifest ignores "%s", which is not in that directory\n' "$_root" "$_i" >&2
+			set -f
+		fi
+	done
+	set +f
 }
 
 # --- the manifest ----------------------------------------------------------
-# linter | fixture root | entries that are shared input, not cases | case count
-run_set docs/adr/adr-lint.sh       docs/adr/tests           ''      6
-run_set docs/prd/prd-lint.sh       docs/prd/tests           facts   9
-run_set docs/tasks/backlog-lint.sh docs/tasks/tests         ''      7
-run_set docs/ci/pr-link-lint.sh    docs/ci/tests/pr-link    ''     10
-run_set docs/glossary-lint.sh      docs/tests/glossary-lint ''      5
+# linter | fixture root | shared input, not cases | good* count | bad-* count
+run_set docs/adr/adr-lint.sh       docs/adr/tests           ''      1 5
+run_set docs/prd/prd-lint.sh       docs/prd/tests           facts   1 8
+run_set docs/tasks/backlog-lint.sh docs/tasks/tests         ''      1 6
+run_set docs/ci/pr-link-lint.sh    docs/ci/tests/pr-link    ''      3 7
+run_set docs/glossary-lint.sh      docs/tests/glossary-lint ''      1 4
 
 # --- SKIP_SETS must name something real -------------------------------------
 # A typo used to be accepted in silence, which is the same hole as a silent skip
