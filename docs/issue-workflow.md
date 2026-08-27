@@ -7,8 +7,9 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 ## In plain terms
 
 > No change starts without an open issue, and every change lands through a pull
-> request that links back to it — except destroying history on the default branch,
-> which no pull request can express and which [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs separately. One issue is one goal. Bigger work is sliced into
+> request that links back to it — except destroying **or restoring** history on the
+> default branch, which no pull request can express and which
+> [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs separately. One issue is one goal. Bigger work is sliced into
 > ordered, test-first steps, and the plan is checked once before building begins.
 > Decisions are written down where the next person — human or agent — can find them.
 

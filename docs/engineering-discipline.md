@@ -184,7 +184,8 @@ correctness of the result that the action exists to produce.
 this kit, and the one no pull request can express. It is permitted only under the
 conditions in [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which
 govern it in full — including which acts count, and the one narrow case (undoing a
-*prior* destruction) that does not.
+*prior* destruction) that is treated differently. Both are outside the
+pull-request rule, because neither can be expressed as one.
 
 ## Honesty and evidence
 

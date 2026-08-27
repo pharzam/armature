@@ -36,8 +36,9 @@ Three forces separate it from ordinary work:
 ## Decision
 
 We will permit destruction of history on the default branch only under the five
-conditions below. Conditions 1–4 hold **before** the act. Condition 5 cannot:
-the evidence it requires does not exist until the act has happened.
+conditions below. Conditions 1–3 hold **before** the act. Condition 4 straddles it —
+the lock is lifted before and restored after. Condition 5 can only follow it: the
+evidence it requires does not exist until the act has happened.
 
 **Destruction** means making commits that are — or once were — reachable from the
 default branch unreachable from it: a reset, a force-pushed rewrite, deleting the
@@ -76,9 +77,11 @@ destruction of history on the default branch* — restoring the tip the branch h
 immediately before that act, and losing only commits that act created — is a
 repair, and needs no second operator. Conditions 1, 3, 4 and 5 still apply: a
 repair discards everything landed since the act it undoes, which is the moment a
-backup matters most. Its issue names the act being undone, by issue number or
-backup reference, because the reflog that would otherwise prove it expires and the
-actor can erase it. No other work qualifies, however it is labelled.
+backup matters most. Its issue names the act being undone — by issue number, backup
+reference, or the discarded tip's own identifier from any durable source — because
+the reflog that would otherwise prove it expires and the actor can erase it. The
+first two exist only where the destruction followed this record; a repair is most
+often needed where it did not. No other work qualifies, however it is labelled.
 
 We rejected forbidding destruction outright — it is sometimes correct — though
 condition 2 closes the path on a solo project regardless. We rejected
@@ -99,8 +102,10 @@ approval authority but nothing about preserving history.
   at tags at all — so two of the four acts above pass it in silence. A lock on the branch, where the
   remote offers one, blocks the act from every client and says nothing about who
   approved. See [what is enforced where](../issue-workflow.md#what-is-enforced-where).
-- Condition 5 is the only one whose cost falls after the operator already has what
-  they wanted, which makes it the one most likely to be skipped.
+- Condition 4's restore and condition 5 both fall after the operator already has
+  what they wanted, which makes them the two most likely to be skipped. The lift
+  without the restore is the quieter failure: it leaves the branch unprotected and
+  nothing announces it.
 - Deleting an **unmerged** branch is not covered here. This record does not say
   whether it may be done; that stays open.
 - Nothing here covers the backups condition 3 creates once condition 1's issue
