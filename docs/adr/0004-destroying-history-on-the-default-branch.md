@@ -10,7 +10,10 @@ Accepted
 
 > Removing or rewriting commits on the default branch is the one change no pull
 > request can express, and the one nobody can undo. It stays allowed, under five
-> conditions, and a second person must agree first.
+> conditions, and a second person must agree first. It also does not do what
+> people expect: on most hosted forges anything that ever appeared in a pull
+> request stays fetchable afterwards, so if a credential leaked, revoke it —
+> removing the commit is not what ends the exposure.
 
 ## Context
 
@@ -40,15 +43,7 @@ the evidence it requires does not exist until the act has happened.
 default branch unreachable from it: a reset, a force-pushed rewrite, deleting the
 branch, or deleting or moving a tag that points into commits already discarded from
 it. Deleting a branch whose commits are ancestors of the default branch is ordinary
-housekeeping and is not covered; deleting an unmerged branch is covered by nothing
-here, which is a gap this record does not close.
-
-**Repair is not destruction.** Undoing a *prior destruction of history on the
-default branch* — restoring a tip the branch held before that act, losing no commit
-which the act did not create and the repair does not re-apply — is a repair. It
-needs no second operator; its issue names the act being undone, by issue number or
-backup reference, because the reflog that would otherwise prove it expires and the
-actor can erase it. No other work qualifies, however it is labelled.
+housekeeping, and this record does not govern it.
 
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it.
@@ -60,24 +55,35 @@ actor can erase it. No other work qualifies, however it is labelled.
    person, the path is closed.
 3. **Everything about to be lost is preserved first** — the default branch's tip,
    every unmerged branch tip that is not an ancestor of it, and every tag pointing
-   into what will be discarded — pushed to the remote as
-   `backup/pre-<reason>-<short-sha>`, one per tip. **Exception:** when the content
+   into what will be discarded. Branch tips go to the remote as
+   `backup/pre-<reason>-<short-sha>`, one per tip; a tag is preserved **as a tag**,
+   because a branch reference cannot carry an annotated tag's name, message, or
+   signature. **Exception:** when the content
    is itself the reason for the destruction, keep the backup off the remote and
    record where it is. That record is one party's word, unverifiable by anyone else.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
    checked field by field against a record of its full configuration made *before*
    lifting; a restore from memory that gets one setting wrong passes an unrecorded
-   check. Where the remote offers no configurable lock, record that instead.
+   check. A bare remote usually offers no such lock and no way for the pushing
+   operator to read one; where that is so, record that there was nothing to lift.
 5. **Afterwards, before other work resumes:** (a) every issue whose deliverable is
    now gone returns to open with the evidence; (b) the issue from condition 1
    records what was destroyed and where the backup is; and (c) it records who
    approved.
 
+**Repair is not destruction, and waives only condition 2.** Undoing a *prior
+destruction of history on the default branch* — restoring the tip the branch held
+immediately before that act, and losing only commits that act created — is a
+repair, and needs no second operator. Conditions 1, 3, 4 and 5 still apply: a
+repair discards everything landed since the act it undoes, which is the moment a
+backup matters most. Its issue names the act being undone, by issue number or
+backup reference, because the reflog that would otherwise prove it expires and the
+actor can erase it. No other work qualifies, however it is labelled.
+
 We rejected forbidding destruction outright — it is sometimes correct — though
 condition 2 closes the path on a solo project regardless. We rejected
 [R4](../issue-workflow.md#r4--no-workarounds)'s workaround shape, which supplies
-approval authority but nothing about preserving history. We rejected requiring a
-pull request, which cannot express the operation.
+approval authority but nothing about preserving history.
 
 ## Consequences
 
@@ -88,11 +94,14 @@ pull request, which cannot express the operation.
   path stays closed and the obligation does not, so the answer is to get a second
   person, not to proceed alone.
 - **Nothing checks the five conditions.** The
-  [`pre-push` hook](../../.githooks/pre-push) refuses the push but is advisory, and
-  a web editor or an API write never runs it. A lock on the branch, where the
+  [`pre-push` hook](../../.githooks/pre-push) refuses a push to the default branch
+  but is advisory, never runs for a web editor or an API write, and does not look
+  at tags at all — so two of the four acts above pass it in silence. A lock on the branch, where the
   remote offers one, blocks the act from every client and says nothing about who
   approved. See [what is enforced where](../issue-workflow.md#what-is-enforced-where).
 - Condition 5 is the only one whose cost falls after the operator already has what
   they wanted, which makes it the one most likely to be skipped.
+- Deleting an **unmerged** branch is not covered here. This record does not say
+  whether it may be done; that stays open.
 - Nothing here covers the backups condition 3 creates once condition 1's issue
   closes; say in that issue when they may go.
