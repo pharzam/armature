@@ -137,11 +137,13 @@ on the issue
 ## Issue-first workflow
 
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
-actionable, demoable goal per issue. The change then lands through a pull request
-whose body links that issue (`Closes`/`Refs #N`) — the exception being destroying history on the default branch, and the rare repair that cannot be expressed as one, which
-[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs, while the task ID stays in the
-commit subject, so the two namespaces coexist. The full rules — R1–R12, and the
-honest table of what is enforced where — live in
+actionable, demoable goal per issue. The change then lands through a pull
+request whose body links that issue (`Closes`/`Refs #N`), while the task ID
+stays in the commit subject, so the two namespaces coexist. The exception is
+destroying history on the default branch, and the rare repair that cannot be
+expressed as a pull request, which
+[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs. The
+full rules — R1–R12, and the honest table of what is enforced where — live in
 [`issue-workflow.md`](issue-workflow.md); the decision is
 [ADR-0003](adr/0003-adopt-issue-first-workflow.md). The kit is forge-free, so an
 "issue" is a ticket in whatever forge you use, and forge-specific issue/PR

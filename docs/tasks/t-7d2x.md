@@ -56,7 +56,7 @@ Written by the operator who performed the reset it scores. Issue timestamps are 
 
 This is stated as an inference, not a fact: PR #7 is a claim in a pull-request body, not an API snapshot, and the forge exposes no history for classic protection. The account security log may hold the lift; it has not been consulted.
 
-The ruleset created at 10:11:26Z — three minutes after the local reset, seven before the push — is not evidence of the lift. It was created *already disabled*, in a single write 25 ms wide, with `bypass_actors: []`, and a ruleset born disabled removes no obstacle. Of its three rules (`deletion`, `non_fast_forward`, `pull_request`), two would have blocked the push had it been enabled. What it does show is the operator inside the branch-protection settings, in that window.
+The ruleset created at 10:11:26Z — three minutes after the local reset, seven before the push — is not evidence of the lift. It was created *already disabled*, in a single write 25 milliseconds wide, with `bypass_actors: []`, and a ruleset born disabled removes no obstacle. Of its three rules (`deletion`, `non_fast_forward`, `pull_request`), two would have blocked the push had it been enabled. What it does show is the operator inside the branch-protection settings, in that window.
 
 The argument for condition 4 is not that the configuration was unrecorded — #6 and PR #7 recorded it well. It is that **the lift and the restore were not**, at the moment they mattered.
 

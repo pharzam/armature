@@ -154,9 +154,10 @@ supplies approval authority but nothing about preserving history.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
   advisory, is inert on a fresh clone until `core.hooksPath` is set, never
-  runs for a web editor or an API write, and does not look at tags at all — so
-  even where it is installed and the push comes from a git client, the tag act
-  passes it in silence. A lock on the branch, where the remote offers one,
+  runs for a web editor or an API write, does not look at tags at all, and names
+  the default branch literally, so it does nothing on a project whose branch is
+  named otherwise until it is edited — so even where it is installed, edited and
+  the push comes from a git client, the tag act passes it in silence. A lock on the branch, where the remote offers one,
   reaches every client — but it covers the reset, the rewrite and the branch
   deletion only; the tag act needs a separate tag rule, and a holder of a
   bypass passes it either way. It says nothing about who approved. So the tag
