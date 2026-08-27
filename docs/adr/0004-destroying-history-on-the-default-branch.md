@@ -10,7 +10,8 @@ Accepted
 
 > Removing or rewriting commits on the default branch is the one change no pull
 > request can express, and the one nobody can undo. It stays allowed, under five
-> conditions, and a second person must agree first. It also does not do what
+> conditions, and a second person must agree first — except when undoing a prior
+> destruction. It also does not do what
 > people expect: on most hosted git services anything that ever appeared in a
 > pull request stays fetchable afterwards, so if a credential leaked, revoke it —
 > removing the commit is not what ends the exposure.
@@ -57,14 +58,13 @@ housekeeping, and this record does not govern it.
 3. **Everything about to be lost is preserved first** — the default branch's tip,
    every unmerged branch tip that is not an ancestor of it, and every tag pointing
    into what will be discarded, **as those refs stood when condition 1's issue was
-   opened, or at the act, whichever set is larger**. Taking the larger set stops
-   the sweep being emptied by deleting the branches first — though only back to
-   that issue: refs deleted before it was opened are outside what this can see, so
-   open it before tidying. All of it goes to the remote: branch tips as
+   opened and as they stand at the act — both sets, together**. Taking both stops
+   the sweep being emptied by deleting the branches first, and needs no judgement
+   about which set counts. It reaches back only to that issue: refs deleted before
+   it was opened are outside what this can see, so open it before tidying. All of it goes to the remote: branch tips as
    `backup/pre-<reason>-<short-sha>`, one per tip, and each tag **as a tag** under
    `backup/pre-<reason>/<tag>`, because a branch reference cannot carry an annotated
-   tag's name, message, or signature — and because a branch and a tag sharing one
-   short name resolve to the tag, with only a warning. **Exception:** when the content
+   tag's name, message, or signature. **Exception:** when the content
    is itself the reason for the destruction, keep the backup off the remote and
    record where it is. That record is one party's word, unverifiable by anyone else.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
@@ -73,15 +73,16 @@ housekeeping, and this record does not govern it.
    check. Where the remote offers no such lock — a bare remote usually
    does not, and gives the pushing operator no way to read one — record that there
    was nothing to lift. Where a lock exists and the operator holds a bypass instead,
-   record that the bypass was used and that the lock was never lifted; that is the
-   third case, and it leaves the least trace. All of this goes on condition 1's
-   issue.
+   record that the bypass was used and that the lock was never lifted — the case
+   that leaves the least trace. Where the act needed neither, because it never
+   touched the lock, record that the lock was untouched. All of this goes on
+   condition 1's issue.
 5. **Afterwards, before other work resumes:** (a) every issue whose deliverable is
    now gone returns to open with the evidence; (b) the issue from condition 1
    records what was destroyed and where the backup is; and (c) it records who
    approved.
 
-**A repair waives condition 2, and nothing else.** Undoing a *prior destruction of
+**A repair waives condition 2.** Undoing a *prior destruction of
 history on the default branch* — restoring the tip the branch held immediately
 before that act — is a repair, and needs no second operator. Conditions 1, 3, 4 and
 5 still apply, and 5(c) is satisfied by recording that the act was a repair. A
@@ -94,7 +95,8 @@ because the reflog that would otherwise prove it expires and the actor can erase
 it. The first two exist only where the destruction followed this record; a repair
 is most often needed where it did not.
 
-**Undoing a repair is not itself a repair.** A repair is a destruction, so
+**Undoing a repair is not itself a repair.** A repair is normally a destruction — a
+fast-forward repair is the exception, since it makes nothing unreachable — so
 without this sentence each undo would qualify as a repair of the last, waiving the
 second operator at every step and leaving two histories to be swapped forever by
 one party. Only the *first* undo of a given destruction is a repair; undoing that
@@ -134,6 +136,7 @@ approval authority but nothing about preserving history.
   nothing announces it.
 - Deleting an **unmerged** branch is ordinary housekeeping and is not covered here,
   except that condition 3 preserves the tips as they stood when condition 1's issue
-  opened, so deleting them first does not shrink what must be preserved.
+  opened *and* as they stand at the act, so deleting them in between does not shrink
+  what must be preserved.
 - Nothing here covers the backups condition 3 creates once condition 1's issue
   closes; say in that issue when they may go.
