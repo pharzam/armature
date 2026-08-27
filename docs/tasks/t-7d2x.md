@@ -13,7 +13,7 @@ ADR (they are immutable), and cannot delete one without renumbering every later 
 an ADR would be inherited permanently by every adopter, in a repository where none of it
 is true.
 
-This file is in-repo, is not immutable, and an adopter deletes it with one command. The
+This file is in-repository, is not immutable, and an adopter deletes it with one command. The
 convention is the kit's own: `backlog.md` says design notes, rejected alternatives, open
 questions, and reproduction detail live in `tasks/<id>.md`.
 
