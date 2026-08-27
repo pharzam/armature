@@ -39,9 +39,18 @@ fi
 
 # 1e. The linters' own tests — every fixture, every linter. Without this the
 #     fixtures are documentation rather than tests (docs/tests/discipline-tests.sh).
+#
+#     A missing linter is no longer a silent skip: the runner fails on one unless
+#     it is named in SKIP_SETS. Note that the `if [ -f ]` guard here is not the
+#     same hole — the runner checks every linter in its manifest, so a script
+#     renamed away is caught by 1e even though the guard above it would pass.
 if [ -f docs/tests/discipline-tests.sh ]; then
 	sh docs/tests/discipline-tests.sh
 fi
+
+# 1f. The runner's own tests run in CI, not here — docs/tests/runner-selftest.sh
+#     copies the tree once per scenario and takes about ten seconds, which is too
+#     slow for a hook that must stay cheap. See docs/ci/ and issue #37.
 
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
 # ‹your-linter› || exit 1

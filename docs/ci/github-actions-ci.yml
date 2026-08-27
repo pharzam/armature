@@ -66,6 +66,17 @@ jobs:
       # Concrete and ready — runs every linter against every fixture.
       - run: sh docs/tests/discipline-tests.sh
 
+  runner-selftest:
+    name: runner-selftest (the runner's own tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready. Mutates a copy of the tree in each of the ways that
+      # once made discipline-tests report a pass it had not earned, and asserts
+      # it now rejects them. About ten seconds, so it runs here and not in the
+      # pre-commit hook.
+      - run: sh docs/tests/runner-selftest.sh
+
   lint:
     name: lint (‹your linter/formatter›)
     runs-on: ubuntu-latest

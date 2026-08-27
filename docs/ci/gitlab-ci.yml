@@ -50,6 +50,12 @@ discipline-tests:
   script:
     - sh docs/tests/discipline-tests.sh  # every linter against every fixture
 
+runner-selftest:           # the gate for the gate for the gate — see issue #37
+  stage: check
+  image: alpine/git        # needs git: each scenario stages a copy of the tree
+  script:
+    - sh docs/tests/runner-selftest.sh  # asserts the runner rejects what it once passed
+
 mr-link:                   # R1 — the MR description must link an issue
   stage: check
   image: alpine:3          # any image with POSIX sh + grep/awk/sed
