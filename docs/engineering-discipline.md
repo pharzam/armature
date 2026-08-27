@@ -138,7 +138,9 @@ on the issue
 
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
 actionable, demoable goal per issue. The change then lands through a pull request
-whose body links that issue (`Closes`/`Refs #N`), while the task ID stays in the
+whose body links that issue (`Closes`/`Refs #N`) — the one exception being a
+destruction of history, which no pull request can express, and which
+[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs, while the task ID stays in the
 commit subject, so the two namespaces coexist. The full rules — R1–R12, and the
 honest table of what is enforced where — live in
 [`issue-workflow.md`](issue-workflow.md); the decision is
@@ -177,6 +179,14 @@ work, *then* start the action — never act first and review the code afterwards
 A quick **smoke run** on a tiny slice, to prove the wiring, is encouraged. But it
 is not a substitute for the review. A smoke run exercises the plumbing, not the
 correctness of the result that the action exists to produce.
+
+**Destroying history on the default branch** is the most irreversible action in
+this kit, and the one no pull request can express: a pull request proposes commits
+onto a branch, while a reset, a rewrite or a deletion takes them away. It is
+permitted only under the five conditions in
+[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) — one of which is the written
+approval of a second operator who is a person. Restoring the branch to a tip it
+previously held is a *repair*, not a destruction, and is not covered.
 
 ## Honesty and evidence
 
