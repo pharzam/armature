@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-7d2x** — Record when `main` may be reset: an ADR stating the preconditions, written before the reset rather than after ([#43](https://github.com/pharzam/armature/issues/43))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
