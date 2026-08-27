@@ -57,7 +57,9 @@ it.
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it. It records the remote's refs
    as they stand at that moment — one `git ls-remote` pasted in — because
-   condition 3 compares against them and nothing else captures them.
+   condition 3 compares against them and nothing else captures them. That
+   paste is one party's word too; the operator approving under condition 2
+   should run it themselves.
 2. **A second operator approves in writing, and that operator is a person.**
    This narrows [`issue-workflow.md`](../issue-workflow.md), which binds every
    operator, human or agent, alike. An agent instantiated by the acting
@@ -83,13 +85,17 @@ it.
    *before* lifting; a restore from memory that gets one setting wrong passes
    an unrecorded check. Where the remote offers no such lock — a bare remote
    usually does not — record that there was nothing to lift. Where the
-   operator cannot read the remote's configuration at all, record *that*, and
-   not that there was nothing: being unable to see a lock is not seeing that
-   there is none. Where a lock exists and the operator holds a bypass instead,
-   record that the bypass was used and that the lock was never lifted — the
-   case that leaves the least trace. Where the act needed neither, because it
-   never touched the lock, record that the lock was untouched. All of this
-   goes on condition 1's issue.
+   operator cannot read the remote's configuration in full, record which part
+   they could not read, and not that there was nothing: being unable to see a
+   lock is not seeing that there is none. Where a lock exists and the operator
+   holds a bypass instead, record that the bypass was used and that the lock
+   was never lifted. Where the act needed neither, because it never touched
+   the lock, record that the lock was untouched **and what made the act not
+   need it** — that is the cheapest case to claim and the one leaving least
+   behind, so it is the one that has to show its reasoning. Where the branch
+   carries more than one mechanism — say a classic protection and a ruleset —
+   answer for each separately; they can be in different states at once. All of
+   this goes on condition 1's issue.
 5. **Afterwards, before other work resumes:** (a) every issue whose
    deliverable is now gone returns to open with the evidence; (b) the issue
    from condition 1 records what was destroyed and where the backup is; and
@@ -154,14 +160,15 @@ supplies approval authority but nothing about preserving history.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
   advisory, is inert on a fresh clone until `core.hooksPath` is set, never
-  runs for a web editor or an API write, does not look at tags at all, and names
-  the default branch literally, so it does nothing on a project whose branch is
-  named otherwise until it is edited — so even where it is installed, edited and
-  the push comes from a git client, the tag act passes it in silence. A lock on the branch, where the remote offers one,
-  reaches every client — but it covers the reset, the rewrite and the branch
-  deletion only; the tag act needs a separate tag rule, and a holder of a
-  bypass passes it either way. It says nothing about who approved. So the tag
-  act is the one act neither mechanism reaches. See [what is enforced
+  runs for a web editor or an API write, does not look at tags at all, and
+  names the default branch literally, so it does nothing on a project whose
+  branch is named otherwise until it is edited — so even where it is
+  installed, edited and the push comes from a git client, the tag act passes
+  it in silence. A lock on the branch, where the remote offers one, reaches
+  every client — but it covers the reset, the rewrite and the branch deletion
+  only; the tag act needs a separate tag rule, and a holder of a bypass passes
+  it either way. It says nothing about who approved. So the tag act is the one
+  act neither mechanism reaches. See [what is enforced
   where](../issue-workflow.md#what-is-enforced-where).
 - Condition 4's restore and condition 5 both fall after the operator already
   has what they wanted, which makes them the two most likely to be skipped.
