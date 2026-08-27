@@ -29,7 +29,9 @@ Two rules keep the glossary earning its place:
 1. **Collision to watch for.** When a term means something different outside this
    project — in a common library, a neighbouring team, or the wider field — say so
    in the Description, in the form "Collision to watch for: …". A word that quietly
-   means two things is worse than an unknown word.
+   means two things is worse than an unknown word. For a caveat, an exception or a
+   relationship that is **not** a clash of meanings, use "Note: …" instead — the
+   collision marker is for collisions.
 2. **Quick-reference table.** Keep the whole glossary skimmable. If it grows past
    what a reader can scan, add a short quick-reference table at the top with just
    Term and one-line meaning, and keep the full entries below.
@@ -69,7 +71,7 @@ section as-is; add your domain terms in the sections below.
 | Coordinated Universal Time | `UTC` | The time standard records are stamped in, so a sequence of events reads the same to every reader regardless of where they are. | A timeline of an incident gives every entry in UTC, not in the operator's local zone. |
 | Application Programming Interface | `API` | The programmatic interface a service exposes, as distinct from its web pages. It matters here because a change made through a forge's API bypasses every local git hook: the hook runs on the operator's machine, and an API write never touches it. | A commit written through the forge's contents API never runs `pre-commit` or `pre-push`. |
 | Destruction of history | `—` | Making commits that are — or once were — reachable from the **published** default branch unreachable from it: a reset, a force-pushed rewrite, or deleting the branch. Deleting or moving a tag that points into commits already discarded from the branch counts too, as the act that removes the last handle on history already gone. Permitted only under the conditions in [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md). Note: rewriting local history you have never pushed is not this, and neither is deleting any other branch, merged or not. | A reset of the published default branch to an earlier commit destroys history; rebasing an unpushed local branch does not. |
-| Repair | `—` | Undoing a prior destruction of history on the default branch by restoring the tip the branch held immediately before that act, while that destruction is still the branch's current state. It waives the second-operator requirement, and adds one: its issue must name the act being undone from a source the actor cannot rewrite. Undoing a repair is not itself a repair. Note: a repair is normally a destruction too — a fast-forward repair is the exception, since it makes nothing unreachable. | Restoring the default branch after an accidental force-push is a repair; rewinding it again once other work has landed is a destruction. |
+| Repair | `—` | Undoing a prior destruction of history on the default branch by restoring the tip the branch held immediately before that act, while that destruction is still the branch's current state. It waives the second-operator requirement, and adds one: its issue must name the act being undone — by issue number, backup reference, or an identifier from a source the actor cannot rewrite. Undoing a repair is not itself a repair. Note: a repair is normally a destruction too — a fast-forward repair is the exception, since it makes nothing unreachable. | Restoring the default branch after an accidental force-push is a repair; rewinding it again once other work has landed is a destruction. |
 | Secure Hash Algorithm | `SHA` | The hash that names a git object; a short SHA is its abbreviated form, used here to make one backup reference per preserved tip. Collision to watch for: `SHA-1` and `SHA-256` are the algorithms; a "sha" in prose is almost always the object name they produce. | `backup/pre-rewind-a1b2c3d` ends in the short SHA of the tip it preserves. |
 
 ## 1. `‹Domain area one›`

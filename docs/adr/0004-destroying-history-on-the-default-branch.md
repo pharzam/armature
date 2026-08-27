@@ -11,7 +11,8 @@ Accepted
 > Removing or rewriting commits on the published default branch is the one
 > change no pull request can express, and no later review can undo. It stays
 > allowed, under five conditions, and a second person must agree first —
-> except when undoing a prior destruction. It also does not do what people
+> except when undoing a prior destruction that is still the branch's current
+> state. It also does not do what people
 > expect: on most hosted git services anything that ever appeared in a pull
 > request stays fetchable afterwards, so if a credential leaked, revoke it —
 > removing the commit is not what ends the exposure.
@@ -37,29 +38,28 @@ Three forces separate it from ordinary work:
 ## Decision
 
 We will permit destruction of history on the default branch only under the
-five conditions below. Conditions 1–3 hold **before** the act. Condition 4
-straddles it where a lock is lifted; in its other cases it records after the
-act what the lock's state was and why nothing was lifted. Condition 5 can only
-follow it: for (a) and (b) the evidence does not exist until the act has
-happened, and (c) is grouped with them so the post-act record is complete in
-one place.
+five conditions below.
 
 **Destruction** means making commits that are — or once were — reachable from
 the **published** default branch unreachable from it: a reset, a force-pushed
 rewrite, or deleting the branch. Rewriting local history you have never pushed
-is not covered. Deleting or moving a tag that points into commits already
-discarded from the branch counts too — it is the one act that removes the last
-handle on history already gone, rather than making history unreachable itself.
-Deleting any *other* branch is ordinary housekeeping, whether or not its
-commits are ancestors of the default branch, and this record does not govern
-it.
+is not covered, and where a project pushes to more than one remote the branch
+this governs is the one the project treats as canonical. Deleting or moving a
+tag that points into commits already discarded from the branch counts too — it
+is the one act that removes the last handle on history already gone, rather
+than making history unreachable itself. Deleting any *other* branch is
+ordinary housekeeping, whether or not its commits are ancestors of the default
+branch, and this record does not govern it — unless it was the default branch
+when those commits were reachable from it. Changing which branch is default
+and then deleting the old one reaches the same outcome by two steps this
+record would otherwise miss.
 
 1. **An open issue states the goal** in the operator's own words, and why no
-   revert, fix-forward, or new branch reaches it. It records the remote's refs
-   as they stand at that moment — one `git ls-remote` pasted in — because
-   condition 3 compares against them and nothing else captures them. That
-   paste is one party's word too; the operator approving under condition 2
-   should run it themselves.
+   revert, fix-forward, or new branch reaches it. It records the remote's
+   references as they stand at that moment — one `git ls-remote` pasted in —
+   because condition 3 compares against them and nothing else captures them.
+   That paste is one party's word too; the operator approving under condition
+   2 should run it themselves.
 2. **A second operator approves in writing, and that operator is a person.**
    This narrows [`issue-workflow.md`](../issue-workflow.md), which binds every
    operator, human or agent, alike. An agent instantiated by the acting
@@ -68,18 +68,19 @@ it.
    afterwards. With no second person, the path is closed.
 3. **Everything about to be lost is preserved first** — the default branch's
    tip, every unmerged branch tip that is not an ancestor of it, and every tag
-   pointing into what will be discarded, **as those refs stood when condition
-   1's issue was opened and as they stand at the act — both sets, together**.
-   Taking both stops the sweep being emptied by deleting the branches first.
-   It reaches back only to that issue: refs deleted before it was opened are
-   outside what this can see, so open it before tidying. All of it goes to the
-   remote: branch tips as `backup/pre-<reason>-<short-sha>`, one per tip, and
-   each tag **as a tag** under `backup/pre-<reason>/<tag>-<short-sha>`,
-   because a branch reference cannot carry an annotated tag's name, message,
-   or signature — and because a tag that moved between the two moments has two
-   targets to preserve, not one. **Exception:** when the content is itself the
-   reason for the destruction, keep the backup off the remote and record where
-   it is. That record is one party's word, unverifiable by anyone else.
+   pointing into what will be discarded, **as those references stood when
+   condition 1's issue was opened and as they stand at the act — both sets,
+   together**. Taking both stops the sweep being emptied by deleting the
+   branches first. It reaches back only to that issue: references deleted
+   before it was opened outside what this can see, so open it before tidying.
+   All of it goes to the remote: branch tips as
+   `backup/pre-<reason>-<short-sha>`, one per tip, and each tag **as a tag**
+   under `backup/pre-<reason>/<tag>-<short-sha>`, because a branch reference
+   cannot carry an annotated tag's name, message, or signature — and because a
+   tag that moved between the two moments has two targets to preserve, not
+   one. **Exception:** when the content is itself the reason for the
+   destruction, keep the backup off the remote and record where it is. That
+   record is one party's word, unverifiable by anyone else.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
    checked field by field against a record of its full configuration made
    *before* lifting; a restore from memory that gets one setting wrong passes
@@ -94,31 +95,31 @@ it.
    need it** — that is the cheapest case to claim and the one leaving least
    behind, so it is the one that has to show its reasoning. Where the branch
    carries more than one mechanism — say a classic protection and a ruleset —
-   answer for each separately; they can be in different states at once. All of
-   this goes on condition 1's issue.
+   answer for each separately; they can be in different states at once, and
+   record how the set of mechanisms was established and from what, because a
+   record answering for one while silently missing another reads exactly like
+   a complete one. All of this goes on condition 1's issue.
 5. **Afterwards, before other work resumes:** (a) every issue whose
    deliverable is now gone returns to open with the evidence; (b) the issue
    from condition 1 records what was destroyed and where the backup is; and
    (c) it records who approved.
 
-**A repair waives condition 2, and only while nothing has landed since.**
-Undoing a *prior destruction of history on the default branch* — restoring the
-tip the branch held immediately before that act — is a repair, and needs no
-second operator **so long as the destruction is still the branch's current
-state**. Once anything has landed on top, undoing it discards that work, and
-discarding other people's work is what condition 2 exists to gate: it is a
-destruction like any other and needs a second operator. Without this bound the
-supervision would run backwards — a repair that destroys nothing would need a
-pull request, while one that discards a year of work would need neither a pull
-request nor an approver — and every un-undone destruction in a repository's
-past would stay a standing licence to do it. Conditions 1, 3, 4 and 5 still
-apply, and 5(c) is satisfied by recording that the act was a repair. Its issue
-names the act being undone — by issue number, backup reference, or the
-discarded tip's own identifier from a source the actor cannot rewrite, such as
-a forge's pull-request reference, a continuous-integration log, or another
-clone — because the reflog that would otherwise prove it expires and the actor
-can erase it. The first two exist only where the destruction followed this
-record; a repair is most often needed where it did not.
+Conditions 1–3 hold **before** the act. Condition 4 straddles it where a lock
+is lifted; in its other cases it records after the act what the lock's state
+was and why nothing was lifted. Condition 5 can only follow it: for (a) and
+(b) the evidence does not exist until the act has happened, and (c) is grouped
+with them so the post-act record is complete in one place.
+
+**A repair waives condition 2, and only while the destruction is still the
+branch's current state.** Undoing a *prior destruction of history on the
+default branch* — restoring the tip the branch held immediately before that
+act — is a repair, and needs no second operator. Once anything has landed on
+top, or the destroying act itself introduced content, undoing it discards work
+someone else may be relying on, and that is what condition 2 exists to gate:
+it is a destruction like any other and needs a second operator — otherwise
+every un-undone destruction in a repository's past would stay a standing
+licence to repeat it. Conditions 1, 3, 4 and 5 still apply, and 5(c) is
+satisfied by recording that the act was a repair.
 
 **Undoing a repair is not itself a repair.** Undoing one is a destruction, so
 without this sentence each undo would qualify as a repair of the last, waiving
@@ -146,17 +147,16 @@ supplies approval authority but nothing about preserving history.
 
 - **On a one-person project, condition 2 closes the path.** That is the
   intended cost. Whether the repair carve-out reopens anything for them
-  depends on their remote. A repair's issue must name the act being undone,
-  and where the destruction did not follow this record there is no issue
-  number and no backup reference to cite — leaving the third route, an
-  identifier from a source the actor cannot rewrite. On a hosted forge the
-  surviving pull-request reference is one, so the repair path is open to them;
-  on a bare remote there is none, and both paths are shut. For a leaked
-  credential, **revoke and rotate** — that ends the exposure, which deleting
-  the commit may not. For an oversized object or an erasure request, whoever
-  operates the remote must act; where that is the same solo operator, the path
-  stays closed and the obligation does not, so the answer is to get a second
-  person, not to proceed alone.
+  depends on what evidence survives. A repair's issue must name the act being
+  undone, and a solo operator who pushed a backup before an ad-hoc destruction
+  already has a citation, so the repair path is open to them. Where nothing
+  was preserved, a hosted forge may still hold the merge record that names the
+  tip, while a bare remote holds nothing — and then the repair path is shut
+  too, so both are. For a leaked credential, **revoke and rotate** — that ends
+  the exposure, which deleting the commit may not. For an oversized object or
+  an erasure request, whoever operates the remote must act; where that is the
+  same solo operator, the path stays closed and the obligation does not, so
+  the answer is to get a second person, not to proceed alone.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
   advisory, is inert on a fresh clone until `core.hooksPath` is set, never

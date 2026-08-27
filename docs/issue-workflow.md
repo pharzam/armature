@@ -29,7 +29,11 @@ are numbered R1–R12 so a review or a commit can cite one by number.
 ## R1 — Issue first
 
 Every change needs an **open issue before any commit or pull request**. A pull
-request with no linked issue does not merge. The issue is where the goal, the
+request with no linked issue does not merge. The one exception is to the
+pull-request half only: destroying history on the default branch, and any repair
+that cannot be expressed as a pull request, still need the issue — condition 1 of
+[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) requires it — but no pull
+request can express them. The issue is where the goal, the
 plan, and the decisions live; the code is the answer to it.
 
 **Linking keywords.** In the PR body, link the issue with the forge's keywords:
