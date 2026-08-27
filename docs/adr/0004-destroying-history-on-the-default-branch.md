@@ -58,7 +58,7 @@ record would otherwise miss.
    revert, fix-forward, or new branch reaches it. It records the remote's
    references as they stand at that moment — one `git ls-remote` pasted in —
    because condition 3 compares against them and nothing else captures them.
-   That paste is one party's word too; the operator approving under condition
+   That paste is one party's word; the operator approving under condition
    2 should run it themselves.
 2. **A second operator approves in writing, and that operator is a person.**
    This narrows [`issue-workflow.md`](../issue-workflow.md), which binds every
@@ -155,16 +155,16 @@ supplies approval authority but nothing about preserving history.
   too, so both are. For a leaked credential, **revoke and rotate** — that ends
   the exposure, which deleting the commit may not. For an oversized object or
   an erasure request, whoever operates the remote must act; where that is the
-  same solo operator, the path stays closed and the obligation does not, so
+  same solo operator, the path stays closed and the obligation remains, so
   the answer is to get a second person, not to proceed alone.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
   advisory, is inert on a fresh clone until `core.hooksPath` is set, never
   runs for a web editor or an API write, does not look at tags at all, and
   names the default branch literally, so it does nothing on a project whose
-  branch is named otherwise until it is edited — so even where it is
-  installed, edited and the push comes from a git client, the tag act passes
-  it in silence. A lock on the branch, where the remote offers one, reaches
+  branch is named otherwise until it is edited. Even where it is installed,
+  edited and the push comes from a git client, the tag act passes it in
+  silence. A lock on the branch, where the remote offers one, reaches
   every client — but it covers the reset, the rewrite and the branch deletion
   only; the tag act needs a separate tag rule, and a holder of a bypass passes
   it either way. It says nothing about who approved. So the tag act is the one
