@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-3k8w** — Make the fixture runner assert **why** a `bad-*` case failed, not only that it exited non-zero, and fail on a missing linter, a missing fixture root, a renamed fixture, or a set that yields no cases ([#37](https://github.com/pharzam/armature/issues/37))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
