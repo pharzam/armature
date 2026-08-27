@@ -6,10 +6,10 @@
 #
 # This is a LOCAL guardrail only: advisory, bypassable (git push --no-verify),
 # and absent on a fresh clone until core.hooksPath is set. The real lock lives
-# server-side in the host's branch-protection rules and, unlike this hook,
-# reaches every client — though a holder of a bypass can still pass it
-# (require a pull request before merging). Keep both — this hook is the
-# fast-feedback twin of that server-side rule, not a replacement for it.
+# server-side in the host's branch-protection rules (require a pull request
+# before merging) and, unlike this hook, reaches every client — though a holder
+# of a bypass can still pass it. Keep both — this hook is the fast-feedback
+# twin of that server-side rule, not a replacement for it.
 #
 # git passes each ref being pushed on stdin, one per line:
 #   <local ref> <local sha> <remote ref> <remote sha>
