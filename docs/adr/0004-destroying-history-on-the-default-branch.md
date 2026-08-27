@@ -38,14 +38,18 @@ Three forces separate it from ordinary work:
 
 We will permit destruction of history on the default branch only under the five
 conditions below. Conditions 1–3 hold **before** the act. Condition 4 straddles
-it — the lock is lifted before and restored after. Condition 5 can only follow
+it where there is a lock to lift; where there is not, it records after the act
+why there was not. Condition 5 can only follow
 it: the evidence it requires does not exist until the act has happened.
 
 **Destruction** means making commits that are — or once were — reachable from
-the default branch unreachable from it: a reset, a force-pushed rewrite,
-deleting the branch, or deleting or moving a tag that points into commits
-already discarded from it. Deleting a branch whose commits are ancestors of the
-default branch is ordinary housekeeping, and this record does not govern it.
+the **published** default branch unreachable from it: a reset, a force-pushed
+rewrite, or deleting the branch. Rewriting local history you have never pushed
+is not covered. Deleting or moving a tag that points into commits already
+discarded from the branch counts too — it is the one act that removes the last
+handle on history already gone, rather than making history unreachable itself.
+Deleting any *other* branch is ordinary housekeeping, whether or not its commits
+are ancestors of the default branch, and this record does not govern it.
 
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it. It records the remote's refs
