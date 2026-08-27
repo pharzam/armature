@@ -504,6 +504,16 @@ bisectable steps into a single opaque commit. Land branches so each commit is
 preserved on `main`: rebase onto the latest `origin/main` first, then do a
 plain merge (not a squash-merge).
 
+**Resetting the default branch.** A reset is the one change to `main` that no pull
+request can express: it removes commits rather than proposing them, so neither the
+[`pre-push` hook](../.githooks/pre-push) nor
+[R1](issue-workflow.md#r1--issue-first) reaches it. It is permitted only under the
+procedure in [ADR-0004](adr/0004-reset-the-default-branch.md) — a stated goal with
+the cheaper alternatives weighed, a backup branch on the remote, every issue whose
+deliverable the reset removes returned to open, and a record on the parent issue —
+and all four are written *before* the reset, not after. Nothing enforces this; see
+[What is enforced where](issue-workflow.md#what-is-enforced-where).
+
 ## Completing a task
 
 Before the PR lands, tick the ticket's acceptance-criteria boxes and write the
