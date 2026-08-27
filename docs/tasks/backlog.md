@@ -31,8 +31,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-7d2x** — Record when history on the default branch may be destroyed, and what must hold before and after ([#43](https://github.com/pharzam/armature/issues/43); [detail](t-7d2x.md))
-
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
