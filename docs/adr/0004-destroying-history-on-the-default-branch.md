@@ -40,18 +40,19 @@ Three forces separate it from ordinary work:
 We will permit destruction of history on the default branch only under the
 five conditions below.
 
-**Destruction** means making commits that are — or once were — reachable from
-the **published** default branch unreachable from it: a reset, a force-pushed
-rewrite, or deleting the branch. Rewriting local history you have never pushed
-is not covered, and where a project pushes to more than one remote the branch
-this governs is the one the project treats as canonical. Deleting or moving a
-tag that points into commits already discarded from the branch counts too — it
-is the one act that removes the last handle on history already gone, rather
-than making history unreachable itself. Deleting any *other* branch is
-ordinary housekeeping, whether or not its commits are ancestors of the default
-branch, and this record does not govern it — unless it was the default branch
-when those commits were reachable from it. Changing which branch is default
-and then deleting the old one reaches the same outcome by two steps.
+**Destruction** means making commits unreachable from the branch the project
+treats as canonical, where they were reachable from whichever branch held that
+role at any point since. A reset, a force-pushed rewrite, and deleting the
+branch are its usual forms; the list is not exhaustive, and an act that
+reaches the same outcome in steps is covered by the outcome, not excused by
+the steps. Moving the canonical role to another branch and then deleting **or
+rewriting** the old one is the worked example. Rewriting local history you
+have never pushed is not covered. Deleting or moving a tag that points into
+commits already discarded counts too — it is the one act that removes the last
+handle on history already gone, rather than making history unreachable itself.
+Deleting or rewriting a branch that never held the canonical role is ordinary
+housekeeping, whether or not its commits are ancestors of it, and this record
+does not govern it.
 
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it. It records the remote's
@@ -97,7 +98,9 @@ and then deleting the old one reaches the same outcome by two steps.
    answer for each separately; they can be in different states at once, and
    record how the set of mechanisms was established and from what, because a
    record answering for one while silently missing another reads exactly like
-   a complete one. All of this goes on condition 1's issue.
+   a complete one. No single command enumerates them, so name the queries you
+   ran; where there is a second operator, they run them too. All of this goes
+   on condition 1's issue.
 5. **Afterwards, before other work resumes:** (a) every issue whose
    deliverable is now gone returns to open with the evidence; (b) the issue
    from condition 1 records what was destroyed and where the backup is; and
@@ -110,18 +113,20 @@ was and why nothing was lifted. Condition 5 can only follow it: for (a) and
 with them so the post-act record is complete in one place.
 
 **A repair waives condition 2, and only while the branch still stands exactly
-where that act left it and that act took only away.** Undoing a *prior destruction of history on the
-default branch* — restoring the tip the branch held immediately before that
-act — is a repair, and needs no second operator. Once anything has landed on
-top, or the destroying act itself introduced content, undoing it discards work
-someone else may be relying on, and that is what condition 2 exists to gate:
-it is a destruction like any other and needs a second operator. Conditions 1,
-3, 4 and 5 still apply; 5(c) is satisfied by recording that the act was a
-repair; and the issue names the act being undone — by issue number, backup
-reference, or the discarded tip's own identifier from a source the actor
-cannot rewrite, such as the forge's record of the merge that produced it. The
-first two are the weaker of the three, being an issue the actor wrote and a
-reference the actor can delete; prefer the third where it exists.
+where that act left it and that act took only away.** Undoing a *prior
+destruction of history on the default branch* — restoring the tip the branch
+held immediately before that act — is a repair, and needs no second operator.
+Once anything has landed on top, or the destroying act itself introduced
+content, undoing it discards work someone else may be relying on, and that is
+what condition 2 exists to gate: it is a destruction like any other and needs
+a second operator. Conditions 1, 3, 4 and 5 still apply; 5(c) is satisfied by
+recording that the act was a repair; and the issue names the act being undone
+— by issue number, backup reference, or the discarded tip's own identifier
+from a source the actor cannot rewrite, such as the forge's record of the
+merge that produced it. The first two are the weaker of the three, being an
+issue the actor wrote and a reference the actor can delete — on the one path
+with no second party to check them, that matters — so prefer the third where
+it exists.
 
 **Undoing a repair is not itself a repair.** Only the *first* undo of a given
 destruction is a repair; undoing that is a destruction like any other, and
@@ -129,13 +134,15 @@ needs a second operator.
 
 **A repair that is a fast-forward is an ordinary change.** Where the
 destruction was a rewind and nothing has landed since, the tip being restored
-is a descendant of the current tip, so the repair lands through a pull request
-like any other work and this record does not except it from that — but it is
-still a repair, and conditions 1, 3, 4 and 5 still apply to it. A repair that
-cannot be expressed as a pull request — after a rewrite, which leaves no
-descendant relationship at all; once work has landed on top; or after a branch
-or tag deletion, which no pull request is shaped to restore — sits outside the
-pull-request rule.
+is a descendant of the current tip, so the repair lands like any other work —
+through a pull request where the remote has them, as an ordinary push where it
+does not — and this record does not except it from that; it is still a repair,
+and conditions 1, 3, 4 and 5 still apply to it. An undo that cannot be
+expressed as a pull request sits outside the pull-request rule: after a
+rewrite, which leaves no descendant relationship at all, or after a branch
+deletion, which no pull request is shaped to restore. Where work has landed on
+top the undo is a destruction, not a repair, and the bound above governs it —
+the word *repair* is reserved for the waived case throughout.
 
 We rejected forbidding destruction outright — it is sometimes correct — though
 condition 2 closes the path on a solo project regardless. We rejected
@@ -150,14 +157,16 @@ supplies approval authority but nothing about preserving history.
   undone, and a solo operator who pushed a backup before an ad-hoc destruction
   already has a citation, so the repair path is open to them. Where nothing
   was preserved, a hosted forge may still hold the record of the merge that
-  produced it — a different artifact from the per-pull-request reference
-  above, which holds the contributor's branch and not the default branch's tip
-  — while a bare remote holds nothing, and then the repair path is shut too.
-  For a leaked credential, **revoke and rotate** — that ends the exposure,
-  which deleting the commit may not. For an oversized object or an erasure
-  request, whoever operates the remote must act; where that is the same solo
-  operator, the path stays closed and the obligation remains, so the answer is
-  to get a second person, not to proceed alone.
+  produced it — though only where that merge produced the tip itself, since a
+  commit pushed directly after it leaves the record naming an ancestor; and a
+  different artifact from the per-pull-request reference above, which holds
+  the contributor's branch and not the default branch's tip — while a bare
+  remote holds nothing, and then the repair path is shut too. For a leaked
+  credential, **revoke and rotate** — that ends the exposure, which deleting
+  the commit may not. For an oversized object or an erasure request, whoever
+  operates the remote must act; where that is the same solo operator, the path
+  stays closed and the obligation remains, so the answer is to get a second
+  person, not to proceed alone.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
   advisory, is inert on a fresh clone until `core.hooksPath` is set, never
