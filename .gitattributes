@@ -1,0 +1,17 @@
+# Line endings.
+#
+# The discipline linters read text with awk, sed and grep, and a stray CR is
+# invisible in a diff while changing what a pattern matches. A review round
+# showed both directions of the damage: a CRLF backlog.md made backlog-lint
+# report OK having checked nothing, and a CRLF .expect file could never match the
+# message it named, with a diagnostic whose "wanted" and "got" lines looked
+# identical on screen.
+#
+# This normalises the files the kit's own checks read. It protects this
+# repository; it does not protect an adopter who does not copy it, so the linters
+# themselves must still tolerate CR — see issue #39.
+*.md      text eol=lf
+*.sh      text eol=lf
+*.expect  text eol=lf
+*.yml     text eol=lf
+.githooks/* text eol=lf

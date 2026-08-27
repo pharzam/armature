@@ -71,8 +71,40 @@ if printf '%s' "$stripped" | grep -Eiq "${pat}"; then
 	exit 0
 fi
 
+# It failed. Say WHY, not just THAT.
+#
+# This script had exactly one failure message, so every rejected body produced the
+# same line whatever was wrong with it. That is fine for a human reading one PR
+# and useless as evidence: the fixture set below could not prove which rule
+# rejected which body, so every one of its seven bad-* cases was interchangeable.
+# A check that cannot name the rule it applied is not evidence that the rule
+# exists — see issue #37, and docs/tests/discipline-tests.sh, which now requires
+# each fixture to provoke its own message.
+#
+# The probes run most-specific first. Each answers "what did the author most
+# likely do wrong", not "what did the regular expression fail to match".
+
+# 1. A link exists, but only inside an HTML comment — the guidance in the
+#    template, left unfilled.
+if printf '%s' "$body" | grep -Eiq "${pat}"; then
+	printf 'FAIL  pr-link-lint: the only issue link is inside an HTML comment (R1).\n' >&2
+	printf '      A reference in <!-- ... --> is guidance, not a link. Put it in the body.\n' >&2
+# 2. The template placeholder is still there: a keyword followed by a literal
+#    `#N`, or a ‹…› marker the adopter never filled.
+elif printf '%s' "$stripped" | grep -Eiq "(^|[^A-Za-z])${kw}[[:space:]]+[‹\`]*#N\b"; then
+	printf 'FAIL  pr-link-lint: the reference is still the template placeholder #N (R1).\n' >&2
+	printf '      Replace #N with the real issue number.\n' >&2
+# 3. A keyword and a plausible reference are both present, but the id does not
+#    end at a delimiter — `#123abc`, `#123-slug`, a URL ending `/123abc`.
+elif printf '%s' "$stripped" | grep -Eiq "(^|[^A-Za-z])${kw}[[:space:]]+${ref}"; then
+	printf 'FAIL  pr-link-lint: an issue id must end at a delimiter (R1).\n' >&2
+	printf '      `#123abc`, `#123-slug` and a URL ending `/123abc` name no issue 123.\n' >&2
+# 4. Nothing that looks like a link at all.
+else
+	printf 'FAIL  pr-link-lint: the PR body links no issue (R1).\n' >&2
+fi
+
 cat >&2 <<'EOF'
-FAIL  pr-link-lint: the PR body links no issue (R1).
   Add a linking line to the PR body, for example:
     Closes #123     # closes the issue when this PR merges (fully satisfies it)
     Refs #123       # links a parent/multi-part issue without closing it

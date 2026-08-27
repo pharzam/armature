@@ -182,8 +182,8 @@ kit already ships the green rows.
 | The same, in conversation | [Glossary](engineering-discipline.md#glossary) | — | — | — | Aspiration — no machine can read a conversation |
 | A workaround carries approval and its own removal issue | R4 | — | — | — | Written rule until wired |
 | One line per task; a task is never both "Now" and done | [Backlog](tasks/backlog.md) | [`pre-commit`](../.githooks/pre-commit) | [`backlog-lint`](ci/) | — | Enforced |
-| Every discipline linter still catches what it claims to | [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`discipline-tests`](ci/) | — | Enforced — each `bad-*` fixture must produce **its own** message, not merely a non-zero exit |
-| The fixture runner cannot report a pass it did not earn | [Testing](engineering-discipline.md#testing) | — — too slow for a hook (~10s) | [`runner-selftest`](ci/) | — | Enforced in CI only |
+| Every discipline linter still catches what it claims to | [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`discipline-tests`](ci/) | — | Enforced — a `bad-*` fixture must provoke the message of the rule it names, a `good*` fixture must exist in every set, and each set's case count is pinned, so a case cannot disappear |
+| A fixture cannot disappear, and an expectation cannot match anything | [Testing](engineering-discipline.md#testing) | — — too slow for a hook (~10s) | [`runner-selftest`](ci/) | — | Enforced in CI only, over 12 scenarios |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in
