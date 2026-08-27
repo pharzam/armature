@@ -12,10 +12,10 @@ Accepted
 > change no pull request can express, and no later review can undo. It stays
 > allowed, under five conditions, and a second person must agree first —
 > except when undoing a prior destruction that is still the branch's current
-> state. It also does not do what people
-> expect: on most hosted git services anything that ever appeared in a pull
-> request stays fetchable afterwards, so if a credential leaked, revoke it —
-> removing the commit is not what ends the exposure.
+> state. It also does not do what people expect: on most hosted git services
+> anything that ever appeared in a pull request stays fetchable afterwards, so
+> if a credential leaked, revoke it — removing the commit is not what ends the
+> exposure.
 
 ## Context
 
@@ -51,15 +51,14 @@ than making history unreachable itself. Deleting any *other* branch is
 ordinary housekeeping, whether or not its commits are ancestors of the default
 branch, and this record does not govern it — unless it was the default branch
 when those commits were reachable from it. Changing which branch is default
-and then deleting the old one reaches the same outcome by two steps this
-record would otherwise miss.
+and then deleting the old one reaches the same outcome by two steps.
 
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it. It records the remote's
    references as they stand at that moment — one `git ls-remote` pasted in —
    because condition 3 compares against them and nothing else captures them.
-   That paste is one party's word; the operator approving under condition
-   2 should run it themselves.
+   That paste is one party's word; the operator approving under condition 2
+   should run it themselves.
 2. **A second operator approves in writing, and that operator is a person.**
    This narrows [`issue-workflow.md`](../issue-workflow.md), which binds every
    operator, human or agent, alike. An agent instantiated by the acting
@@ -72,8 +71,8 @@ record would otherwise miss.
    condition 1's issue was opened and as they stand at the act — both sets,
    together**. Taking both stops the sweep being emptied by deleting the
    branches first. It reaches back only to that issue: references deleted
-   before it was opened outside what this can see, so open it before tidying.
-   All of it goes to the remote: branch tips as
+   before it was opened are outside what this can see, so open it before
+   tidying. All of it goes to the remote: branch tips as
    `backup/pre-<reason>-<short-sha>`, one per tip, and each tag **as a tag**
    under `backup/pre-<reason>/<tag>-<short-sha>`, because a branch reference
    cannot carry an annotated tag's name, message, or signature — and because a
@@ -116,17 +115,17 @@ default branch* — restoring the tip the branch held immediately before that
 act — is a repair, and needs no second operator. Once anything has landed on
 top, or the destroying act itself introduced content, undoing it discards work
 someone else may be relying on, and that is what condition 2 exists to gate:
-it is a destruction like any other and needs a second operator — otherwise
-every un-undone destruction in a repository's past would stay a standing
-licence to repeat it. Conditions 1, 3, 4 and 5 still apply, and 5(c) is
-satisfied by recording that the act was a repair.
+it is a destruction like any other and needs a second operator. Conditions 1,
+3, 4 and 5 still apply; 5(c) is satisfied by recording that the act was a
+repair; and the issue names the act being undone — by issue number, backup
+reference, or the discarded tip's own identifier from a source the actor
+cannot rewrite, such as the forge's record of the merge that produced it. The
+first two are the weaker of the three, being an issue the actor wrote and a
+reference the actor can delete; prefer the third where it exists.
 
-**Undoing a repair is not itself a repair.** Undoing one is a destruction, so
-without this sentence each undo would qualify as a repair of the last, waiving
-the second operator at every step and leaving two histories to be swapped
-forever by one party. Only the *first* undo of a given destruction is a
-repair; undoing that is a destruction like any other, and needs a second
-operator.
+**Undoing a repair is not itself a repair.** Only the *first* undo of a given
+destruction is a repair; undoing that is a destruction like any other, and
+needs a second operator.
 
 **A repair that is a fast-forward is an ordinary change.** Where the
 destruction was a rewind and nothing has landed since, the tip being restored
@@ -150,13 +149,15 @@ supplies approval authority but nothing about preserving history.
   depends on what evidence survives. A repair's issue must name the act being
   undone, and a solo operator who pushed a backup before an ad-hoc destruction
   already has a citation, so the repair path is open to them. Where nothing
-  was preserved, a hosted forge may still hold the merge record that names the
-  tip, while a bare remote holds nothing — and then the repair path is shut
-  too, so both are. For a leaked credential, **revoke and rotate** — that ends
-  the exposure, which deleting the commit may not. For an oversized object or
-  an erasure request, whoever operates the remote must act; where that is the
-  same solo operator, the path stays closed and the obligation remains, so
-  the answer is to get a second person, not to proceed alone.
+  was preserved, a hosted forge may still hold the record of the merge that
+  produced it — a different artifact from the per-pull-request reference
+  above, which holds the contributor's branch and not the default branch's tip
+  — while a bare remote holds nothing, and then the repair path is shut too.
+  For a leaked credential, **revoke and rotate** — that ends the exposure,
+  which deleting the commit may not. For an oversized object or an erasure
+  request, whoever operates the remote must act; where that is the same solo
+  operator, the path stays closed and the obligation remains, so the answer is
+  to get a second person, not to proceed alone.
 - **Nothing checks the five conditions.** The [`pre-push`
   hook](../../.githooks/pre-push) refuses a push to the default branch but is
   advisory, is inert on a fresh clone until `core.hooksPath` is set, never
@@ -164,10 +165,10 @@ supplies approval authority but nothing about preserving history.
   names the default branch literally, so it does nothing on a project whose
   branch is named otherwise until it is edited. Even where it is installed,
   edited and the push comes from a git client, the tag act passes it in
-  silence. A lock on the branch, where the remote offers one, reaches
-  every client — but it covers the reset, the rewrite and the branch deletion
-  only; the tag act needs a separate tag rule, and a holder of a bypass passes
-  it either way. It says nothing about who approved. So the tag act is the one
+  silence. A lock on the branch, where the remote offers one, reaches every
+  client — but it covers the reset, the rewrite and the branch deletion only;
+  the tag act needs a separate tag rule, and a holder of a bypass passes it
+  either way. It says nothing about who approved. So the tag act is the one
   act neither mechanism reaches. See [what is enforced
   where](../issue-workflow.md#what-is-enforced-where).
 - Condition 4's restore and condition 5 both fall after the operator already
@@ -175,7 +176,8 @@ supplies approval authority but nothing about preserving history.
   The lift without the restore is the quieter failure: it leaves the branch
   unprotected and nothing announces it.
 - Deleting an **unmerged** branch is ordinary housekeeping and is not covered
-  here, except that condition 3's sweep reaches back to condition 1's issue,
-  so deleting them in between does not shrink what must be preserved.
+  here — unless it was the default branch when its commits were reachable from
+  it — except that condition 3's sweep reaches back to condition 1's issue, so
+  deleting them in between does not shrink what must be preserved.
 - Nothing here covers the backups condition 3 creates once condition 1's issue
   closes; say in that issue when they may go.

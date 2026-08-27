@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Proposed | Accepted | Deprecated | Superseded by [ADR-NNNN](NNNN-short-title.md)
+Proposed | Accepted | Deprecated | Superseded by [ADR-NNNN](NNNN-short-title.md) | Accepted. Amended by [ADR-NNNN](NNNN-short-title.md)
 
 ## Context
 
