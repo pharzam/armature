@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR-0004](0004-destroying-history-on-the-default-branch.md)
 
 ## Context
 
