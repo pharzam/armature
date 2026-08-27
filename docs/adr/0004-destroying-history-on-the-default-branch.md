@@ -57,18 +57,25 @@ housekeeping, and this record does not govern it.
 3. **Everything about to be lost is preserved first** — the default branch's tip,
    every unmerged branch tip that is not an ancestor of it, and every tag pointing
    into what will be discarded, **as those refs stood when condition 1's issue was
-   opened**. Anchoring the sweep there is what stops it being emptied by deleting
-   the branches first. Branch tips go to the remote as
-   `backup/pre-<reason>-<short-sha>`, one per tip; a tag is preserved **as a tag**,
-   because a branch reference cannot carry an annotated tag's name, message, or
-   signature. **Exception:** when the content
+   opened, or at the act, whichever set is larger**. Taking the larger set stops
+   the sweep being emptied by deleting the branches first — though only back to
+   that issue: refs deleted before it was opened are outside what this can see, so
+   open it before tidying. All of it goes to the remote: branch tips as
+   `backup/pre-<reason>-<short-sha>`, one per tip, and each tag **as a tag** under
+   `backup/pre-<reason>/<tag>`, because a branch reference cannot carry an annotated
+   tag's name, message, or signature — and because a branch and a tag sharing one
+   short name resolve to the tag, with only a warning. **Exception:** when the content
    is itself the reason for the destruction, keep the backup off the remote and
    record where it is. That record is one party's word, unverifiable by anyone else.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
    checked field by field against a record of its full configuration made *before*
    lifting; a restore from memory that gets one setting wrong passes an unrecorded
-   check. A bare remote usually offers no such lock and no way for the pushing
-   operator to read one; where that is so, record that there was nothing to lift.
+   check. Where the remote offers no such lock — a bare remote usually
+   does not, and gives the pushing operator no way to read one — record that there
+   was nothing to lift. Where a lock exists and the operator holds a bypass instead,
+   record that the bypass was used and that the lock was never lifted; that is the
+   third case, and it leaves the least trace. All of this goes on condition 1's
+   issue.
 5. **Afterwards, before other work resumes:** (a) every issue whose deliverable is
    now gone returns to open with the evidence; (b) the issue from condition 1
    records what was destroyed and where the backup is; and (c) it records who
@@ -80,17 +87,26 @@ before that act — is a repair, and needs no second operator. Conditions 1, 3, 
 5 still apply, and 5(c) is satisfied by recording that the act was a repair. A
 repair discards whatever landed after the destruction it undoes, which is why the
 backup still matters. Its issue names the act being undone — by issue number,
-backup reference, or the discarded tip's own identifier from any durable source —
+backup reference, or the discarded tip's own identifier from a source the actor
+cannot rewrite, such as a forge's pull-request reference, a continuous-integration
+log, or another clone —
 because the reflog that would otherwise prove it expires and the actor can erase
 it. The first two exist only where the destruction followed this record; a repair
 is most often needed where it did not.
 
-**A repair that is a fast-forward is an ordinary change.** Where nothing has landed
-since the destruction, the tip being restored is a descendant of the current tip,
-so the repair lands through a pull request like any other work and this record does
-not except it from that. Only a repair that cannot be expressed as a pull request —
-after a rewrite, or once work has landed on top of the destruction — sits outside
-the pull-request rule.
+**Undoing a repair is not itself a repair.** A repair is a destruction, so
+without this sentence each undo would qualify as a repair of the last, waiving the
+second operator at every step and leaving two histories to be swapped forever by
+one party. Only the *first* undo of a given destruction is a repair; undoing that
+is a destruction like any other, and needs a second operator.
+
+**A repair that is a fast-forward is an ordinary change.** Where the destruction was a rewind and nothing
+has landed since, the tip being restored is a descendant of the current tip, so the
+repair lands through a pull request like any other work and this record does not
+except it from that — but it is still a repair, and conditions 1, 3, 4 and 5 still
+apply to it. A repair that cannot be expressed as a pull request — after a rewrite,
+which leaves no descendant relationship at all, or once work has landed on top —
+sits outside the pull-request rule.
 
 We rejected forbidding destruction outright — it is sometimes correct — though
 condition 2 closes the path on a solo project regardless. We rejected
@@ -108,7 +124,8 @@ approval authority but nothing about preserving history.
 - **Nothing checks the five conditions.** The
   [`pre-push` hook](../../.githooks/pre-push) refuses a push to the default branch
   but is advisory, never runs for a web editor or an API write, and does not look
-  at tags at all — so two of the four acts above pass it in silence. A lock on the branch, where the
+  at tags at all — so of the four acts above, only the tag act passes it in
+  silence. A lock on the branch, where the
   remote offers one, blocks the act from every client and says nothing about who
   approved. See [what is enforced where](../issue-workflow.md#what-is-enforced-where).
 - Condition 4's restore and condition 5 both fall after the operator already has
