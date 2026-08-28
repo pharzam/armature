@@ -20,13 +20,22 @@
 # that are neither good* nor bad* — the shared prd facts/ dir, a suite README — are
 # skipped too.
 #
-# Usage:  sh docs/tests/run-discipline-tests.sh
+# Usage:  sh docs/tests/run-discipline-tests.sh [-v]
+#   -v, --verbose  print an "ok" line per passing case; by default only failures
+#                  and a one-line summary are shown (quiet enough for the hook).
 # Exit status: 0 = every case matched its expected outcome, 1 = one or more did not.
 #
 # It reads only text and drives the same POSIX-sh linters, so it needs no
 # toolchain. It runs in the pre-commit hook and in CI, alongside those linters.
 
 set -u
+
+verbose=0
+case ${1:-} in
+	-v|--verbose) verbose=1 ;;
+	'') : ;;
+	*)  printf 'run-discipline-tests: unknown argument: %s\n' "$1" >&2; exit 2 ;;
+esac
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo=$(CDPATH= cd -- "$script_dir/../.." && pwd)
@@ -51,7 +60,7 @@ assert_case() {
 	if { [ "$_want" -eq 0 ] && [ "$_got" -eq 0 ]; } \
 	|| { [ "$_want" -eq 1 ] && [ "$_got" -ne 0 ]; }; then
 		pass=$((pass + 1))
-		printf 'ok    %s\n' "$_label"
+		[ "$verbose" -eq 1 ] && printf 'ok    %s\n' "$_label"
 	else
 		fail=$((fail + 1))
 		[ "$_want" -eq 0 ] && _wtxt='exit 0' || _wtxt='non-zero exit'
