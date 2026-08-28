@@ -31,7 +31,7 @@ Every claim was re-run against a scratch copy before it entered this file. The s
 checks report B calls untested were re-broken one at a time, and the discipline
 suite was re-run after each. Nothing here is taken on a report's word.
 
-**Verification result.** 43 of 44 claims stand — 29 as written, 14 with a
+**Verification result.** 43 of 44 claims stand — 26 as written, 17 with a
 correction to the detail. One is refuted. Severity after the adversarial pass:
 7 medium, 30 low, 7 describe no defect.
 
@@ -276,3 +276,14 @@ check: the rules that fire are the ones a machine checks.
 This entry is 249 characters in `completed.md`, against the 536 and 476 of the two
 before it. Finding S2c says that file's own one-line rule is decaying. This task
 does not add to the decay.
+
+**One correction to this record's own history.** The first commit, `f55d19a`, and
+its pull-request description both split the standing claims as "29 as written, 14
+with a correction". Counting the table itself gives 26 and 17. The total, 43 of 44
+standing with 1 refuted, was right throughout; only the split was wrong. It came
+from the verifiers' pass rather than from the table that was finally written, and
+it was caught by counting the rows, not by reading them. The commit message is
+immutable and still carries the wrong split. This is the same defect class the
+record documents in S1a and S1b — a shipped statement that is not true of the
+thing it describes — produced while writing the record about it. It is the
+argument for `T-4x2k`.
