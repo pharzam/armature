@@ -140,8 +140,7 @@ Before a task reaches step 1 of the gate, an **issue is open for it** — one
 actionable, demoable goal per issue. The change then lands through a pull
 request whose body links that issue (`Closes`/`Refs #N`), while the task ID
 stays in the commit subject, so the two namespaces coexist. The exception is
-destroying history on the default branch, and the rare repair that cannot be
-expressed as a pull request, which
+destroying history on the default branch, which
 [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs. The
 full rules — R1–R12, and the honest table of what is enforced where — live in
 [`issue-workflow.md`](issue-workflow.md); the decision is
@@ -184,10 +183,8 @@ correctness of the result that the action exists to produce.
 **Destroying history on the default branch** is the most irreversible action in
 this kit, and the one no pull request can express. It is permitted only under the
 conditions in [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which
-govern it in full — including which acts count, and the one narrow case (undoing a
-*prior* destruction) that is treated differently. A destruction is outside the
-pull-request rule because none can be expressed as one; a repair is outside it only
-when it is not a fast-forward.
+govern it in full, including which acts count. It is outside the pull-request rule
+because no pull request can express it.
 
 ## Honesty and evidence
 

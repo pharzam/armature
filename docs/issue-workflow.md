@@ -8,9 +8,8 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 
 > No change starts without an open issue, and every change lands through a
 > pull request that links back to it — except destroying history on the
-> default branch, and the rare repair that cannot be expressed as one, which
-> [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs
-> separately. One issue is one goal. Bigger work is sliced into ordered,
+> default branch, which no pull request can express and which
+> [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs separately. One issue is one goal. Bigger work is sliced into ordered,
 > test-first steps, and the plan is checked once before building begins.
 > Decisions are written down where the next person — human or agent — can find
 > them.
@@ -30,10 +29,9 @@ are numbered R1–R12 so a review or a commit can cite one by number.
 
 Every change needs an **open issue before any commit or pull request**. A pull
 request with no linked issue does not merge. The one exception is to the
-pull-request half only: destroying history on the default branch, and any repair
-that cannot be expressed as a pull request, still need the issue — condition 1 of
-[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) requires it — but no pull
-request can express them. The issue is where the goal, the
+pull-request half only: destroying history on the default branch still needs the
+issue — condition 1 of [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md)
+requires it — but no pull request can express it. The issue is where the goal, the
 plan, and the decisions live; the code is the answer to it.
 
 **Linking keywords.** In the PR body, link the issue with the forge's keywords:
@@ -167,7 +165,7 @@ kit already ships the green rows.
 | Concern | Written rule | Local hook | CI | Branch protection | Status |
 | ------- | ------------ | ---------- | -- | ----------------- | ------ |
 | Land only via a PR (never a direct push to the default branch), except the row below | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
-| Destroy history on the default branch, and any repair no pull request can express | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and blind to tags | — | ‹block force-push and deletion on the default branch› — where configured it stops the reset, the rewrite and the branch deletion for every client, though a bypass holder passes it; a tag needs its own rule; and it says nothing about who approved | Written rule only — nothing checks the five conditions |
+| Destroy history on the default branch | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and blind to tags | — | ‹block force-push and deletion on the default branch› — where configured it stops the reset, the rewrite and the branch deletion for every client, though a bypass holder passes it; a tag needs its own rule; and it says nothing about who approved | Written rule only — nothing checks the five conditions |
 | Conventional Commits | [Commit messages](engineering-discipline.md#commit-messages) | [`commit-msg`](../.githooks/commit-msg) | [`pr-title`](ci/github-actions-pr-title.yml) | — | Enforced |
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
