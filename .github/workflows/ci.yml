@@ -1,0 +1,50 @@
+# Continuous integration for the Armature repo itself.
+#
+# This is the ACTIVATED, tailored copy of docs/ci/github-actions-ci.yml. It runs
+# only the jobs that apply to the kit's own repository — the discipline checks,
+# which need no toolchain. The template's lint / tests / security jobs are omitted
+# on purpose: Armature is domain-free and ships no product code, so there is
+# nothing for them to run (the template README says to delete jobs a project does
+# not need). The kit's own "tests" are the discipline checks below.
+#
+# The PR-title and PR-link checks live in their own workflows (pr-title.yml,
+# pr-link.yml) because they run on pull-request events only.
+#
+# CI is the authority for the quality gate. To make these checks block a merge,
+# mark them required on `main` (Settings → Branches → branch protection) — a
+# repo-settings step, not a file here.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  adr-lint:
+    name: adr-lint (docs/adr discipline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh docs/adr/adr-lint.sh
+
+  prd-lint:
+    name: prd-lint (docs/prd discipline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh docs/prd/prd-lint.sh
+
+  discipline-tests:
+    name: discipline-tests (linter fixtures)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Runs each discipline linter against its good/bad fixtures. No toolchain.
+      - run: sh docs/tests/run-discipline-tests.sh
