@@ -47,13 +47,16 @@ Before opening an issue, search the open **and** closed issues. If the work is
 part of a larger one, open it as a child/sub-issue and link the parent, rather
 than duplicating an existing thread.
 
-## R3 — Solution selection: state-of-the-art and best practice only
+## R3 — Apply the solution-selection standard
 
-Choose the state-of-the-art, best-practice solution. Prefer a proven standard over
-a custom build. Record the chosen option **and the rejected alternatives** as a
-decision note — an [ADR](adr/) if the choice is architecturally significant, else a
-short comment on the issue. A choice made with no record is a choice a later reader
-will re-open.
+Apply the reusable [solution-selection standard](engineering-discipline.md#solution-selection)
+to every technical selection. This includes the approach used to resolve a problem,
+the work plan, the test tools and approach, and each package, library, module,
+framework, service, platform, or vendor. Treat its criteria as considerations and
+compare the candidates manually. Record the selected option **and the rejected
+alternatives** in an [ADR](adr/) if the selection is architecturally significant;
+otherwise, record them on the issue. A selection with no record is one a later
+reader will reopen.
 
 ## R4 — No workarounds
 
@@ -64,10 +67,11 @@ is a permanent defect wearing a temporary label.
 
 ## R5 — Deterministic over LLM-based
 
-Prefer deterministic mechanisms — scripts, linters, type checks, CI gates — over
-an LLM judgement, wherever a rule can be checked by a machine. A human operator may
-explicitly choose the LLM approach for a specific case; that choice is recorded on
-the issue with its reason.
+Apply the deterministic consideration in the
+[solution-selection standard](engineering-discipline.md#solution-selection).
+Prefer a deterministic mechanism when it can do the work. A human operator can
+select an LLM approach for a specific case, but must record the selection and its
+reason on the issue.
 
 ## R6 — Agent-to-agent communication through the issue
 
@@ -138,6 +142,10 @@ its own.
 - **One gate per slice.** Every sliced sub-task passes the same
   [quality gate](engineering-discipline.md#working-a-task-under-the-quality-gate);
   slicing is never a shortcut around discipline.
+- **Select the plan.** Compare candidate plans with the
+  [solution-selection standard](engineering-discipline.md#solution-selection). The
+  criteria are considerations: use them to select the plan that best fits the task
+  and its constraints.
 - **Review the plan once, then record it.** The ordered plan gets **one round of
   independent review and a reviewer's confirmation** before building begins. This
   is a review of the *plan* — lighter than, and separate from, the uncapped

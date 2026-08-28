@@ -134,6 +134,43 @@ on the issue
    and move the ticket from backlog to completed — see
    [Completing a task](#completing-a-task). Then take the next logical task.
 
+## Solution selection
+
+Use one standard for every technical selection. Apply it when you select how to
+resolve a problem, plan the work, test the result, or choose a package, library,
+module, framework, service, platform, or vendor. The criteria are considerations,
+not a scoring formula. Compare the candidates manually, record the selected option
+and the rejected alternatives, and explain the important tradeoffs.
+
+Use this order:
+
+1. **Search before you build.** Search the problem domain for an existing public
+   solution before you write a custom one. Build your own only when no suitable
+   public solution exists.
+2. **Prefer a permissive open-source license.** Prefer Apache 2.0, MIT, BSD, or a
+   similar license that permits reuse. Use a copyleft license such as GPL or AGPL
+   only when the project accepts its obligations.
+3. **Compare suitability.** Judge each candidate against these considerations:
+   - **Reliable:** stable, widely adopted, and proven in production.
+   - **Active:** recent releases and commits, with responsive maintainers.
+   - **Popular:** healthy use, shown by relevant stars, downloads, or forks.
+   - **Well maintained:** addressed issues and pull requests, with a healthy ratio
+     of open work to closed work.
+   - **Well documented:** public source, a clear README, an API reference, and
+     useful examples.
+   - **Secure:** no known, unaddressed vulnerabilities or security advisories.
+   - **Dependency-light:** few direct and transitive dependencies.
+   - **Deterministic:** plain code, rules, or algorithms in preference to an LLM
+     call; the same input gives the same output without a model, API key, or network.
+   - **Light on infrastructure:** no database, broker, cluster, or external service
+     unless the problem requires it.
+   - **A cultural fit:** idiomatic for the stack, with a stable API and no sign of
+     deprecation.
+
+No candidate must lead on every consideration. Select the candidate that best fits
+the task and its constraints. If the selection is architecturally significant,
+record it in an [ADR](adr/). Otherwise, record it on the issue.
+
 ## Issue-first workflow
 
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
