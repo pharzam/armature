@@ -75,7 +75,9 @@ Each ships with a fixture suite (a `good` case and one or more `bad-*` cases), a
 the exit code by a simple naming convention:
 
 - a fixture whose name starts with `good…` must be **accepted** (exit 0);
-- a fixture whose name starts with `bad…` must be **rejected** (non-zero exit).
+- a fixture whose name starts with `bad…` must be **rejected** (exit 1 — the
+  linters' "one or more violations" code, so a crashed linter is caught, not
+  mistaken for a rejection).
 
 The linters already self-lint the *real* repo green in the hook and CI; the runner
 does the complementary job — it proves each linter correctly *rejects* bad input,
@@ -83,10 +85,20 @@ not just that it passes the kit's own clean files. It dispatches per suite
 (`adr-lint`/`prd-lint` take a fixture directory, `pr-link-lint`/`commit-msg` take a
 file), skips entries that are neither `good*` nor `bad*` (the shared `prd/tests/facts/`
 directory, a suite `README.md`), and skips a suite whose linter or fixtures are
-absent — so a slimmed adopter kit still runs green. It reads only text and needs no
-toolchain. Run it directly with `sh docs/tests/run-discipline-tests.sh` (add `-v`
-for an `ok` line per case); it also runs in the [`pre-commit` hook](../../.githooks/pre-commit)
-and in [CI](../ci/). Add a fixture when you add or tighten a linter rule.
+absent — so a slimmed adopter kit still runs green.
+
+A test that never runs proves nothing, so the runner also enforces a **coverage
+floor**: every *present* suite must keep at least one `good` and one `bad` fixture,
+and at least one case must run overall. That turns a silently-disabled suite —
+fixtures emptied, or renamed out of the `good*`/`bad*` convention — into a red
+rather than a green with no coverage. (It does not police the exact count, so keep
+fixture names within the convention; each suite's `README.md` lists the cases it
+expects.)
+
+It reads only text and needs no toolchain. Run it directly with
+`sh docs/tests/run-discipline-tests.sh` (add `-v` for an `ok` line per case); it
+also runs in the [`pre-commit` hook](../../.githooks/pre-commit) and in [CI](../ci/).
+Add a fixture when you add or tighten a linter rule.
 
 ## Enforcement (hook + CI)
 

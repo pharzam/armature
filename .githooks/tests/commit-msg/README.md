@@ -19,6 +19,6 @@ drives every case and asserts the outcome.
 | `bad-no-description` | exit 1 | a `type:` with no description |
 
 The `good*` / `bad*` filename prefix is the runner's contract: `good*` must exit 0,
-`bad*` must exit non-zero. A `bad-*` subject must not begin with `Merge `, `Revert `,
+`bad*` must exit 1. A `bad-*` subject must not begin with `Merge `, `Revert `,
 `fixup!`, `squash!`, or `amend!` — the hook lets those through by design, so such a
 subject would wrongly pass.

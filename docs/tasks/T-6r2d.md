@@ -28,18 +28,21 @@ runner before its wiring, so each step is independently buildable and testable.
 2. **`commit-msg` fixtures** — `.githooks/tests/commit-msg/` with a `README.md` and
    `good-*.txt` / `bad-*.txt` message files. Prove each by hand against the hook.
 3. **The runner** — `docs/tests/run-discipline-tests.sh` (POSIX shell, no
-   toolchain). It is **data-driven over a per-suite descriptor** — each row names
-   the linter, its fixture root, and whether a fixture is a **directory**
-   (`adr-lint`, `prd-lint`) or a **file** (`pr-link-lint`, `commit-msg`), because
-   the two invocation modes differ. It asserts the exit code by the
-   `good*`→pass / `bad*`→fail naming convention, and **skips any entry that is
-   neither** — the shared `docs/prd/tests/facts/` dir and every suite `README.md`.
-   It also **skips an absent suite** (guard each with
-   `[ -f <linter> ] && [ -d <fixtures> ]`) so a slimmed adopter kit — one that
-   deleted `prd/` or ships no ADRs — still runs green. Print a summary; exit
-   non-zero on any mismatch. Prove it green on all real fixtures; prove it goes
-   **red** via a temporary mislabeled fixture (a valid message named `bad-*`), then
-   remove it.
+   toolchain). Two per-suite helpers carry the two invocation modes:
+   `run_dir_suite` (the linter is pointed at a case **directory** — `adr-lint`,
+   `prd-lint`) and `run_file_suite` (the linter reads a single **file** —
+   `pr-link-lint`, `commit-msg`); each is called with the linter, its fixture
+   root, and the label. A `good*` fixture must exit 0, a `bad*` fixture must exit
+   **exactly 1** (the linters' "one or more violations" code — not merely non-zero,
+   so a crashed linter is caught, not mistaken for a rejection). Entries that are
+   neither `good*` nor `bad*` — the shared `docs/prd/tests/facts/` dir, a suite
+   `README.md` — are skipped, and an **absent suite** (guard `[ -f <linter> ] &&
+   [ -d <fixtures> ]`) is skipped too, so a slimmed adopter kit that dropped `prd/`
+   or ships no ADRs still runs green. A **coverage floor** makes a silently-disabled
+   suite a red: every *present* suite must keep ≥1 good and ≥1 bad case, and ≥1 case
+   must run overall. Print a summary; exit non-zero on any mismatch. Prove it green
+   on all real fixtures; prove it goes **red** via a temporary mislabeled fixture (a
+   valid message named `bad-*`), then remove it.
 4. **Wire into `pre-commit` and CI** — add the runner behind an `if [ -f ]` guard
    after the existing `adr-lint` / `prd-lint` steps in
    [`pre-commit`](../../.githooks/pre-commit), **and** as a job in both CI templates
@@ -68,6 +71,9 @@ runner before its wiring, so each step is independently buildable and testable.
   (the negative test, captured below once run).
 - The runner dispatches dir-mode vs file-mode per suite, skips non-fixture entries
   (`facts/`, READMEs), and skips an absent suite (adopter-slimmed kit stays green).
+- The runner requires `bad*` to exit exactly 1 (a crashed linter is caught) and
+  enforces a coverage floor (each present suite keeps ≥1 good and ≥1 bad case; ≥1
+  case runs overall), so a silently-disabled suite fails rather than passing empty.
 - The runner is wired into **both** `pre-commit` and the two CI templates; the real
   linters stay green.
 - Docs updated in the same PR (tests/README reframe, test-levels, enforced-where
