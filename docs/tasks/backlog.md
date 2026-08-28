@@ -31,8 +31,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-3v9q** — Record the verified result of two external audits of the kit: 43 of 44 claims stand, almost none is new, and 23 issues closed `NOT_PLANNED` already hold most of them ([#55](https://github.com/pharzam/armature/issues/55); [detail](T-3v9q.md))
-
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->

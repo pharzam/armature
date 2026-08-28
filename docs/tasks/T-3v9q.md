@@ -1,7 +1,7 @@
 # T-3v9q — Record two external audits of the kit
 
-Tracks [issue #55](https://github.com/pharzam/armature/issues/55). Backlog line:
-[backlog.md](backlog.md).
+Tracks [issue #55](https://github.com/pharzam/armature/issues/55). Completed line:
+[completed.md](completed.md).
 
 ## In plain terms
 
@@ -233,4 +233,46 @@ the same change. Finding S2a is therefore closed by this task, not deferred.
 
 ## Verdict
 
-Written at close-out.
+The record is complete and the gate is green. Evidence, run on `f55d19a`:
+
+```
+$ sh docs/adr/adr-lint.sh              -> adr-lint: OK              exit 0
+$ sh docs/prd/prd-lint.sh              -> prd-lint: OK              exit 0
+$ sh docs/tests/run-discipline-tests.sh -> 34 passed, 0 failed      exit 0
+$ git diff --check                     -> (no output)               exit 0
+```
+
+All seven Definition of Done items are met. Every relative link and heading
+anchor in the four changed files resolves. The only unresolved targets are the
+three `‹id›.md` / `...` placeholders inside the HTML comments of `backlog.md` and
+of `completed.md`, which were there before this change.
+
+Three things are worth carrying forward.
+
+**The reports were right about the kit and wrong about the danger.** 43 of 44
+claims stand, and not one survives at high severity. An audit that grades its own
+findings has no pre-registered pass bar, which is the trap
+[`guardrails.md`](../guardrails.md) names in its first section: a decision rule
+chosen after seeing the result is a fitted parameter. Both reports set severity
+after the fact. Read their facts; re-derive their severities.
+
+**The kit's real defect is not in the kit.** It is that this repository already
+found most of this, wrote it up across 23 issues, and closed them all
+`NOT_PLANNED`. Report B quotes "the rules you throw away are the ones you will
+pick up off the floor in a year" and then measures the loss in prose drift. The
+measurement was in the issue tracker. `T-5h8n` is therefore ordered first: triage
+the abandoned issues before writing one new line of rule.
+
+**One test of the rule ran during this task.** The abbreviation rule forced three
+glossary rows the moment the record named `CLI`, `TUI` and `GUI`, and the rule
+worked — the rows exist and S2a is closed. In the same change a heading anchor was
+written that looked right and did not exist
+(`#long-running-operations`, against the real
+`#progress-indicators-for-long-running-operations`). It was caught by checking,
+not by reading. That is the single broken link in `docs/ci/tests/pr-link/README.md`
+happening again, live, and it is the argument for `T-8b4r` and the proposed link
+check: the rules that fire are the ones a machine checks.
+
+This entry is 249 characters in `completed.md`, against the 536 and 476 of the two
+before it. Finding S2c says that file's own one-line rule is decaying. This task
+does not add to the decay.
