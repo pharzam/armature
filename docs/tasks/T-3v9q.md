@@ -11,8 +11,10 @@ Tracks [issue #55](https://github.com/pharzam/armature/issues/55). Completed lin
 > and two of the fixes both audits now recommend — a root agent entry file and a
 > glossary linter — were shipped once and then removed. An `Accepted` decision
 > record went with them, and nothing says why. The audits are accurate about the
-> kit and wrong about how bad it is: after an adversarial second pass, nothing
-> survives at critical or high severity.
+> kit and wrong about how bad it is: after an adversarial second pass, no single
+> finding survives at critical or high severity. They are wrong in the other
+> direction too. One report's headline defect is that six of the kit's checks can
+> be deleted with the test suite still green. The real number is eleven.
 
 ## Why
 
@@ -89,6 +91,10 @@ did not hold.
 | P2 | The two paths do **not** diverge. They converge at `pr-link-lint.sh:45`. | Refuted | none |
 | P3 | `pre-push` is 38 lines of untested branching that fails open if the protected-branch string is edited. | Stands | low |
 | P4 | Nine `commit-msg` fixtures exist. They cover 3 of 10 types and 1 of 5 exempt prefixes. | Stands | none |
+
+**The survivor count is wrong, and it is wrong downwards — see X7.** Report B
+names six. An independent sweep of every `err "` site in `adr-lint.sh`, every
+`ec=1` site in `prd-lint.sh`, and the required-section loop finds **eleven**.
 
 **M6 and P1, stated honestly.** Report B calls the standard-input path its
 sharpest finding and says the branch that runs in continuous integration has zero
@@ -188,6 +194,69 @@ worktree.
 evidence that the linters work comes from fixtures. That is acceptable, and it is
 worth knowing when reading a green gate.
 
+**X7 — report B undercounts its own headline defect.** B says six checks can be
+gutted with the suite still green. A sweep that neutralises every `err "` site in
+`adr-lint.sh`, flips every `ec=1` in `prd-lint.sh`, and narrows the required-section
+loop finds **eleven**. The five B missed:
+
+| Survivor | What stops being checked |
+| -------- | ------------------------ |
+| `adr-lint.sh:34` | the ADR index README need not exist |
+| `adr-lint.sh:109` | the `Date:` **format** — separate from `:101`, which B counts as one check with it |
+| `adr-lint.sh:126` | the `## Context` and `## Consequences` arms of the required-section loop; only `## Decision` has a fixture |
+| `prd-lint.sh:105` | a requirement with no phase value |
+| `prd-lint.sh:110` | a requirement-like row with the wrong number of cells |
+
+The sweep is the method B recommends, applied to every site rather than to a
+chosen list. B's own R1 is therefore scoped too small: it budgets fixtures for six
+survivors and would leave five alive. `T-8b4r` carries the corrected set.
+
+Two mutations in the first sweep run — `prd-lint.sh:100` and `:103` — failed to
+apply, because the replacement text broke the `sed` expression. They are recorded
+as killed on the strength of the run that applied them cleanly, not on that failed
+run. A sweep that cannot tell "mutation applied and was caught" from "mutation
+never applied" reports a false green, which is the same defect the sweep exists to
+find. Any standing harness built for `T-8b4r` must assert that the mutant actually
+changed the file.
+
+**X8 — report B readmits the figures it says it excluded.** B states that two of
+its lenses cited "182 obligations, 21 enforced, 149 prose-only" from a rules map
+that does not exist, and that those numbers are excluded. Its headline sentence
+then says the kit "states about 180 rules while shipping checks for roughly two
+dozen". That is the same unsourced magnitude, re-entering through the most quoted
+line in the report. Neither `180` nor `two dozen` has a file behind it. Both are
+barred from this record. A defensible ratio would count committed sites — 11 `err`
+sites in `adr-lint`, 10 in `prd-lint`, 1 in `pr-link-lint`, 1 regex in
+`commit-msg`.
+
+**X9 — report A's cost estimate for its linters is false.** A ranks "ship the two
+linters" as its first action, "most value for the least work", on the premise that
+fixtures are "picked up by `run-discipline-tests.sh` with no change to the runner".
+The runner has no discovery loop: `run-discipline-tests.sh:128-131` hardcodes four
+dispatch lines. Every new suite needs a new line, and neither proposed linter fits
+either existing shape — a glossary or link check is repo-wide, not
+one-fixture-per-directory or one-fixture-per-file, so it needs a third helper too.
+Report B's R1 gets this right and budgets for a new dispatch. A's ranking rests on
+a cost it did not check.
+
+**X10 — the reports contradict each other, and the record settles it.** On the
+same measured drifts, A adds two linters and ranks them first; B fixes them with
+nine one-line edits at "prose delta ≈ 0" and would have dropped the linters at its
+own bar. X9 breaks the tie: A's cheapest-first ranking is built on a wrong cost, so
+take B's one-line edits now (`T-4x2k`) and hold both linters as unproven. On review
+discipline the two invert: A calls the fresh-reviewer rule a verification gap, B
+lists the same mechanism among the kit's strengths without a caveat. Both are
+right about different things. The stopping rule — rounds until a round finds
+nothing — is a verified strength. Reviewer independence is a real gap at
+`engineering-discipline.md:188`, because a fresh session is not a different model.
+
+**X11 — three of report B's ten recommendations are outside this record.** B's R6
+(restate test-driven development as the falsification event rather than the write
+order), R8 (ship a `docs/architecture.md` for module structure), and R9 (give a
+plan a revision path, as every other artifact has) are policy proposals, not
+findings about the tree. They are not verified here, and they are not scheduled.
+Each changes a rule, so each needs its own issue and an ADR under R10.
+
 ## Already recorded — finding to abandoned issue
 
 Triage these before writing anything new. R2 requires it.
@@ -220,6 +289,12 @@ Recorded so nobody derives them a second time.
 - 77 markdown files; 3 files named `*-lint.sh`; 4 discipline linters.
 - The standard-input gap is one statement, not a whole branch.
 - The R8 template difference is intentional. See X1.
+- **Eleven** linter checks survive gutting, not six. See X7.
+- "About 180 rules … roughly two dozen checks" is the figure report B declares
+  excluded, re-entering through its headline. Neither number has a file behind it.
+  Barred from this record. See X8.
+- "No change to the runner" is false: every new suite needs a hardcoded dispatch
+  line, and a repo-wide linter needs a third helper as well. See X9.
 
 ## Out of scope (follow-ups)
 
@@ -276,6 +351,14 @@ check: the rules that fire are the ones a machine checks.
 This entry is 249 characters in `completed.md`, against the 536 and 476 of the two
 before it. Finding S2c says that file's own one-line rule is decaying. This task
 does not add to the decay.
+
+**A completeness pass ran after the first version of this record, and changed
+it.** It re-read both reports against the covered claims and found what the sweep
+had not asked: X7 through X11. The largest is X7 — the survivor count is eleven,
+not six, so report B understates the one defect it calls its headline, and its own
+remedy is scoped to leave five checks unfixtured. The severities in this record
+stand; the coverage gap behind them is larger than either report says. Both facts
+belong in the same sentence, and only one of them is comfortable.
 
 **One correction to this record's own history.** The first commit, `f55d19a`, and
 its pull-request description both split the standing claims as "29 as written, 14
