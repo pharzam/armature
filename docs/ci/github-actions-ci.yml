@@ -42,6 +42,15 @@ jobs:
       # Concrete and ready — the PRD linter needs no toolchain.
       - run: sh docs/prd/prd-lint.sh
 
+  discipline-tests:
+    name: discipline-tests (linter fixtures)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — runs each discipline linter against its good/bad
+      # fixtures. No toolchain needed.
+      - run: sh docs/tests/run-discipline-tests.sh
+
   lint:
     name: lint (‹your linter/formatter›)
     runs-on: ubuntu-latest

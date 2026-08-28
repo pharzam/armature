@@ -25,6 +25,12 @@ if [ -f docs/prd/prd-lint.sh ]; then
 	sh docs/prd/prd-lint.sh
 fi
 
+# 1c. Discipline self-tests — run each linter above against its good/bad fixtures,
+#     so the linters themselves are tested (see docs/tests/run-discipline-tests.sh).
+if [ -f docs/tests/run-discipline-tests.sh ]; then
+	sh docs/tests/run-discipline-tests.sh
+fi
+
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
 # ‹your-linter› || exit 1
 
