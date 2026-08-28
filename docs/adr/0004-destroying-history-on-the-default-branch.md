@@ -38,10 +38,12 @@ Three forces separate it from ordinary work:
 We will permit destroying history on the published default branch only under
 the five conditions below. **Destruction** means making commits unreachable
 from the remote's default branch, where they were reachable from whichever
-branch was the default at any point in the project's history — by a reset, a
-force-pushed rewrite, or deleting the branch. Commits still reachable from a
-branch that stood on the remote independently of the act are not destroyed, so
-pointing the default at another branch while the old one stays is not covered.
+branch was the default at any point in the project's history. A reset, a
+force-pushed rewrite and deleting the branch are its usual forms; the list is
+not exhaustive, and an act reaching the same outcome in steps is covered by the
+outcome, not excused by the steps. Commits still reachable from a branch that
+stood on the remote independently of the act are not destroyed, so pointing the
+default at another branch while the old one stays is not covered.
 A backup pushed under condition 3 is not such a branch: a backup made because
 of the act cannot also be what exempts the act from this record. Rewriting
 local history you have never pushed is not covered.
@@ -60,16 +62,21 @@ local history you have never pushed is not covered.
    the act, both sets — pushed to the remote as
    `backup/pre-<reason>-<short-sha>`, one per tip; earlier `backup/` references
    are not swept again, or the set grows with every act. Reading the set at the
-   act alone lets an operator shrink it first by deleting branches, which this
-   record does not otherwise govern.
+   act alone lets an operator shrink it first by deleting branches. Taking both
+   moments closes that only for deletions after condition 1's issue was opened;
+   references deleted before it existed are outside what this can see, so open
+   the issue before tidying.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
    with both recorded, and the restore checked against a record of the lock's
    full configuration made *before* lifting; a restore from memory that gets one
    setting wrong passes an unrecorded check. Where the remote offers no such
-   lock, or the act never needed it moved, record that instead.
-5. **Afterwards, before other work resumes:** every issue whose deliverable is
-   now gone returns to open with the evidence, and the issue from condition 1
-   records what was destroyed, where the backup is, and who approved.
+   lock, or the act never needed it moved, record that instead — and for the
+   second, what made the act not need it, since that is the cheapest case to
+   claim and so the one that has to show its reasoning.
+5. **Afterwards, before any commit, push, or merge that is not part of this
+   reconciliation:** every issue whose deliverable is now gone returns to open
+   with the evidence, and the issue from condition 1 records what was destroyed,
+   where the backup is, and who approved.
 
 Conditions 1–3 hold before the act, 4 spans it, and 5 can only follow it: the
 evidence it requires does not exist until the act has happened.
@@ -98,9 +105,9 @@ approval authority but nothing about preserving history.
   happened.** Restoring it can itself destroy history under the definition
   above — undoing a rewrite makes the rewritten commits unreachable — and where
   it does, these conditions apply, including the second operator that a solo
-  operator does not have. Where it does not — most plainly when the tip being restored is a
-  descendant of the current one — nothing becomes unreachable and the record
-  does not reach the act at all. Whether that is the right answer is left open, and
-  decided on its own terms rather than settled here in passing.
+  operator does not have. Where it does not, most plainly when the tip being
+  restored is a descendant of the current one, nothing becomes unreachable and
+  this record does not reach the act. What governs it instead is left open and
+  decided on its own terms, not settled here in passing.
 - Condition 5's cost falls after the operator already has what they wanted,
   which makes it the one most likely to be skipped.

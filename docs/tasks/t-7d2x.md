@@ -42,16 +42,37 @@ contain it. Review found, in order: it exempted the very reset it scores; it
 waived all five conditions rather than one; it contradicted itself; it recursed
 without bound, leaving every un-undone destruction a standing single-operator
 licence; and once bounded by count it was still unbounded in time. Each fix
-raised a new defect. The rule now says only that undoing a destruction is itself
-a destruction, and leaves the carve-out to
+raised a new defect. The carve-out is deferred to
 [#48](https://github.com/pharzam/armature/issues/48), which carries all five
 failures so the next draft does not rediscover them.
 
+Two fragments of it came back in round 10, and one came back **looser than the
+version that was cut**: the descendant case. The cut draft said a fast-forward
+repair "is still a repair, and conditions 1, 3, 4 and 5 still apply to it"; the
+restored form said the record does not reach it at all — a permission the cut
+version withheld, reintroduced while claiming nothing had been restored. The
+record now says only that it does not reach the act and that what governs it
+instead stays with #48. The second fragment, condition 4's "never needed it
+moved", came back without its guard and has it again.
+
 **Acts that reach the same outcome sideways.** A default-branch swap — point the
 canonical role at a new branch, then delete or rewrite the old one — walked past
-an enumerated definition twice. The definition is role-indexed now, which closes
-it without a list of exceptions, but the tag act and the per-mechanism lock
-discipline that grew alongside it are gone.
+an enumerated definition twice. The definition is anchored to the remote's
+default branch now, and its act list is explicitly non-exhaustive, so an act
+reaching the same outcome in steps is covered by the outcome. It does carry two
+stated exceptions — the swap where the old branch stays, and local history never
+pushed — because a definition with no exceptions turned out to be a definition
+that either caught the swap or exempted anyone who made a backup. The tag act
+and the per-mechanism lock discipline that grew alongside it are gone.
+
+**What the sweep cannot see.** Condition 3 reads the refs at two moments, which
+stops an operator emptying the set by deleting branches *after* condition 1's
+issue is opened. It does not stop deleting them **before** — that ordering is
+outside what the sweep can observe, and the condition says so rather than
+implying a completeness it does not have. Local-only branches are also outside
+it: the sweep reads the remote, so a branch that exists on one machine is not
+preserved by this rule. `chore/t-5r2q-review-debt` was exactly that case, and
+the scorecard below records that it survived by luck rather than by the rule.
 
 **Where the evidence lives.** Every finding above, with its reproduction, is on
 [#43](https://github.com/pharzam/armature/issues/43) and
