@@ -44,5 +44,33 @@ feedback against. It also makes the kit dogfood its own CI advice.
 
 ## Verdict
 
-<!-- Filled at close: the workflows activated, actionlint result, and the live
-green check run on the PR. -->
+Live CI is on for the Armature repo. Three workflows under
+[`.github/workflows/`](../../.github/workflows/) run the ready-as-is gate on every
+PR and push to `main`: `ci.yml` (`adr-lint`, `prd-lint`, `discipline-tests`),
+`pr-title.yml`, and `pr-link.yml`. The template's `lint`/`tests`/`security` jobs are
+omitted — the kit ships no product code, so nothing runs them; the reason is
+recorded in the `ci.yml` header and `ci/README.md` points at the live files as a
+worked example.
+
+Evidence: `actionlint` is clean, each job command is green locally, and — the real
+proof — all five checks ran **green on the PR itself** (#52): `adr-lint`,
+`prd-lint`, `discipline-tests`, `conventional-title`, `pr-link`.
+
+Two findings surfaced by activating the gate, both fixed here:
+
+- **The pr-title check rejects a task-ID-first title.** The action's
+  `subjectPattern` requires a lowercase subject start, so `ci: T-2w8k …` failed. The
+  fix is the convention, not the check: **a PR title is a plain
+  `<type>: <description>` with no task ID** — the ID lives in the commit subjects and
+  the issue link in the PR body, so traceability is unaffected. The misleading
+  pr-title comment (it claimed to "enforce §Commit messages", which permits the
+  ID-first form) was corrected in the template and the activated copy.
+- **`ci.yml` granted its jobs more token than they need.** Added
+  `permissions: contents: read` at the workflow level (and in the template) — the
+  discipline jobs only read the repo.
+
+Out of scope, noted for follow-up: a `shellcheck` job (needs a pass over SC1007 on
+the idiomatic `CDPATH= cd`, SC2034 in `pre-push`, SC2012 in `prd-lint`); pinning
+the third-party `amannn/action-semantic-pull-request@v5` to a commit SHA
+kit-wide; and making the checks **required** via branch protection (a maintainer
+repo-setting, not a file here).
