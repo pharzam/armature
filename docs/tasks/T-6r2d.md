@@ -82,5 +82,29 @@ runner before its wiring, so each step is independently buildable and testable.
 
 ## Verdict
 
-<!-- Filled at close: what the task delivered, with the runner's green output and
-the negative-test evidence. -->
+Delivered a domain-free discipline-test runner,
+[`docs/tests/run-discipline-tests.sh`](../tests/run-discipline-tests.sh), that runs
+all four discipline linters (`adr-lint`, `prd-lint`, `pr-link-lint`, `commit-msg`)
+against fixtures and asserts the exit code, plus new fixture suites for `adr-lint`
+([`docs/adr/tests/`](../adr/tests/)) and the `commit-msg` hook
+([`.githooks/tests/commit-msg/`](../../.githooks/tests/commit-msg/)). Wired into the
+`pre-commit` hook and both CI templates; documented across the test docs, the
+enforced-where table, and the glossary.
+
+Evidence: the runner reports `run-discipline-tests: 34 passed, 0 failed` (exit 0),
+and a mislabeled fixture — a valid message named `bad-*` — drives it red (exit 1).
+Two independent blind-review rounds settled it. The first found and fixed two holes:
+a `bad*` case counted any non-zero exit as a rejection (a crashed linter passed for
+the wrong reason) — it now requires exit exactly 1; and a wired suite with no
+recognized cases reported green — a per-suite coverage floor (≥1 good and ≥1 bad)
+plus a global "≥1 case ran" floor now turn a silently-disabled suite red, while a
+legitimately slimmed kit still skips an absent suite and stays green. Each fix was
+verified by reproducing the exact failure (a crashed linter, an emptied suite, a
+renamed suite, a no-cases-ran invocation) and confirming it now goes red. The second
+round reproduced every fix, found nothing material, and confirmed the findings had
+decayed.
+
+Out of scope, noted for a follow-up: `adr-lint.sh` word-splits its file list, so the
+argument-less real run breaks when the repo path contains a space (the runner
+sidesteps this via relative paths); and ADR-0003 still reads "R1–R11", left as an
+immutable decision-time snapshot per the [ADR rules](../adr/README.md).

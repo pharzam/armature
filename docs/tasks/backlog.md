@@ -30,7 +30,6 @@ same summary, dated — rather than deleting it or checking it off.
 <!-- One line per task. Example shape:
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
-- **T-6r2d** — Run the kit's own discipline-linter fixtures via a domain-free test runner, and add the missing `adr-lint`/`commit-msg` fixtures ([#49](https://github.com/pharzam/armature/issues/49); [detail](T-6r2d.md))
 
 ## Next
 
