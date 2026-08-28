@@ -33,8 +33,8 @@ advisory, bypassable with `git push --no-verify`, and absent on a fresh clone
 until `core.hooksPath` is set. The real lock is your host's
 **branch-protection rule** (require a pull request before merging), enforced
 server-side: unlike this hook it reaches every client, though a holder of a
-bypass can still pass it. Turn that on for every repo; this hook is its local twin, not a
-substitute.
+bypass can still pass it. Turn that on for every repo; this hook is its local
+twin, not a substitute.
 
 ## How to adapt
 

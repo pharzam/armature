@@ -30,8 +30,8 @@ pre-push: direct push to '${protected#refs/heads/}' is not allowed.
     # then open the PR
 See docs/engineering-discipline.md.
 (The host's branch protection enforces this server-side for every client,
- though a bypass holder can still pass it; this hook is the
- local, fast-feedback twin. To bypass in an emergency: git push --no-verify.)
+ though a bypass holder can still pass it; this hook is the local,
+ fast-feedback twin. To bypass in an emergency: git push --no-verify.)
 EOF
 		exit 1
 	fi

@@ -37,10 +37,12 @@ Three forces separate it from ordinary work:
 
 We will permit destroying history on the published default branch only under
 the five conditions below. **Destruction** means making commits unreachable
-from the branch the project treats as canonical, where they were reachable from
-whichever branch held that role at any point since — a reset, a force-pushed
-rewrite, or deleting the branch. Rewriting local history you have never pushed
-is not covered.
+from the remote's default branch, and from every other branch on the remote,
+where they were reachable from whichever branch was the default at any point in
+the project's history — by a reset, a force-pushed rewrite, or deleting the
+branch. Rewriting local history you have never pushed is not covered, and
+neither is pointing the default at another branch while the old one stays,
+since nothing becomes unreachable.
 
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it.
@@ -51,12 +53,17 @@ is not covered.
    and holds no stake in what is lost. With no second person, the path is
    closed.
 3. **Everything about to be lost is preserved first** — the default branch's
-   tip and every unmerged branch tip that is not an ancestor of it — pushed to
-   the remote as `backup/pre-<reason>-<short-sha>`, one per tip.
+   tip and every other branch tip on the remote that is not an ancestor of it,
+   as those refs stood when condition 1's issue was opened and as they stand at
+   the act, both sets — pushed to the remote as
+   `backup/pre-<reason>-<short-sha>`, one per tip. Reading the set at the act
+   alone lets an operator shrink it first by deleting branches, which this
+   record does not otherwise govern.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
-   checked against a record of its full configuration made *before* lifting; a
-   restore from memory that gets one setting wrong passes an unrecorded check.
-   Where the remote offers no such lock, record that instead.
+   with both recorded, and the restore checked against a record of the lock's
+   full configuration made *before* lifting; a restore from memory that gets one
+   setting wrong passes an unrecorded check. Where the remote offers no such
+   lock, or the act never needed it moved, record that instead.
 5. **Afterwards, before other work resumes:** every issue whose deliverable is
    now gone returns to open with the evidence, and the issue from condition 1
    records what was destroyed, where the backup is, and who approved.
@@ -74,7 +81,9 @@ approval authority but nothing about preserving history.
 - **On a one-person project, condition 2 closes the path.** That is the
   intended cost. For a leaked credential, **revoke and rotate** — that ends the
   exposure, which deleting the commit may not. For an oversized object or an
-  erasure request, whoever operates the remote must act.
+  erasure request on a hosted forge, its operator must act, and the request goes
+  to them. Where the operator runs the remote themselves, that route is the door
+  condition 2 just closed, and this record leaves them without one.
 - **Nothing checks the five conditions.** The
   [`pre-push` hook](../../.githooks/pre-push) refuses a push to the default
   branch but is advisory, is inert on a fresh clone, and never runs for a web
@@ -83,10 +92,12 @@ approval authority but nothing about preserving history.
   bypass passes it. See
   [what is enforced where](../issue-workflow.md#what-is-enforced-where).
 - **This record does not say how to undo a destruction that should not have
-  happened.** Restoring the branch is itself destroying history under the
-  definition above, so these conditions apply to it — including the second
-  operator, which a solo operator does not have. Whether that is the right
-  answer is left open, and decided on its own terms rather than settled here in
-  passing.
+  happened.** Restoring it can itself destroy history under the definition
+  above — undoing a rewrite makes the rewritten commits unreachable — and where
+  it does, these conditions apply, including the second operator that a solo
+  operator does not have. Where it does not, because the tip being restored is a
+  descendant of the current one, nothing becomes unreachable and the record does
+  not reach the act at all. Whether that is the right answer is left open, and
+  decided on its own terms rather than settled here in passing.
 - Condition 5's cost falls after the operator already has what they wanted,
   which makes it the one most likely to be skipped.

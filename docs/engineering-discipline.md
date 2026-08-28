@@ -181,10 +181,10 @@ is not a substitute for the review. A smoke run exercises the plumbing, not the
 correctness of the result that the action exists to produce.
 
 **Destroying history on the default branch** is the most irreversible action in
-this kit, and the one no pull request can express. It is permitted only under the
-conditions in [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which
-govern it in full, including which acts count. It is outside the pull-request rule
-because no pull request can express it.
+this kit, and the one no pull request can express — which is why it sits outside
+the pull-request rule. It is permitted only under the conditions in
+[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which govern it in
+full, including which acts count.
 
 ## Honesty and evidence
 

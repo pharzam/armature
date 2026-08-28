@@ -22,18 +22,19 @@ questions, and reproduction detail live in `tasks/<id>.md`.
 Condition 2 requires a second **person**, so on a one-person project the *destruction*
 path is closed. The repair path is not: nothing has landed on `main` since the 2026-08-27
 reset, and both a backup reference and the forge's record of the merge that produced the
-discarded tip survive — so a repair of that reset is available to a single operator today,
-and would stop being available the moment anything lands. If that proves wrong in
+discarded tip survive — so restoring it is a fast-forward that makes nothing
+unreachable — outside the record's own definition of destruction, and therefore
+available to a single operator today. It would stop being available the moment
+anything lands, because the restore would then discard that work. If that proves wrong in
 practice, the correction is a **superseding** ADR, not an edit: the decision would have
 changed, and `adr/README.md` reserves amendment for a decision that still holds.
 
 ## What this record deliberately does not carry
 
-Nine rounds of independent review were run over a draft roughly two and a half
-times this record's size. Most of what those rounds found was in material added
-beyond what the audit asked for, so that material was cut rather than perfected.
-It is recorded here, where an adopter deletes it with the file, instead of in an
-ADR they cannot edit.
+Nine rounds of independent review ran over a draft roughly two and a half times
+this record's size, and most of what they found was in material added beyond
+what the audit asked for. That material is recorded here, where an adopter
+deletes it with the file, rather than in an ADR they cannot edit.
 
 **Undoing a destruction.** The draft carried a repair carve-out that waived the
 second-operator requirement, plus a recursion bound and a fast-forward rule to
@@ -54,9 +55,10 @@ discipline that grew alongside it are gone.
 
 **Where the evidence lives.** Every finding above, with its reproduction, is on
 [#43](https://github.com/pharzam/armature/issues/43) and
-[#16](https://github.com/pharzam/armature/issues/16) — about 190,000 bytes of
-review record. The superseded draft is preserved on
-`docs/t-7d2x-reset-adr-v2`, reference only and never a merge source.
+[#16](https://github.com/pharzam/armature/issues/16) — over 190,000 bytes of
+review record. The 11,895-byte draft is in this branch's own
+history; the earlier 7,022-byte one is on `docs/t-7d2x-reset-adr`, which forked
+at the reset point and is reference only, never a merge source.
 
 ## The 2026-08-27 reset, scored against the five conditions
 
@@ -75,9 +77,9 @@ Written by the operator who performed the reset it scores. Issue timestamps are 
 | Condition | Score |
 |---|---|
 | 1 — *"An open issue states the goal in the operator's own words, and why no revert, fix-forward, or new branch reaches it."* | **Not met.** Nothing was written anywhere before the act. The goal and the reason are real and were recorded 23 minutes after the push; the condition is about *when*. |
-| 2 — *"A second operator approves in writing, and that operator is a person."* | **Not met.** Self-approved. |
-| 3 — *"Everything about to be lost is preserved first."* | **Partly.** `backup/pre-r12-reset-999765f` held the default branch's tip, correctly. Two unmerged tips that were not ancestors of it were not: `fix/t-3k8w-runner-asserts-reason` happened to be on the remote already, and `chore/t-5r2q-review-debt` existed on one machine only and was pushed to `backup/pre-r12-reset-t-5r2q` — a name that carries a task ID where condition 3's `backup/pre-<reason>-<short-sha>` wants the tip's short SHA, though the condition postdates the act — at 11:46:30Z (local `git reflog show refs/remotes/origin/backup/pre-r12-reset-t-5r2q`; the repository events feed carries no event for it), 88 minutes after the push. It survived by luck. No tags existed. Condition 3 now sweeps the references as they stood when condition 1's issue opened *and* as they stand at the act, together; here condition 1's issue never existed, so only the act-time set applies and the score is unchanged. |
-| 4 — *"Any lock on the branch is lifted deliberately and restored afterwards, checked against a record of its full configuration made before lifting."* | **Not met.** A documented lock existed and, on the evidence below, was lifted around the act and restored; nobody recorded either, and no check against a prior record ran — which is the failure regardless of what the lock was doing. See below. |
+| 2 — *"A second operator approves in writing, and that operator is a person… With no second person, the path is closed."* | **Not met.** Self-approved. |
+| 3 — *"Everything about to be lost is preserved first…"* | **Partly.** `backup/pre-r12-reset-999765f` held the default branch's tip, correctly. Two unmerged tips that were not ancestors of it were not: `fix/t-3k8w-runner-asserts-reason` happened to be on the remote already, and `chore/t-5r2q-review-debt` existed on one machine only and was pushed to `backup/pre-r12-reset-t-5r2q` — a name that carries a task ID where condition 3's `backup/pre-<reason>-<short-sha>` wants the tip's short SHA, though the condition postdates the act — at 11:46:30Z (local `git reflog show refs/remotes/origin/backup/pre-r12-reset-t-5r2q`; the repository events feed carries a CreateEvent for the first backup at 10:14:26Z but none for this one), 88 minutes after the push. It survived by luck. Condition 3 now sweeps the references as they stood when condition 1's issue opened *and* as they stand at the act, together; here condition 1's issue never existed, so only the act-time set applies and the score is unchanged. |
+| 4 — *"Any lock on the branch is lifted deliberately and restored afterwards, with both recorded, and the restore checked against a record of the lock's full configuration made before lifting…"* | **Not met.** A documented lock existed and, on the evidence below, was lifted around the act and restored; nobody recorded either, and no check against a prior record ran — which is the failure regardless of what the lock was doing. See below. |
 | 5 — *"Afterwards, before other work resumes: every issue whose deliverable is now gone returns to open with the evidence, and the issue from condition 1 records what was destroyed, where the backup is, and who approved."* | **Not met.** The test is *before other work resumes*, and work resumed 28 minutes after the push in the wrong direction: twelve further issues were closed as completed over deliverables that had just been destroyed. The reopens began at 11:46:56Z, 60 minutes after those closes. Condition 1's issue never existed, so the second half has no subject; the 10:41 comment records what was destroyed and names the backup branch, and there was no approver to record. |
 
 **Nought of five fully met, one partly.**

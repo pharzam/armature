@@ -6,13 +6,13 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 
 ## In plain terms
 
-> No change starts without an open issue, and every change lands through a
-> pull request that links back to it — except destroying history on the
-> default branch, which no pull request can express and which
-> [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs separately. One issue is one goal. Bigger work is sliced into ordered,
-> test-first steps, and the plan is checked once before building begins.
-> Decisions are written down where the next person — human or agent — can find
-> them.
+> No change starts without an open issue, and every change lands through a pull
+> request that links back to it — except destroying history on the default branch,
+> which no pull request can express and which
+> [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) governs
+> separately. One issue is one goal. Bigger work is sliced into ordered, test-first
+> steps, and the plan is checked once before building begins. Decisions are written
+> down where the next person — human or agent — can find them.
 
 > **How to adapt this file.** This is a generic policy. The kit is **forge-free**,
 > so an *issue* here means a tracked ticket in whatever forge you use (or none),
@@ -165,7 +165,7 @@ kit already ships the green rows.
 | Concern | Written rule | Local hook | CI | Branch protection | Status |
 | ------- | ------------ | ---------- | -- | ----------------- | ------ |
 | Land only via a PR (never a direct push to the default branch), except the row below | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
-| Destroy history on the default branch | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and blind to tags | — | ‹block force-push and deletion on the default branch› — where configured it stops the reset, the rewrite and the branch deletion for every client, though a bypass holder passes it; a tag needs its own rule; and it says nothing about who approved | Written rule only — nothing checks the five conditions |
+| Destroy history on the default branch | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and inert on a fresh clone | — | ‹block force-push and deletion on the default branch› — where configured it stops the reset, the rewrite and the branch deletion for every client, though a bypass holder passes it; a tag needs its own rule; and it says nothing about who approved | Written rule only — nothing checks the five conditions |
 | Conventional Commits | [Commit messages](engineering-discipline.md#commit-messages) | [`commit-msg`](../.githooks/commit-msg) | [`pr-title`](ci/github-actions-pr-title.yml) | — | Enforced |
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
