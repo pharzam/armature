@@ -3,9 +3,12 @@
 # INERT here on purpose. To activate:
 #   cp docs/ci/github-actions-pr-title.yml .github/workflows/pr-title.yml
 #
-# Enforces docs/engineering-discipline.md §"Commit messages" on the PR title,
-# which becomes the merge commit's subject. The .githooks/commit-msg hook applies
-# the same rule to every local commit. Ready as-is — no ‹…› to fill.
+# Checks the PR title follows Conventional Commits — the same <type>: <description>
+# shape as docs/engineering-discipline.md §"Commit messages" — with a lowercase
+# subject and no trailing period (the subjectPattern below). The task ID stays in
+# the individual commit subjects, and the PR links its issue in the body (R1), so
+# the PR title itself carries no ID. The .githooks/commit-msg hook checks each
+# local commit. Ready as-is — no ‹…› to fill.
 
 name: PR title (conventional commits)
 
