@@ -1,7 +1,7 @@
 # T-7k3m — Generalize the solution-selection standard
 
-Tracks [issue #53](https://github.com/pharzam/armature/issues/53). Backlog line:
-[backlog.md](backlog.md).
+Tracks [issue #53](https://github.com/pharzam/armature/issues/53). Completed line:
+[completed.md](completed.md).
 
 ## Why
 
@@ -19,7 +19,7 @@ the test approach, and other technical selections.
 3. Add the shared term to [`glossary.md`](../glossary.md) and expose the standard in
    the root [`README.md`](../../README.md), without repeating its criteria.
 4. Run the documentation linters and search for stale or duplicated selection rules.
-5. Move this card from backlog to completed and record the verdict in the landing PR.
+5. Add the completed-task entry and record the verdict in the landing PR.
 
 ## Definition of Done
 
@@ -39,6 +39,8 @@ considerations. R3 applies it to problem resolution, planning, testing, and all
 other technical selections. R5 and R12 link to the same standard instead of
 creating separate criteria.
 
-The glossary defines the shared term, and the root README exposes the standard.
-The criteria occur only in `engineering-discipline.md`. Evidence: `adr-lint`,
-`prd-lint`, all 34 discipline fixture tests, and `git diff --check` pass.
+The glossary defines the shared term and each license or interface abbreviation.
+The root README exposes the standard, and both issue templates collect the selected
+option, rejected alternatives, and important tradeoffs. The comparison criteria
+occur only in `engineering-discipline.md`. Evidence: `adr-lint`, `prd-lint`, all 34
+discipline fixture tests, and `git diff --check` pass.

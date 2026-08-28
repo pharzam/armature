@@ -96,7 +96,9 @@ states any rule that has no section of its own. **Before step 1, an issue is ope
 for the task** — see [Issue-first workflow](#issue-first-workflow) — and the work is
 sliced into an ordered, DoD-covering, test-first plan, reviewed once and recorded
 on the issue
-([R12](issue-workflow.md#r12--slice-and-prioritize)).
+([R12](issue-workflow.md#r12--slice-and-prioritize)). Apply the
+[solution-selection standard](#solution-selection) when you select the approach,
+the plan, the tests, or another technical part of the task.
 
 1. **Isolate.** Do the work in a per-task git worktree under `‹worktree dir›/<task>`,
    branched off `origin/main` — see [Starting a task](#starting-a-task). Never
@@ -139,37 +141,37 @@ on the issue
 Use one standard for every technical selection. Apply it when you select how to
 resolve a problem, plan the work, test the result, or choose a package, library,
 module, framework, service, platform, or vendor. The criteria are considerations,
-not a scoring formula. Compare the candidates manually, record the selected option
-and the rejected alternatives, and explain the important tradeoffs.
+not a scoring formula.
 
-Use this order:
+First, search the problem domain for an existing public solution. Do not build a
+custom solution when a suitable public solution exists. Then compare the suitable
+candidates manually against all applicable considerations:
 
-1. **Search before you build.** Search the problem domain for an existing public
-   solution before you write a custom one. Build your own only when no suitable
-   public solution exists.
-2. **Prefer a permissive open-source license.** Prefer Apache 2.0, MIT, BSD, or a
-   similar license that permits reuse. Use a copyleft license such as GPL or AGPL
-   only when the project accepts its obligations.
-3. **Compare suitability.** Judge each candidate against these considerations:
-   - **Reliable:** stable, widely adopted, and proven in production.
-   - **Active:** recent releases and commits, with responsive maintainers.
-   - **Popular:** healthy use, shown by relevant stars, downloads, or forks.
-   - **Well maintained:** addressed issues and pull requests, with a healthy ratio
-     of open work to closed work.
-   - **Well documented:** public source, a clear README, an API reference, and
-     useful examples.
-   - **Secure:** no known, unaddressed vulnerabilities or security advisories.
-   - **Dependency-light:** few direct and transitive dependencies.
-   - **Deterministic:** plain code, rules, or algorithms in preference to an LLM
-     call; the same input gives the same output without a model, API key, or network.
-   - **Light on infrastructure:** no database, broker, cluster, or external service
-     unless the problem requires it.
-   - **A cultural fit:** idiomatic for the stack, with a stable API and no sign of
-     deprecation.
+- **License and commercial terms:** for open-source software, prefer Apache 2.0,
+  MIT, BSD, or a similar permissive license. Use GPL, AGPL, or another copyleft
+  license only when the project accepts its obligations. For proprietary software,
+  assess price, contract terms, vendor lock-in, data ownership, and an exit path.
+- **Project health:** assess reliability, active development, adoption, and
+  maintenance. Look for stable production use, recent releases and commits,
+  responsive maintainers, resolved issues and pull requests, and evidence of a
+  healthy user community. Use indicators that fit the ecosystem; no specific forge
+  metric is mandatory.
+- **Documentation:** require enough public source or product information, setup
+  guidance, API reference material, and examples to assess and use the candidate.
+- **Security:** check for known, unaddressed vulnerabilities or security advisories.
+- **Dependencies:** prefer few direct and transitive dependencies.
+- **Determinism:** prefer plain code, rules, and algorithms to an LLM call. For work
+  that does not require a model, external service, network, or changing data, prefer
+  the candidate that gives the same output for the same input without them.
+- **Infrastructure:** prefer little or no additional infrastructure. Add a database,
+  broker, cluster, or external service only when the problem requires it.
+- **Cultural fit:** prefer an idiomatic fit for the stack, a stable API, and no sign
+  of deprecation.
 
-No candidate must lead on every consideration. Select the candidate that best fits
-the task and its constraints. If the selection is architecturally significant,
-record it in an [ADR](adr/). Otherwise, record it on the issue.
+No candidate needs to lead on every consideration. Select the candidate that best
+fits the task and its constraints. Record the selected option, the rejected
+alternatives, and the important tradeoffs. If the selection is architecturally
+significant, record it in an [ADR](adr/). Otherwise, record it on the issue.
 
 ## Issue-first workflow
 
