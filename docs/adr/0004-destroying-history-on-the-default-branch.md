@@ -9,7 +9,7 @@ Accepted
 ## In plain terms
 
 > Removing or rewriting commits on the default branch is the one change no pull
-> request can express, and no later review can undo. It stays allowed, under
+> request can express, and no later review can undo. It is permitted, under
 > five conditions, and a second person must agree first. It also does not do
 > what people expect: on most hosted git services anything that ever appeared
 > in a pull request stays fetchable afterwards, so if a credential leaked,
@@ -40,37 +40,40 @@ conditions below. **Destruction** means making commits unreachable from the
 remote's default branch, where they were reachable from whichever branch was
 the default at any point in the project's history. A reset, a force-pushed
 rewrite and deleting the branch are its usual forms; the list is not
-exhaustive. Where the branch that was the default still stands on the remote
-holding them, they are not destroyed — so pointing the default at another branch
-while the old one stays is not covered. No other branch exempts an act: not a
-backup pushed under condition 3, and not one that happened to be pushed
-beforehand. Rewriting local history you have never pushed is not covered.
+exhaustive. Moving the default pointer, and nothing else, is not a destruction
+where the branch that held it stays on the remote holding the commits. Any other
+sequence is judged by its end state: where commits reachable from the default
+branch before it are not reachable from it after, the sequence is a destruction,
+whichever step is looked at alone, and no branch's default status — past or
+present — exempts it. Rewriting local history you have never pushed is not
+covered.
 
 1. **An open issue states the goal** in the operator's own words, and why no
-   revert, fix-forward, or new branch reaches it.
+   revert, fix-forward, or new branch reaches it. It records the remote's
+   references as they stand at that moment, because condition 3 compares against
+   them and nothing else captures them.
 2. **A second operator approves in writing, and that operator is a person.**
    This narrows [`issue-workflow.md`](../issue-workflow.md), which binds every
-   operator, human or agent, alike: an agent instantiated by the acting
-   operator is not independent, since it can be re-prompted until it approves
-   and holds no stake in what is lost. With no second person, the path is
-   closed.
+   operator, human or agent, alike. With no second person, the path is closed.
 3. **Everything about to be lost is preserved first** — the default branch's
-   tip and every other branch tip on the remote that is not an ancestor of it,
-   as those refs stood when condition 1's issue was opened and as they stand at
-   the act, both sets — pushed to the remote as
-   `backup/pre-<reason>-<short-sha>`, one per tip; earlier `backup/` references
-   are not swept again, or the set grows with every act. Open condition 1's
-   issue before tidying references.
+   tip and every other branch tip on the remote that is not an ancestor of it —
+   pushed to the remote as `backup/pre-<reason>-<short-sha>`, one per tip. Take
+   both the set as it stood when condition 1's issue was opened and the set as
+   it stands at the act; earlier `backup/` references are not swept again. Open
+   condition 1's issue before tidying references. These references are not
+   deleted while the issue that names them stands: condition 3 otherwise buys a
+   moment, not a copy.
 4. **Any lock on the branch is lifted deliberately and restored afterwards**,
    with both recorded, and the restore checked against a record of the lock's
    full configuration made *before* lifting. Where the remote offers no such
    lock, record that; where the act never needed it moved, record that and what
    made it unnecessary.
-5. **Afterwards, before any further work that is not part of this
-   reconciliation** — a commit, a push, a merge, or closing an issue as done:
+5. **Afterwards, and before the acting operator does any further work that is
+   not part of this reconciliation** — a commit, a push, a merge and closing an
+   issue are all further work — **and in any case before that operator stops:**
    every issue whose deliverable is now gone returns to open with the evidence,
-   and the issue from condition 1 records what was destroyed, where the backup
-   is, and who approved.
+   and condition 1's issue — or a new one where condition 1 was skipped —
+   records what was destroyed, where the backup is, and who approved.
 
 Conditions 1–3 hold before the act, 4 spans it, and 5 can only follow it: the
 evidence it requires does not exist until the act has happened.
@@ -84,15 +87,15 @@ supplies approval authority but nothing about preserving history.
 - **On a one-person project, condition 2 closes the path.** That is the
   intended cost. For a leaked credential, **revoke and rotate** — that ends the
   exposure, which deleting the commit may not. For an oversized object or an
-  erasure request on a hosted forge, its operator must act, and the request goes
-  to them. Where the operator runs the remote themselves, that route is the door
-  condition 2 just closed, and this record leaves them without one.
+  erasure request on a hosted forge, its operator must act. Where the operator
+  runs the remote themselves, that route is the one condition 2 closed, and
+  this record leaves them without one.
 - **Nothing checks the five conditions.** The
-  [`pre-push` hook](../../.githooks/pre-push) refuses a push to the default
-  branch but is advisory, is inert on a fresh clone, and never runs for a web
-  editor or an API write. A lock on the branch, where the remote offers one,
-  reaches every client but says nothing about who approved, and a holder of a
-  bypass passes it. See
+  [`pre-push` hook](../../.githooks/pre-push) refuses a push to the branch it is
+  configured to protect but is advisory, is inert on a fresh clone, and never
+  runs for a web editor or an API write. A lock on the branch, where the remote
+  offers one, reaches every client but says nothing about who approved, and a
+  holder of a bypass passes it. See
   [what is enforced where](../issue-workflow.md#what-is-enforced-where).
 - **This record does not say how to undo a destruction that should not have
   happened.** Restoring it can itself destroy history under the definition

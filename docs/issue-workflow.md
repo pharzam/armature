@@ -164,8 +164,8 @@ kit already ships the green rows.
 
 | Concern | Written rule | Local hook | CI | Branch protection | Status |
 | ------- | ------------ | ---------- | -- | ----------------- | ------ |
-| Land only via a PR (never a direct push to the default branch), except the row below | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
-| Destroy history on the default branch | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) blocks a push to the default branch only — advisory, bypassable, and inert on a fresh clone | — | ‹block force-push and deletion on the default branch› — where configured it stops the reset, the rewrite and the branch deletion for every client, though a bypass holder passes it; and it says nothing about who approved | Written rule only — nothing checks the five conditions |
+| Land only via a PR (never a direct push to the branch the hook protects), except the row below | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
+| Destroy history on the default branch | [ADR-0004](adr/0004-destroying-history-on-the-default-branch.md) | [`pre-push`](../.githooks/pre-push) — the push only, advisory | — | ‹block force-push and deletion on the default branch› — the acts only; a bypass holder passes | Written rule only — nothing checks the five conditions |
 | Conventional Commits | [Commit messages](engineering-discipline.md#commit-messages) | [`commit-msg`](../.githooks/commit-msg) | [`pr-title`](ci/github-actions-pr-title.yml) | — | Enforced |
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |

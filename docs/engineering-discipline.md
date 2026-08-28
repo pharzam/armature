@@ -181,10 +181,10 @@ is not a substitute for the review. A smoke run exercises the plumbing, not the
 correctness of the result that the action exists to produce.
 
 **Destroying history on the default branch** is the most irreversible action in
-this kit, and the one no pull request can express — which is why it sits outside
-the pull-request rule. It is permitted only under the conditions in
-[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which govern it in
-full, including which acts count.
+this kit. It is permitted only under the conditions in
+[ADR-0004](adr/0004-destroying-history-on-the-default-branch.md), which state
+which acts count and what must be true before and after — and which say plainly
+what they do not decide.
 
 ## Honesty and evidence
 
@@ -518,11 +518,11 @@ Before the PR lands, tick the ticket's acceptance-criteria boxes and write the
 task's verdict — the plain statement of what the work found or delivered, backed
 by the evidence under `‹evidence store›`.
 
-The **same PR that lands a task's work moves it from
+The **same change that lands a task's work moves it from
 [`tasks/backlog.md`](tasks/backlog.md) to
 [`tasks/completed.md`](tasks/completed.md)** — delete its backlog line and add a
 dated entry to the completed log (most recent first). This is not a separate
-follow-up. Doing the move in the landing PR keeps the two files from ever drifting
+follow-up. Doing the move in the landing change keeps the two files from ever drifting
 (a task is never both "Now" and done at once), and the reviewer sees the backlog
 bookkeeping alongside the change that earns it. The task's own detail file stays
 where it is — only the one-line index entry moves.

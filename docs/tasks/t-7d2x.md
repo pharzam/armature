@@ -20,8 +20,8 @@ questions, and reproduction detail live in `tasks/<id>.md`.
 ## Open question, recorded rather than decided
 
 Condition 2 requires a second **person**, so on a one-person project the *destruction*
-path is closed. The repair path is not: nothing has landed on `main` since the 2026-08-27
-reset, and both a backup reference and the forge's record of the merge that produced the
+path is closed. The repair path is not, for now: as of `385a8d6` nothing had landed on
+`main` since the 2026-08-27 reset — this record's own merge ends that — and both a backup reference and the forge's record of the merge that produced the
 discarded tip survive — so restoring it is a fast-forward that makes nothing
 unreachable, and outside the record's own definition of destruction. That is
 not the same as being permitted: ADR-0004 says only that it does not reach the
@@ -34,7 +34,7 @@ changed, and `adr/README.md` reserves amendment for a decision that still holds.
 
 ## What this record deliberately does not carry
 
-Nine rounds of independent review ran over a draft roughly two and a half times
+Nine rounds of independent review ran over a draft of 11,895 bytes, about twice
 this record's size, and most of what they found was in material added beyond
 what the audit asked for. That material is recorded here, where an adopter
 deletes it with the file, rather than in an ADR they cannot edit.
@@ -57,8 +57,10 @@ in force, and it was never argued for — it should be settled deliberately.
 **Acts that reach the same outcome sideways.** A default-branch swap — point the
 canonical role at a new branch, then delete or rewrite the old one — walked past
 an enumerated definition twice. The definition is anchored to the remote's
-default branch now, and its act list is explicitly non-exhaustive, so an act
-reaching the same outcome in steps is covered by the outcome. It does carry two
+default branch now, its act list is explicitly non-exhaustive, and a sequence of
+acts is judged by its end state — so composing blessed steps to reach a
+destruction does not escape it. That last rule was cut once as redundant and put
+back when two lenses independently built the four-step swap it exists to catch. It does carry two
 stated exceptions — the swap where the old branch stays, and local history never
 pushed — because a definition with no exceptions turned out to be a definition
 that either caught the swap or exempted anyone who made a backup. The tag act
@@ -96,11 +98,11 @@ Written by the operator who performed the reset it scores. Issue timestamps are 
 
 | Condition | Score |
 |---|---|
-| 1 — *"An open issue states the goal in the operator's own words, and why no revert, fix-forward, or new branch reaches it."* | **Not met.** Nothing was written anywhere before the act. The goal and the reason are real and were recorded 23 minutes after the push; the condition is about *when*. |
+| 1 — *"An open issue states the goal in the operator's own words, and why no revert, fix-forward, or new branch reaches it."* | **Not met, on both limbs.** Nothing was written anywhere before the act. The goal was recorded 23 minutes after the push, so for that limb the condition is about *when*. The second limb — why no revert, fix-forward or new branch reaches the goal — was never recorded at all: the 10:41:02Z record names none of the three, and redoing the work on a new branch reaches the stated goal. |
 | 2 — *"A second operator approves in writing, and that operator is a person… With no second person, the path is closed."* | **Not met.** Self-approved. |
-| 3 — *"Everything about to be lost is preserved first…"* | **Partly.** `backup/pre-r12-reset-999765f` held the default branch's tip, correctly. Two other tips that were not ancestors of it were not: `fix/t-3k8w-runner-asserts-reason` happened to be on the remote already, and `chore/t-5r2q-review-debt` existed on one machine only and was pushed to `backup/pre-r12-reset-t-5r2q` — a name that carries a task ID where condition 3's `backup/pre-<reason>-<short-sha>` wants the tip's short SHA, though the condition postdates the act — at 11:46:30Z (local `git reflog show refs/remotes/origin/backup/pre-r12-reset-t-5r2q`; the repository events feed carries a CreateEvent for the first backup at 10:14:26Z but none for this one), 88 minutes after the push. It survived by luck. Condition 3 now sweeps the references as they stood when condition 1's issue opened *and* as they stand at the act, together; here condition 1's issue never existed, so only the act-time set applies and the score is unchanged. |
+| 3 — *"Everything about to be lost is preserved first…"* | **Partly.** `backup/pre-r12-reset-999765f` held the default branch's tip, correctly. One other remote tip that was not an ancestor of it was not, and one branch condition 3 does not reach at all: `fix/t-3k8w-runner-asserts-reason` happened to be on the remote already, and `chore/t-5r2q-review-debt` existed on one machine only and was pushed to `backup/pre-r12-reset-t-5r2q` — a name that carries a task ID where condition 3's `backup/pre-<reason>-<short-sha>` wants the tip's short SHA, though the condition postdates the act — at 11:46:30Z (local `git reflog show refs/remotes/origin/backup/pre-r12-reset-t-5r2q`; the repository events feed carries a CreateEvent for the first backup at 10:14:26Z but none for this one), 88 minutes after the push. It survived by luck. Condition 3 now sweeps the references as they stood when condition 1's issue opened *and* as they stand at the act, together; here condition 1's issue never existed, so only the act-time set applies and the score is unchanged. |
 | 4 — *"Any lock on the branch is lifted deliberately and restored afterwards, with both recorded, and the restore checked against a record of the lock's full configuration made before lifting…"* | **Not met.** A documented lock existed and, on the evidence below, was lifted around the act and restored; nobody recorded either, and no check against a prior record ran — which is the failure regardless of what the lock was doing. See below. |
-| 5 — *"Afterwards, before any further work that is not part of this reconciliation — a commit, a push, a merge, or closing an issue as done: every issue whose deliverable is now gone returns to open with the evidence, and the issue from condition 1 records what was destroyed, where the backup is, and who approved."* | **Not met.** The test is *before any further work that is not part of the reconciliation*, and work resumed 28 minutes after the push in the wrong direction: twelve further issues were closed as completed over deliverables that had just been destroyed. The reopens began at 11:46:56Z, 60 minutes after those closes. Condition 1's issue never existed, so the second half has no subject; the 10:41 comment records what was destroyed and names the backup branch, and there was no approver to record. |
+| 5 — *"Afterwards, and before the acting operator does any further work that is not part of this reconciliation — a commit, a push, a merge and closing an issue are all further work — and in any case before that operator stops: every issue whose deliverable is now gone returns to open with the evidence, and condition 1's issue — or a new one where condition 1 was skipped — records what was destroyed, where the backup is, and who approved."* | **Not met.** The test is *before the acting operator does any further work*, and work resumed 28 minutes after the push in the wrong direction: twelve further issues were closed as completed over deliverables that had just been destroyed. The reopens began at 11:46:56Z, 60 minutes after those closes. Condition 1's issue never existed, so the second half has no subject; the 10:41 comment records what was destroyed and names the backup branch, and there was no approver to record. |
 
 **Nought of five fully met, one partly.**
 
@@ -118,7 +120,7 @@ The argument for condition 4 is not that the configuration was unrecorded — #6
 
 ### What that score does and does not say
 
-It does not say the reset was wrong. It answered a real problem — 45 commits, 67 files and roughly 1,659 insertions delivered in under three hours in one session, which the operator could not absorb — and no revert solves that. The backup went to the remote before anything was destroyed, and the reason was written down.
+It does not say the reset was wrong. It answered a real problem — 45 commits, 67 files and roughly 1,659 insertions delivered in under three hours in one session, which the operator could not absorb — though whether a revert or a new branch would have served as well was never argued, then or since. The backup went to the remote before anything was destroyed, and the reason was written down.
 
 It says the care came from the operator and not from a rule, and that unguided care covered part of one of the five things that matter and missed the rest.
 
