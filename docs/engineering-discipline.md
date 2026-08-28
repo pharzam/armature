@@ -151,11 +151,9 @@ candidates manually against all applicable considerations:
   MIT, BSD, or a similar permissive license. Use GPL, AGPL, or another copyleft
   license only when the project accepts its obligations. For proprietary software,
   assess price, contract terms, vendor lock-in, data ownership, and an exit path.
-- **Project health:** assess reliability, active development, adoption, and
-  maintenance. Look for stable production use, recent releases and commits,
-  responsive maintainers, resolved issues and pull requests, and evidence of a
-  healthy user community. Use indicators that fit the ecosystem; no specific forge
-  metric is mandatory.
+- **Project health:** look for stable production use, recent releases and commits,
+  responsive maintainers, resolved issues and pull requests, and adoption evidence
+  that is relevant to the ecosystem. No specific forge metric is mandatory.
 - **Documentation:** require enough public source or product information, setup
   guidance, API reference material, and examples to assess and use the candidate.
 - **Security:** check for known, unaddressed vulnerabilities or security advisories.
@@ -165,7 +163,7 @@ candidates manually against all applicable considerations:
   the candidate that gives the same output for the same input without them.
 - **Infrastructure:** prefer little or no additional infrastructure. Add a database,
   broker, cluster, or external service only when the problem requires it.
-- **Cultural fit:** prefer an idiomatic fit for the stack, a stable API, and no sign
+- **Stack fit:** prefer an idiomatic fit for the stack, a stable API, and no sign
   of deprecation.
 
 No candidate needs to lead on every consideration. Select the candidate that best

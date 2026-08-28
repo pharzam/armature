@@ -34,7 +34,7 @@ the test approach, and other technical selections.
 
 The discipline now has one canonical solution-selection standard. It starts with a
 search for an existing public solution, gives license preference, and defines the
-health, security, dependency, determinism, infrastructure, and cultural-fit
+health, security, dependency, determinism, infrastructure, and stack-fit
 considerations. R3 applies it to problem resolution, planning, testing, and all
 other technical selections. R5 and R12 link to the same standard instead of
 creating separate criteria.

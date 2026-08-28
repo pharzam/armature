@@ -67,7 +67,7 @@ Consequences you will meet immediately, and which are not negotiable:
 | Path | What |
 |------|------|
 | `‹path›` | `‹what lives there›` |
-| [`engineering-discipline.md`](engineering-discipline.md) | **How we work**: branches, worktrees, commits, tests, reviews, ADRs. Read before your first commit. |
+| [`engineering-discipline.md`](engineering-discipline.md) | **How we work**: the quality gate, solution selection, branches, worktrees, commits, tests, reviews, and ADRs. Read before your first commit. |
 | [`glossary.md`](glossary.md) | The shared vocabulary. Skim it; come back constantly. |
 | [`facts/`](facts/) | Facts collected from the customer, stored as-is as immutable evidence. Derived requirements cite them by `F-NNNN` ID. |
 | [`prd/`](prd/) | Product Requirements Documents, derived from the facts; each `REQ`/`NFR` cites an `F-NNNN` fact. |

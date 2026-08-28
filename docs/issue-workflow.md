@@ -66,7 +66,8 @@ Apply the deterministic consideration in the
 [solution-selection standard](engineering-discipline.md#solution-selection).
 Wherever a rule can be checked by a machine, prefer a script, linter, type check,
 or CI gate over an LLM judgement. A human operator can select an LLM approach for
-a specific case, but must record the selection and its reason on the issue.
+a specific case, but must record the selection and its reason as the standard
+requires.
 
 ## R6 — Agent-to-agent communication through the issue
 
@@ -137,10 +138,11 @@ its own.
 - **One gate per slice.** Every sliced sub-task passes the same
   [quality gate](engineering-discipline.md#working-a-task-under-the-quality-gate);
   slicing is never a shortcut around discipline.
-- **Select the plan.** If the task has materially different approaches, compare
-  them with the [solution-selection standard](engineering-discipline.md#solution-selection)
-  before you write the selected approach as the ordered plan. R3 states where to
-  record the rejected approaches; no fixed number of candidates is required.
+- **Select the plan.** Apply the
+  [solution-selection standard](engineering-discipline.md#solution-selection)
+  before you write the selected approach as the ordered plan. Compare materially
+  different approaches when they exist; no fixed number of candidates is required.
+  The standard states where to record the selected and rejected approaches.
 - **Review the plan once, then record it.** The ordered plan gets **one round of
   independent review and a reviewer's confirmation** before building begins. This
   is a review of the *plan* — lighter than, and separate from, the uncapped
