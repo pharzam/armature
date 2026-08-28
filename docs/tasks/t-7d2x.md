@@ -42,7 +42,9 @@ waived all five conditions rather than one; it contradicted itself; it recursed
 without bound, leaving every un-undone destruction a standing single-operator
 licence; and once bounded by count it was still unbounded in time. Each fix
 raised a new defect. The rule now says only that undoing a destruction is itself
-a destruction, and leaves the carve-out to be decided on its own terms.
+a destruction, and leaves the carve-out to
+[#48](https://github.com/pharzam/armature/issues/48), which carries all five
+failures so the next draft does not rediscover them.
 
 **Acts that reach the same outcome sideways.** A default-branch swap — point the
 canonical role at a new branch, then delete or rewrite the old one — walked past

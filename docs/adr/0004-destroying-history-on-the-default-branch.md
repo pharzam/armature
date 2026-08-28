@@ -86,6 +86,7 @@ approval authority but nothing about preserving history.
   happened.** Restoring the branch is itself destroying history under the
   definition above, so these conditions apply to it — including the second
   operator, which a solo operator does not have. Whether that is the right
-  answer is deliberately left open rather than settled here in passing.
+  answer is left open, and decided on its own terms rather than settled here in
+  passing.
 - Condition 5's cost falls after the operator already has what they wanted,
   which makes it the one most likely to be skipped.
