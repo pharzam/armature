@@ -46,14 +46,10 @@ raised a new defect. The carve-out is deferred to
 [#48](https://github.com/pharzam/armature/issues/48), which carries all five
 failures so the next draft does not rediscover them.
 
-Two fragments of it came back in round 10, and one came back **looser than the
-version that was cut**: the descendant case. The cut draft said a fast-forward
-repair "is still a repair, and conditions 1, 3, 4 and 5 still apply to it"; the
-restored form said the record does not reach it at all — a permission the cut
-version withheld, reintroduced while claiming nothing had been restored. The
-record now says only that it does not reach the act and that what governs it
-instead stays with #48. The second fragment, condition 4's "never needed it
-moved", came back without its guard and has it again.
+One decision #48 inherits: the cut draft held that a fast-forward repair "is
+still a repair, and conditions 1, 3, 4 and 5 still apply to it", where the
+record now says it does not reach the act at all. The looser reading is the one
+in force, and it was never argued for — it should be settled deliberately.
 
 **Acts that reach the same outcome sideways.** A default-branch swap — point the
 canonical role at a new branch, then delete or rewrite the old one — walked past

@@ -30,8 +30,8 @@ them, `git config --unset core.hooksPath`.
 [`pre-push`](pre-push) blocks a direct push to `main` so changes go through a
 branch and a pull request. It is a **local, fast-feedback guardrail only** —
 advisory, bypassable with `git push --no-verify`, and absent on a fresh clone
-until `core.hooksPath` is set. The real lock is your host's
-**branch-protection rule** (require a pull request before merging), enforced
+until `core.hooksPath` is set. The real lock is your host's **branch-protection
+rule** (require a pull request before merging), enforced
 server-side: unlike this hook it reaches every client, though a holder of a
 bypass can still pass it. Turn that on for every repo; this hook is its local
 twin, not a substitute.
