@@ -97,6 +97,13 @@ repo files and run in both the hook and CI, while
 artifact absent at commit time — so it runs in CI only. Add one whenever a
 convention is worth enforcing by machine rather than by review.
 
+These linters are themselves tested. [`run-discipline-tests.sh`](run-discipline-tests.sh)
+runs each one — the three above **and** the [`commit-msg`](../../.githooks/commit-msg)
+hook — against a fixture suite, asserting that a `good` fixture is accepted and a
+`bad-*` fixture rejected. It is a *harness over* the linters, not a fourth linter,
+and it runs in the hook and CI. See
+[The discipline self-tests](README.md#the-discipline-self-tests).
+
 ## Security tests sit alongside the ladder
 
 Security checks are not a fourth rung but a parallel track that runs at hook and

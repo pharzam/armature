@@ -6,9 +6,14 @@ test to the thing it proves. It is a domain-free scaffold: every document here i
 a template with `‹…›` placeholders, and no language, framework, or test runner is
 named. You adapt it to your stack, then grow it.
 
-This section holds the *conventions*. The product tests themselves live in the
-root [`tests/`](../../tests/) directory (or your stack's own layout). Armature
-ships no product tests — only these patterns for an adopter to fill.
+This section is mostly *conventions*, plus one executable exception:
+[`run-discipline-tests.sh`](run-discipline-tests.sh), which runs the kit's own
+discipline linters against their fixtures (see
+[The discipline self-tests](#the-discipline-self-tests) below). The *product*
+tests themselves live in the root [`tests/`](../../tests/) directory (or your
+stack's own layout); Armature ships no product tests — only these patterns for an
+adopter to fill. The discipline self-tests are the exception because their subject
+— the kit's linters — ships with the kit, so their tests can too.
 
 > **How to adapt this section.** Do three things, then delete this note.
 > 1. **Fill the placeholders.** Replace every `‹…›` command in
@@ -27,8 +32,9 @@ ships no product tests — only these patterns for an adopter to fill.
 
 > This folder tells you how to test on this project: what the four kinds of test
 > are, how to write each one, what to check before you trust a test suite, and how
-> to prove that every requirement has a test behind it. It does not run any tests
-> itself — it is the rulebook your real tests follow.
+> to prove that every requirement has a test behind it. It is mostly the rulebook
+> your real product tests follow; the one thing here that actually runs is
+> `run-discipline-tests.sh`, which tests the kit's own linters.
 
 ## What's here
 
@@ -44,6 +50,7 @@ ships no product tests — only these patterns for an adopter to fill.
 | [`dod-checklist.md`](dod-checklist.md) | How to verify every Definition of Done (DoD) item has test coverage. |
 | [`traceability-template.md`](traceability-template.md) | The format linking a test to a requirement, guardrail, or ADR. |
 | [`example-fact-to-test.md`](example-fact-to-test.md) | A worked path: fact → requirement → guardrail → test, in kit conventions. |
+| [`run-discipline-tests.sh`](run-discipline-tests.sh) | The one executable here: runs each discipline linter against its good/bad fixtures and asserts the outcome. |
 
 ## How the pieces fit
 
@@ -58,6 +65,40 @@ ships no product tests — only these patterns for an adopter to fill.
    to the requirement, guardrail, or ADR it proves, and
    **[`example-fact-to-test.md`](example-fact-to-test.md)** walks the whole line
    once, end to end.
+
+## The discipline self-tests
+
+The kit's [discipline tests](test-levels.md#discipline-tests) — `adr-lint`,
+`prd-lint`, `pr-link-lint`, and the `commit-msg` hook — are themselves tested.
+Each ships with a fixture suite (a `good` case and one or more `bad-*` cases), and
+[`run-discipline-tests.sh`](run-discipline-tests.sh) runs every case and asserts
+the exit code by a simple naming convention:
+
+- a fixture whose name starts with `good…` must be **accepted** (exit 0);
+- a fixture whose name starts with `bad…` must be **rejected** (exit 1 — the
+  linters' "one or more violations" code, so a crashed linter is caught, not
+  mistaken for a rejection).
+
+The linters already self-lint the *real* repo green in the hook and CI; the runner
+does the complementary job — it proves each linter correctly *rejects* bad input,
+not just that it passes the kit's own clean files. It dispatches per suite
+(`adr-lint`/`prd-lint` take a fixture directory, `pr-link-lint`/`commit-msg` take a
+file), skips entries that are neither `good*` nor `bad*` (the shared `prd/tests/facts/`
+directory, a suite `README.md`), and skips a suite whose linter or fixtures are
+absent — so a slimmed adopter kit still runs green.
+
+A test that never runs proves nothing, so the runner also enforces a **coverage
+floor**: every *present* suite must keep at least one `good` and one `bad` fixture,
+and at least one case must run overall. That turns a silently-disabled suite —
+fixtures emptied, or renamed out of the `good*`/`bad*` convention — into a red
+rather than a green with no coverage. (It does not police the exact count, so keep
+fixture names within the convention; each suite's `README.md` lists the cases it
+expects.)
+
+It reads only text and needs no toolchain. Run it directly with
+`sh docs/tests/run-discipline-tests.sh` (add `-v` for an `ok` line per case); it
+also runs in the [`pre-commit` hook](../../.githooks/pre-commit) and in [CI](../ci/).
+Add a fixture when you add or tighten a linter rule.
 
 ## Enforcement (hook + CI)
 

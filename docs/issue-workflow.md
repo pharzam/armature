@@ -161,6 +161,7 @@ kit already ships the green rows.
 | Land only via a PR (never a direct push to the default branch) | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
 | Conventional Commits | [Commit messages](engineering-discipline.md#commit-messages) | [`commit-msg`](../.githooks/commit-msg) | [`pr-title`](ci/github-actions-pr-title.yml) | — | Enforced |
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
+| The linters reject bad input (fixtures) | [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`discipline-tests`](tests/run-discipline-tests.sh) | — | Enforced |
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |

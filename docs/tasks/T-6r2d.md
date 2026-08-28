@@ -1,0 +1,110 @@
+# T-6r2d — Discipline-test runner
+
+Tracks [issue #49](https://github.com/pharzam/armature/issues/49). Backlog line:
+[backlog.md](backlog.md).
+
+## Why
+
+The kit governs itself only in the cheap layers: `commit-msg`, `adr-lint`, and
+`prd-lint` pass, and the kit stays domain-free. But the *expensive* layer of its
+own gate — **running its own tests** — is not applied to the kit. The discipline
+linters self-lint the **real** repo green, yet **nothing runs their fixtures**, so
+there is no automated proof that a linter correctly *rejects* bad input; and two of
+them (`adr-lint`, `commit-msg`) ship no fixtures at all.
+
+The reframe that makes the expensive layer apply: **the kit's product is its
+documents and its linters.** With that view, "run your own tests" has a domain-free
+form — run the discipline linters against their fixtures and assert the outcome.
+
+## Plan (R12 — ordered, DoD-covering, test-first)
+
+The fixtures (the tests) come before the runner (the code under them), and the
+runner before its wiring, so each step is independently buildable and testable.
+
+1. **`adr-lint` fixtures** — `docs/adr/tests/` with a `README.md`, a `good/` case
+   (exit 0), and `bad-*` cases isolating one violation each (bad filename,
+   numbering gap, bad Status value, missing section, no index row). Prove each by
+   hand against `adr-lint.sh` — watch every `bad-*` fail for its *own* reason.
+2. **`commit-msg` fixtures** — `.githooks/tests/commit-msg/` with a `README.md` and
+   `good-*.txt` / `bad-*.txt` message files. Prove each by hand against the hook.
+3. **The runner** — `docs/tests/run-discipline-tests.sh` (POSIX shell, no
+   toolchain). Two per-suite helpers carry the two invocation modes:
+   `run_dir_suite` (the linter is pointed at a case **directory** — `adr-lint`,
+   `prd-lint`) and `run_file_suite` (the linter reads a single **file** —
+   `pr-link-lint`, `commit-msg`); each is called with the linter, its fixture
+   root, and the label. A `good*` fixture must exit 0, a `bad*` fixture must exit
+   **exactly 1** (the linters' "one or more violations" code — not merely non-zero,
+   so a crashed linter is caught, not mistaken for a rejection). Entries that are
+   neither `good*` nor `bad*` — the shared `docs/prd/tests/facts/` dir, a suite
+   `README.md` — are skipped, and an **absent suite** (guard `[ -f <linter> ] &&
+   [ -d <fixtures> ]`) is skipped too, so a slimmed adopter kit that dropped `prd/`
+   or ships no ADRs still runs green. A **coverage floor** makes a silently-disabled
+   suite a red: every *present* suite must keep ≥1 good and ≥1 bad case, and ≥1 case
+   must run overall. Print a summary; exit non-zero on any mismatch. Prove it green
+   on all real fixtures; prove it goes **red** via a temporary mislabeled fixture (a
+   valid message named `bad-*`), then remove it.
+4. **Wire into `pre-commit` and CI** — add the runner behind an `if [ -f ]` guard
+   after the existing `adr-lint` / `prd-lint` steps in
+   [`pre-commit`](../../.githooks/pre-commit), **and** as a job in both CI templates
+   ([`github-actions-ci.yml`](../ci/github-actions-ci.yml),
+   [`gitlab-ci.yml`](../ci/gitlab-ci.yml)) plus a mention in
+   [`ci/README.md`](../ci/README.md). Discipline tests run **hook + CI** by
+   definition ([`test-levels.md`](../tests/test-levels.md)); CI is the authority, and
+   hook-only enforcement is bypassable with `--no-verify`.
+5. **Docs, same PR** — `docs/tests/README.md` (new row **and** the "does not run any
+   tests itself / ships no product tests" framing reworded, since the folder now
+   holds an executable self-test), `test-levels.md` (name the runner under
+   Discipline without miscounting it as a fourth linter; note `commit-msg` is now
+   fixture-tested), the "what is enforced where" table in `issue-workflow.md` (a row
+   for the discipline self-tests, hook + CI), the main `README.md` "What's inside"
+   (and fix the stale `R1–R11` → `R1–R12` on line 45 in passing), and a **`POSIX`
+   glossary row** (the term is used by the runner and already appears uncovered in
+   `prd-lint.sh` and `gitlab-ci.yml`).
+6. **Backlog bookkeeping** — this card moves from `backlog.md` to `completed.md` in
+   the same PR that lands the work.
+
+## Definition of Done
+
+- Every discipline linter has both a `good` fixture (proves it passes clean input)
+  and at least one `bad-*` fixture (proves it rejects a violation).
+- The runner runs all four suites and exits 0; a mislabeled fixture makes it exit 1
+  (the negative test, captured below once run).
+- The runner dispatches dir-mode vs file-mode per suite, skips non-fixture entries
+  (`facts/`, READMEs), and skips an absent suite (adopter-slimmed kit stays green).
+- The runner requires `bad*` to exit exactly 1 (a crashed linter is caught) and
+  enforces a coverage floor (each present suite keeps ≥1 good and ≥1 bad case; ≥1
+  case runs overall), so a silently-disabled suite fails rather than passing empty.
+- The runner is wired into **both** `pre-commit` and the two CI templates; the real
+  linters stay green.
+- Docs updated in the same PR (tests/README reframe, test-levels, enforced-where
+  table, main README R1–R12 fix); a `POSIX` glossary row added — no undefined
+  abbreviation.
+
+## Verdict
+
+Delivered a domain-free discipline-test runner,
+[`docs/tests/run-discipline-tests.sh`](../tests/run-discipline-tests.sh), that runs
+all four discipline linters (`adr-lint`, `prd-lint`, `pr-link-lint`, `commit-msg`)
+against fixtures and asserts the exit code, plus new fixture suites for `adr-lint`
+([`docs/adr/tests/`](../adr/tests/)) and the `commit-msg` hook
+([`.githooks/tests/commit-msg/`](../../.githooks/tests/commit-msg/)). Wired into the
+`pre-commit` hook and both CI templates; documented across the test docs, the
+enforced-where table, and the glossary.
+
+Evidence: the runner reports `run-discipline-tests: 34 passed, 0 failed` (exit 0),
+and a mislabeled fixture — a valid message named `bad-*` — drives it red (exit 1).
+Two independent blind-review rounds settled it. The first found and fixed two holes:
+a `bad*` case counted any non-zero exit as a rejection (a crashed linter passed for
+the wrong reason) — it now requires exit exactly 1; and a wired suite with no
+recognized cases reported green — a per-suite coverage floor (≥1 good and ≥1 bad)
+plus a global "≥1 case ran" floor now turn a silently-disabled suite red, while a
+legitimately slimmed kit still skips an absent suite and stays green. Each fix was
+verified by reproducing the exact failure (a crashed linter, an emptied suite, a
+renamed suite, a no-cases-ran invocation) and confirming it now goes red. The second
+round reproduced every fix, found nothing material, and confirmed the findings had
+decayed.
+
+Out of scope, noted for a follow-up: `adr-lint.sh` word-splits its file list, so the
+argument-less real run breaks when the repo path contains a space (the runner
+sidesteps this via relative paths); and ADR-0003 still reads "R1–R11", left as an
+immutable decision-time snapshot per the [ADR rules](../adr/README.md).

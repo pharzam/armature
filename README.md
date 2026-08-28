@@ -42,13 +42,13 @@ the frame that gives a thing its strength.
 |-------|---------------|
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate and every working practice. |
-| [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R11): the ticket policy the gate assumes. |
+| [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R12): the ticket policy the gate assumes. |
 | [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary the other docs assume. |
 | [`docs/guardrails.md`](docs/guardrails.md) | Known pitfalls, pre-registered pass/fail rules, and validation. |
 | [`docs/adr/`](docs/adr/) | Architecture Decision Records — the *why* behind structural choices — plus [`adr-lint.sh`](docs/adr/adr-lint.sh), the discipline test that keeps them honest. |
 | [`docs/facts/`](docs/facts/) | Raw customer facts kept as immutable evidence, and the citation convention that derives requirements from them. |
 | [`docs/prd/`](docs/prd/) | Product Requirements Documents derived from the facts, plus [`prd-lint.sh`](docs/prd/prd-lint.sh), the discipline test that keeps them honest. |
-| [`docs/tests/`](docs/tests/) | The testing conventions — the test levels, a pattern per level, the security, scaling, and Definition-of-Done checklists, and test-to-requirement traceability. |
+| [`docs/tests/`](docs/tests/) | The testing conventions — the test levels, a pattern per level, the security, scaling, and Definition-of-Done checklists, and test-to-requirement traceability — plus [`run-discipline-tests.sh`](docs/tests/run-discipline-tests.sh), which tests the kit's own linters against fixtures. |
 | [`tests/`](tests/) | The repo-root drop-in where an adopter's product tests live. Empty in the kit (it has no product), kept in git by a `.gitkeep`. |
 | [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md). |
 | [`.githooks/`](.githooks/) | Git hooks that enforce the cheap gate locally — a commit-message check and a pre-commit runner. Install with `git config core.hooksPath .githooks`. |
