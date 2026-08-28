@@ -11,8 +11,10 @@ one demoable step, open a parent issue with child issues instead.›
 
 ## Solution note (R3)
 
-- **Chosen:** ‹the state-of-the-art / best-practice option›
+- **Chosen:** ‹the option selected with the solution-selection standard›
+- **Why:** ‹why this option best fits the task and its constraints›
 - **Rejected:** ‹the alternatives, and why not›
+- **Important tradeoffs:** ‹the costs, limits, and risks accepted with the choice›
 - **Decision record:** ‹ADR-NNNN if architecturally significant, else "issue comment"›
 
 ## Acceptance criteria

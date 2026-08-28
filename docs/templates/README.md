@@ -2,7 +2,7 @@
 
 Issue and pull/merge-request templates that embody the [issue-first
 workflow](../issue-workflow.md) — single-goal scope (R11), the duplicate check
-(R2), the decision note (R3), and the action/why/tradeoff comment (R7).
+(R2), solution selection (R3), and the action/why/tradeoff comment (R7).
 
 **These are inert here on purpose.** An issue or PR template changes the live forge
 interface the moment it lands, so the kit does not activate one for you — it stays

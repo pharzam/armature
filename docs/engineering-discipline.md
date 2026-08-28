@@ -96,7 +96,9 @@ states any rule that has no section of its own. **Before step 1, an issue is ope
 for the task** — see [Issue-first workflow](#issue-first-workflow) — and the work is
 sliced into an ordered, DoD-covering, test-first plan, reviewed once and recorded
 on the issue
-([R12](issue-workflow.md#r12--slice-and-prioritize)).
+([R12](issue-workflow.md#r12--slice-and-prioritize)). Apply the
+[solution-selection standard](#solution-selection) when you select the approach,
+the plan, the tests, or another technical part of the task.
 
 1. **Isolate.** Do the work in a per-task git worktree under `‹worktree dir›/<task>`,
    branched off `origin/main` — see [Starting a task](#starting-a-task). Never
@@ -133,6 +135,41 @@ on the issue
 8. **Close out in the same PR.** Tick the acceptance boxes, write the verdict,
    and move the ticket from backlog to completed — see
    [Completing a task](#completing-a-task). Then take the next logical task.
+
+## Solution selection
+
+Use one standard for every technical selection. Apply it when you select how to
+resolve a problem, plan the work, test the result, or choose a package, library,
+module, framework, service, platform, or vendor. The criteria are considerations,
+not a scoring formula.
+
+First, search the problem domain for an existing public solution. Do not build a
+custom solution when a suitable public solution exists. Then compare the suitable
+candidates manually against all applicable considerations:
+
+- **License and commercial terms:** for open-source software, prefer Apache 2.0,
+  MIT, BSD, or a similar permissive license. Use GPL, AGPL, or another copyleft
+  license only when the project accepts its obligations. For proprietary software,
+  assess price, contract terms, vendor lock-in, data ownership, and an exit path.
+- **Project health:** look for stable production use, recent releases and commits,
+  responsive maintainers, resolved issues and pull requests, and adoption evidence
+  that is relevant to the ecosystem. No specific forge metric is mandatory.
+- **Documentation:** require enough public source or product information, setup
+  guidance, API reference material, and examples to assess and use the candidate.
+- **Security:** check for known, unaddressed vulnerabilities or security advisories.
+- **Dependencies:** prefer few direct and transitive dependencies.
+- **Determinism:** prefer plain code, rules, and algorithms to an LLM call. For work
+  that does not require a model, external service, network, or changing data, prefer
+  the candidate that gives the same output for the same input without them.
+- **Infrastructure:** prefer little or no additional infrastructure. Add a database,
+  broker, cluster, or external service only when the problem requires it.
+- **Stack fit:** prefer an idiomatic fit for the stack, a stable API, and no sign
+  of deprecation.
+
+No candidate needs to lead on every consideration. Select the candidate that best
+fits the task and its constraints. Record the selected option, the rejected
+alternatives, and the important tradeoffs. If the selection is architecturally
+significant, record it in an [ADR](adr/). Otherwise, record it on the issue.
 
 ## Issue-first workflow
 

@@ -41,7 +41,7 @@ the frame that gives a thing its strength.
 | Piece | What it holds |
 |-------|---------------|
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
-| [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate and every working practice. |
+| [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate, the reusable solution-selection standard, and every working practice. |
 | [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R12): the ticket policy the gate assumes. |
 | [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary the other docs assume. |
 | [`docs/guardrails.md`](docs/guardrails.md) | Known pitfalls, pre-registered pass/fail rules, and validation. |

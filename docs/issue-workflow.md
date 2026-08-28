@@ -47,13 +47,11 @@ Before opening an issue, search the open **and** closed issues. If the work is
 part of a larger one, open it as a child/sub-issue and link the parent, rather
 than duplicating an existing thread.
 
-## R3 — Solution selection: state-of-the-art and best practice only
+## R3 — Apply the solution-selection standard
 
-Choose the state-of-the-art, best-practice solution. Prefer a proven standard over
-a custom build. Record the chosen option **and the rejected alternatives** as a
-decision note — an [ADR](adr/) if the choice is architecturally significant, else a
-short comment on the issue. A choice made with no record is a choice a later reader
-will re-open.
+Apply the reusable [solution-selection standard](engineering-discipline.md#solution-selection)
+to every technical selection. Follow its comparison and recording rules. A
+selection with no record is one a later reader will reopen.
 
 ## R4 — No workarounds
 
@@ -64,10 +62,12 @@ is a permanent defect wearing a temporary label.
 
 ## R5 — Deterministic over LLM-based
 
-Prefer deterministic mechanisms — scripts, linters, type checks, CI gates — over
-an LLM judgement, wherever a rule can be checked by a machine. A human operator may
-explicitly choose the LLM approach for a specific case; that choice is recorded on
-the issue with its reason.
+Apply the deterministic consideration in the
+[solution-selection standard](engineering-discipline.md#solution-selection).
+Wherever a rule can be checked by a machine, prefer a script, linter, type check,
+or CI gate over an LLM judgement. A human operator can select an LLM approach for
+a specific case, but must record the selection and its reason as the standard
+requires.
 
 ## R6 — Agent-to-agent communication through the issue
 
@@ -138,6 +138,11 @@ its own.
 - **One gate per slice.** Every sliced sub-task passes the same
   [quality gate](engineering-discipline.md#working-a-task-under-the-quality-gate);
   slicing is never a shortcut around discipline.
+- **Select the plan.** Apply the
+  [solution-selection standard](engineering-discipline.md#solution-selection)
+  before you write the selected approach as the ordered plan. Compare materially
+  different approaches when they exist; no fixed number of candidates is required.
+  The standard states where to record the selected and rejected approaches.
 - **Review the plan once, then record it.** The ordered plan gets **one round of
   independent review and a reviewer's confirmation** before building begins. This
   is a review of the *plan* — lighter than, and separate from, the uncapped
