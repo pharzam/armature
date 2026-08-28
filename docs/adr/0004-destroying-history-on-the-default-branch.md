@@ -40,11 +40,11 @@ conditions below. **Destruction** means making commits unreachable from the
 remote's default branch, where they were reachable from whichever branch was
 the default at any point in the project's history. A reset, a force-pushed
 rewrite and deleting the branch are its usual forms; the list is not
-exhaustive. Commits still reachable from a branch that stood on the remote
-independently of the act are not destroyed, so pointing the default at another
-branch while the old one stays is not covered. A backup pushed under condition
-3 is not such a branch. Rewriting local history you have never pushed is not
-covered.
+exhaustive. Where the branch that was the default still stands on the remote
+holding them, they are not destroyed — so pointing the default at another branch
+while the old one stays is not covered. No other branch exempts an act: not a
+backup pushed under condition 3, and not one that happened to be pushed
+beforehand. Rewriting local history you have never pushed is not covered.
 
 1. **An open issue states the goal** in the operator's own words, and why no
    revert, fix-forward, or new branch reaches it.
@@ -66,10 +66,11 @@ covered.
    full configuration made *before* lifting. Where the remote offers no such
    lock, record that; where the act never needed it moved, record that and what
    made it unnecessary.
-5. **Afterwards, before any commit, push, or merge that is not part of this
-   reconciliation:** every issue whose deliverable is now gone returns to open
-   with the evidence, and the issue from condition 1 records what was destroyed,
-   where the backup is, and who approved.
+5. **Afterwards, before any further work that is not part of this
+   reconciliation** — a commit, a push, a merge, or closing an issue as done:
+   every issue whose deliverable is now gone returns to open with the evidence,
+   and the issue from condition 1 records what was destroyed, where the backup
+   is, and who approved.
 
 Conditions 1–3 hold before the act, 4 spans it, and 5 can only follow it: the
 evidence it requires does not exist until the act has happened.
