@@ -68,7 +68,7 @@ Written by the operator who performed the reset it scores. Issue timestamps are 
 |---|---|
 | 10:08:11 | `main` reset locally (`git reflog show main`) |
 | 10:11:26 | a branch ruleset named `main` is created, already disabled — see below |
-| 10:14:25 | `backup/pre-r12-reset-999765f` pushed — the default branch's tip preserved, before anything was destroyed (`git reflog show refs/remotes/origin/backup/pre-r12-reset-999765f`; the events feed carries no event for either backup push) |
+| 10:14:25 | `backup/pre-r12-reset-999765f` pushed — the default branch's tip preserved, before anything was destroyed (`git reflog show refs/remotes/origin/backup/pre-r12-reset-999765f`; the events feed carries a CreateEvent for this push at 10:14:26Z, but none for the second backup) |
 | 10:18:03 | force-pushed to the remote (`PushEvent refs/heads/main`) |
 | 10:41:02 | the record written on #16, opening **"Status: main was reset."** — past tense |
 | 10:46:24–10:46:51 | **twelve further issues closed as completed** (#19, #20, #22, #33–#41) over deliverables `main` no longer held |
