@@ -1,0 +1,26 @@
+# PR links an issue — R1 (ACTIVE workflow for the Armature repo).
+#
+# The activated copy of docs/ci/github-actions-pr-link.yml. It enforces
+# docs/issue-workflow.md (R1) on the PR body: a pull request must link its issue
+# (Closes / Fixes / Resolves / Refs / Part of #N). It lives in its own workflow,
+# not in ci.yml, because the body exists only on a pull_request event.
+
+name: PR links an issue (R1)
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  pr-link:
+    name: pr-link (PR body links an issue)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read          # read the linter from the checkout; the body comes from the event
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the PR body links an issue
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        # Concrete and ready — the linter needs no toolchain.
+        run: printf '%s' "$PR_BODY" | sh docs/ci/pr-link-lint.sh

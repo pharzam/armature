@@ -11,6 +11,15 @@ run while they sit here (that is deliberate: a half-filled workflow must never g
 red on the kit itself). You activate CI by copying the template your forge uses
 into the place it expects.
 
+**Live example — the kit runs its own.** Armature's repo activates the *ready-as-is*
+subset for itself, under [`.github/workflows/`](../../.github/workflows/):
+[`ci.yml`](../../.github/workflows/ci.yml) (`adr-lint`, `prd-lint`,
+`discipline-tests`), [`pr-title.yml`](../../.github/workflows/pr-title.yml), and
+[`pr-link.yml`](../../.github/workflows/pr-link.yml). It omits the `lint`, `tests`,
+and `security` jobs because the kit ships no product code to run them against — a
+worked instance of "delete any job your project does not need." Use those files as a
+filled-in reference alongside the templates here.
+
 ## Activate
 
 **GitHub Actions:**

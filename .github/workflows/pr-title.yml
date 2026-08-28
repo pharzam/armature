@@ -1,14 +1,10 @@
-# PR title check — Conventional Commits (OPTIONAL template, GitHub Actions).
+# PR title check — Conventional Commits (ACTIVE workflow for the Armature repo).
 #
-# INERT here on purpose. To activate:
-#   cp docs/ci/github-actions-pr-title.yml .github/workflows/pr-title.yml
-#
-# Checks the PR title follows Conventional Commits — the same <type>: <description>
-# shape as docs/engineering-discipline.md §"Commit messages" — with a lowercase
-# subject and no trailing period (the subjectPattern below). The task ID stays in
-# the individual commit subjects, and the PR links its issue in the body (R1), so
-# the PR title itself carries no ID. The .githooks/commit-msg hook checks each
-# local commit. Ready as-is — no ‹…› to fill.
+# The activated copy of docs/ci/github-actions-pr-title.yml. It checks the PR title
+# follows Conventional Commits — the same <type>: <description> shape the
+# .githooks/commit-msg hook checks locally — with a lowercase subject and no
+# trailing period. The task ID stays in the commit subjects, and the PR links its
+# issue in the body (R1), so the PR title itself carries no ID.
 
 name: PR title (conventional commits)
 

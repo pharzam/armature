@@ -21,6 +21,12 @@ on:
   push:
     branches: [ "‹default branch, e.g. main›" ]
 
+# Least privilege by default: the discipline jobs only read the repo. Raise this
+# per job (e.g. a job that must comment on a PR needs `pull-requests: write`) —
+# never widen the whole workflow.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
