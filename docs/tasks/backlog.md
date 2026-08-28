@@ -30,6 +30,7 @@ same summary, dated — rather than deleting it or checking it off.
 <!-- One line per task. Example shape:
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
+- **T-2w8k** — Activate live CI for the Armature repo — the ready-as-is `adr-lint`/`prd-lint`/`discipline-tests`/`pr-title`/`pr-link` checks under `.github/workflows/` ([#51](https://github.com/pharzam/armature/issues/51); [detail](T-2w8k.md))
 
 ## Next
 
