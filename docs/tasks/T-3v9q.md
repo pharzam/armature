@@ -45,16 +45,21 @@ This is the second version of the plan. The first version is on
 review rejected it. Its step 1 was a "test slice" that wrote nothing and asserted
 only that the existing gate stayed green. That assertion cannot fail: delete this
 record and the glossary from a scratch copy and `run-discipline-tests.sh` still
-prints `34 passed, 0 failed`. A first step that cannot fail is not the red half of
+printed `34 passed, 0 failed` at `ccc4e91`. A first step that cannot fail is not the
+red half of
 [R8](../issue-workflow.md#r8--test-driven-strict-red-then-green), and it left
 Definition of Done items 1 to 6 with no covering step at all. The revised plan is
 below, and the review that rejected the first one is recorded on the issue.
 
 1. **Test slice.** Write [`audit-record-lint.sh`](audit-record-lint.sh), which
-   asserts Definition of Done items 1 to 6 against this record, the backlog and the
-   glossary. Run it red first: against the record as first written it fails on 30
-   of the 43 standing claim rows. Mutation-test every block before trusting the
-   green.
+   asserts Definition of Done items 1 to 6 and 9 against this record, the backlog,
+   the glossary and `completed.md`. Run it red first: against the record as first
+   written it fails on 30 of the 43 standing claim rows. Ship its own fixtures
+   under [`tests/`](tests/), one good case and one bad case per block, and wire
+   them into `run-discipline-tests.sh` — findings M1 to M7 below fault every other
+   linter in this kit for exactly the fixture gap, so this one does not get to
+   ship without them. Mutation-test every block, and read every kill for its
+   reason, before trusting the green.
 2. **Glossary slice.** The abbreviation rule
    ([engineering-discipline.md:308-320](../engineering-discipline.md#glossary))
    binds this file the moment it names an abbreviation. Add the missing rows, and
@@ -64,10 +69,13 @@ below, and the review that rejected the first one is recorded on the issue.
 4. **Schedule slice.** One line per follow-up under **Next** in
    [backlog.md](backlog.md), each naming the closed issue it revives. Block 5 of
    the linter is the gate on this step.
-5. **Close-out slice.** Move the task line to
-   [completed.md](completed.md) and wire the new linter into
-   [`ci.yml`](../../.github/workflows/ci.yml), so the row stays green after this
-   change instead of only at the moment of writing.
+5. **Close-out slice.** Move the task line to [completed.md](completed.md), and
+   wire the new linter into both gates that actually run — step 1d of
+   [`.githooks/pre-commit`](../../.githooks/pre-commit) and its own job in
+   [`ci.yml`](../../.github/workflows/ci.yml) — so the traceability rows stay
+   green after this change and not only at the moment of writing. A `green` row
+   for a test no gate runs is what
+   [`dod-checklist.md:22-27`](../tests/dod-checklist.md) forbids.
 
 ## Definition of Done
 
@@ -86,14 +94,21 @@ which this task ships for that purpose.
 | 5 | Each follow-up is one line under **Next** with a stable ID | `audit-record-lint.sh` block 5 |
 | 6 | Every abbreviation used has a glossary row | `audit-record-lint.sh` block 6 |
 | 7 | The gate stays green | `run-discipline-tests.sh`, `adr-lint`, `prd-lint` |
-| 8 | Every claim the reports got wrong carries the correction | this file, Corrections — judgement, not machine-checkable |
-| 9 | Docs updated and the task line moved to `completed.md` | `completed.md:20`; `backlog.md` holds no `T-3v9q` line |
+| 8 | Every claim the reports got wrong carries the correction | **nothing — see below** |
+| 9 | Docs updated and the task line moved to `completed.md` | `audit-record-lint.sh` block 9 |
 
-Items 8 and 9 carry no automated row. Item 8 is a judgement about wording, and no
-regular expression decides whether a correction is the right one. Item 9 is checked
-by reading two files. Both are recorded here as unproven-by-test rather than
-mapped to a document and called done, which is the defect the first version of this
-table had.
+**Item 8 is not covered by a test, and this table says so rather than pretending
+otherwise.** Item 8 is a judgement about wording: no regular expression decides
+whether a correction is the right correction.
+[`dod-checklist.md:22-27`](../tests/dod-checklist.md) is explicit that an item with
+no row is not covered and the change is not done, so item 8 is an open item on this
+task, not a satisfied one. It is recorded here rather than mapped to a document and
+ticked, which is what the first version of this table did.
+
+The other eight items each map to a `green` row below. Block 7 of the linter
+guards this table and the one below it, so reverting a `Covered by` cell to a
+document name fails the gate — the first version of the linter did not check that,
+and reverting all six rows left it green.
 
 ## Test traceability
 
@@ -111,12 +126,18 @@ toolchain.
 | `audit-record-lint.sh` block 5 | discipline | DoD 5 | — | `T-3v9q` | green |
 | `audit-record-lint.sh` block 6 | discipline | DoD 6 | — | `T-3v9q` | green |
 | `run-discipline-tests.sh` | discipline | DoD 7 | — | `T-3v9q` | green |
+| `audit-record-lint.sh` block 7 | discipline | this table and the DoD table | fitted parameters, [`guardrails.md`](../guardrails.md) | `T-3v9q` | green |
+| `audit-record-lint.sh` block 9 | discipline | DoD 9 | — | `T-3v9q` | green |
+| `docs/tasks/tests/` fixtures | discipline | the linter itself, via `run-discipline-tests.sh` | — | `T-3v9q` | green |
+
+**Definition of Done item 8 has no row here.** That is the honest state, not an
+omission: see the note above the table.
 
 Every row is `green` and every row was driven red first. Block 2 was red against
 the record as first written: 30 of the 43 standing rows carried no citation. The
-other five blocks were driven red by mutation — eleven mutants, eleven killed, each
-one confirmed to have changed the file before the linter ran. The **Verdict**
-section records that sweep and the one mutant that survived its first run.
+other blocks were driven red by mutation. The **Verdict** section records the
+sweep, the mutants that survived it, and what a second, independent sweep found
+that the first one missed.
 
 ## Findings
 
@@ -128,11 +149,11 @@ did not hold.
 
 | ID | Finding | Verdict | Severity |
 | -- | ------- | ------- | -------- |
-| M1 | The duplicate-ADR-number check is `adr-lint.sh:75`. No case under `docs/adr/tests/` holds two records with the same number — every case directory has one file per number. Gut line 75 and the suite still prints `34 passed, 0 failed`. | Stands | medium |
+| M1 | The duplicate-ADR-number check is `adr-lint.sh:75`. No case under `docs/adr/tests/` holds two records with the same number — every case directory has one file per number. Gut line 75 and the suite still passed at `b684a96`, where it printed `34 passed, 0 failed`. | Stands | medium |
 | M2 | The ADR title-line check is `adr-lint.sh:93-95`, not one line. It has no fixture: every record under `docs/adr/tests/` starts with a correct `# NNNN. <title>` line. | Corrected | low |
 | M3 | The `Date:` line check has no fixture. Its two `err` sites are `adr-lint.sh:101` (the line is missing) and `:109` (the format is wrong). All eight records under `docs/adr/tests/` carry the placeholder `Date: YYYY-MM-DD`, so neither site can fire. | Stands | low |
 | M4 | The missing `## Status` check is `adr-lint.sh:114-115`. It has no fixture: every record under `docs/adr/tests/` has the section. `bad-status` tests the status value at `adr-lint.sh:121`, not the missing section. | Stands | medium |
-| M5 | The `requirement missing from the matrix` check is `prd-lint.sh:124`. It has no fixture: `docs/prd/tests/bad-matrix-mismatch/` fails on the opposite arm at `prd-lint.sh:125`. Neutralise line 124 and the suite still prints `34 passed, 0 failed`. | Stands | medium |
+| M5 | The `requirement missing from the matrix` check is `prd-lint.sh:124`. It has no fixture: `docs/prd/tests/bad-matrix-mismatch/` fails on the opposite arm at `prd-lint.sh:125`. Neutralise line 124 and the suite still passed at `b684a96`, where it printed `34 passed, 0 failed`. | Stands | medium |
 | M6 | No fixture pipes a body into `pr-link-lint.sh:43`. The runner always passes a file: `run-discipline-tests.sh:123`, wired at `:130`. The one live run pipes: `.github/workflows/pr-link.yml:26`. The shipped CI templates pipe too. | Stands | medium |
 | M7 | Deleting a fixture root makes the runner exit 0. `run-discipline-tests.sh:106` turns an absent root into `return 0`, so the coverage floor at `:113` never runs. It prints `skip` at `:100`, so it is not silent, but the gate accepts it. | Corrected | low |
 | A1 | A trailing slash on the `adr-lint.sh` directory argument silences the cross-link check. `adr-lint.sh:44` filters on `^$adr_dir/`, which becomes a double slash and matches no path, so the ADR's own index README counts as an inbound link. The failure is a false negative: in any run that passes the index check at `:131`, the warning cannot fire. `sh docs/adr/adr-lint.sh docs/adr/tests/good/` prints no `WARN`; the same run without the slash prints two. | Stands | low |
@@ -161,7 +182,8 @@ at `pr-link-lint.sh:43`; the file path has two exclusive lines of its own, equal
 untested; everything below line 45 is shared and fully exercised. The gap is real
 but small. What makes it worth fixing is not size: a fail-open mutant —
 `cat >/dev/null; body="Closes #1"` — survives the suite with
-`34 passed, 0 failed` and silently disables R1 enforcement for every pull request.
+`34 passed, 0 failed` at `b684a96` and silently disables R1 enforcement for every
+pull request.
 One piped fixture kills it.
 
 ### The kit against its own rules
@@ -175,7 +197,7 @@ One piped fixture kills it.
 | S1e | `LICENSE:3` reads `Copyright (c) 2026 Farzam`, and the file holds no `‹` marker at all. No shipped document links to it. Only the follow-up line at `backlog.md:44` names it, and this task wrote that line. | Corrected | low |
 | S2a | The abbreviation rule binds **all LLMs and all human operators** and is "not optional" at `engineering-discipline.md:311-312`. `CLI`, `TUI` and `GUI` sit in rule text at `engineering-discipline.md:116-117` and had no glossary row. This task added the three rows at `glossary.md:74-76`. | Stands | low |
 | S2b | "Fresh context" has no row in `glossary.md` — no Term column matches it. It is used six times outside `docs/tasks/`: `adr/0003-adopt-issue-first-workflow.md:44`, `engineering-discipline.md:291`, `glossary.md:63`, `issue-workflow.md:98`, `tests/example-fact-to-test.md:75` and `tests/traceability-template.md:52`. The use at `glossary.md:63` sits inside the "Test freeze" entry. | Stands | low |
-| S2c | `completed.md:7` states one line per task. Its bullets at `completed.md:22-25` run 536, 476, 389 and 359 characters. | Corrected | low |
+| S2c | `completed.md:7` states one line per task. The four bullets the report measured, at `completed.md:22-25`, run 536, 476, 389 and 359 characters. The file now holds six, and `completed.md:21` (`T-7k3m`, 410) sits between them and this entry. | Corrected | low |
 | S2d | The "what is enforced where" table at `issue-workflow.md:164-172` names R1, R5, R8 and R12 only. It omits the abbreviation rule of `engineering-discipline.md:308`. R2, R3, R4, R6, R7, R9, R10 and R11 are absent from it too. | Stands | low |
 | S2e | The rule binds "any conversation, context, prompt, reply, or response" at `engineering-discipline.md:308-309`, which reaches a read-only turn that changes nothing. `glossary.md:7-8` repeats the same scope. | Corrected | low |
 | S2f | `README.md:32-37` sets the reading path before a first commit: `onboarding-for-engineers.md` (88 lines) plus `engineering-discipline.md` (557) is 645 lines, not 608. The broken "short sections" promise is `engineering-discipline.md:7`, not the README. | Corrected | low |
@@ -185,7 +207,7 @@ One piped fixture kills it.
 | ID | Finding | Verdict | Severity |
 | -- | ------- | ------- | -------- |
 | D1 | The security checklist names dependency scanning as a minimum check. The row is `security-checklist.md:29`, under the heading `## The minimum checks` at `:24`. | Stands | none |
-| D2 | Actions float on mutable tags. The real scope is **13** unpinned `uses:` references, not 2, across `.github/workflows/` and `docs/ci/`, and none carries a commit SHA. `docs/ci/gitlab-ci.yml:25` floats on `alpine:3`, and so do `:31`, `:37` and `:43`. No Dependabot configuration: `.github/` holds only `workflows/`. | Corrected | low |
+| D2 | Actions float on mutable tags. The real scope at `b684a96` is **13** unpinned `uses:` references, not 2, across `.github/workflows/` and `docs/ci/`, and none carries a commit SHA. Every job this kit adds later adds one more, so `T-7m6s` pins them by rule and not by count. `docs/ci/gitlab-ci.yml:25` floats on `alpine:3`, and so do `:31`, `:37` and `:43`. No Dependabot configuration: `.github/` holds only `workflows/`. | Corrected | low |
 | D3 | Pinning is already recorded — but only at `T-2w8k.md:73-75`, a card already moved to `completed.md:22`. It was not a backlog line at `b684a96`. This task added one: `backlog.md:44`, `T-7m6s`. | Stands | none |
 | D4 | The repository description says "Fork it as a template", against `README.md:67` ("not a fork") and `:81` ("no fork relationship"). Fork and template are different operations on this forge, and the repository is set as a template. | Stands | low |
 | D5 | **Eight** stale remote branches, not six. Two are merged and undeleted — `origin/ci/T-2w8k-activate-live-ci` and `origin/docs/T-53-solution-selection`; six are abandoned. The kit has no written rule about remote branches: `engineering-discipline.md:517-519` tells you only to remove the local worktree once it is merged or abandoned. | Corrected | low |
@@ -200,7 +222,7 @@ One piped fixture kills it.
 | K4 | Review rounds require a fresh reviewer, not a different model. `engineering-discipline.md:188-189` asks only that the reviewer does not see your reasoning. R9 at `issue-workflow.md:98` names "another agent or session" as sufficient. A repository-wide search for the phrase "different model" finds it only in this record. | Stands | medium |
 | K5 | `guardrails.md:51` ships a filled testing-pitfalls block at `:56-77`. It has no equivalent for model pitfalls — a search of the file for `model`, `LLM`, `hallucination` and `prompt` returns nothing. No rule requires one, so this is an enhancement. | Stands | low |
 | K6 | No agent entry file — `git ls-files` matches no `AGENTS.md`, `CLAUDE.md`, `.cursorrules` or Copilot file. The kit's own pattern is to ship tool-specific files inert under `docs/templates/` (`docs/templates/README.md:7`), so that is where one belongs. | Stands | low |
-| K7 | No numeric quality bar — a repository search for `complexity`, `cyclomatic`, `mutation`, `mutant` and `CRAP` finds nothing outside this record and `backlog.md`. **But the coverage placeholder does exist** — `issue-workflow.md:171` reserves `‹add a coverage gate›` in the enforcement table. Report B's premise for its coverage recommendation is wrong. | Corrected | low |
+| K7 | No numeric quality bar — no threshold is written down anywhere. At `b684a96` a repository search for `complexity`, `cyclomatic`, `mutation`, `mutant` and `CRAP` found nothing at all; the only hits today are this record, `backlog.md`, and the `CRAP` glossary row at `glossary.md:80` that this task added, none of which sets a bar. **But the coverage placeholder does exist** — `issue-workflow.md:171` reserves `‹add a coverage gate›` in the enforcement table. Report B's premise for its coverage recommendation is wrong. | Corrected | low |
 | K8 | "Substantive task" is undefined at 3 sites — `README.md:36`, `engineering-discipline.md:11` and `:93` — and `glossary.md` has no row for it. Adoption markers number **350** outside this record, not 297, and the one unclosed `‹` is at `README.md:92`. | Corrected | low |
 | K9 | The reports disagree on scale. Both are right at `b684a96`: 76 markdown files before `T-7k3m.md` landed at `70611c0`, 77 after; `git ls-files "*-lint.sh"` returned 3 files, while `run-discipline-tests.sh:128-131` dispatched 4 discipline linters, counting the `.githooks/commit-msg` hook. Neither stated its counting rule, and neither named a commit. | Stands | none |
 
@@ -355,17 +377,21 @@ Recorded so nobody derives them a second time.
 
 - `engineering-discipline.md:454`, not `:417`, holds the two-hooks sentence.
 - The reading path is 645 lines, not 608. It grew when `T-7k3m` landed.
-- `completed.md` bullets are 536, 476, 389 and 359 characters. The reported
-  540/482/393/363 are byte counts, and "the two most recent" is now stale.
-- 13 unpinned action references, not 2. The token is `pull-requests: read`, not a
-  broad grant.
+- The `completed.md` bullets the report measured are 536, 476, 389 and 359
+  characters at `completed.md:22-25`. The reported 540/482/393/363 are byte counts,
+  and "the two most recent" was already stale when it was written.
+- 13 unpinned action references at `b684a96`, not 2. The token is
+  `pull-requests: read`, not a broad grant.
 - 8 stale remote branches, not 6.
-- 350 adoption markers at `b684a96`, not 297. The figure is 354 once this record
-  landed, because the record adds four markers of its own. The one unclosed `‹` is
-  `README.md:92`.
+- 350 adoption markers at `b684a96`, not 297. Counting rule: every occurrence of
+  the open marker, not every closed pair. The one unclosed marker **outside this
+  record** is `README.md:92`. No figure for the tree after this change is given
+  here on purpose — it moves with every commit, and an unanchored count is the
+  defect this bullet exists to correct.
 - A coverage placeholder **does** exist at `issue-workflow.md:171`.
-- 77 markdown files at `b684a96`; 78 once this record landed. 3 files named
-  `*-lint.sh` before this change, 4 after it; 4 discipline linters before, 5 after.
+- 77 markdown files at `b684a96`. 3 files named `*-lint.sh` there, 4 after this
+  change. The runner dispatched 4 fixture suites there and dispatches 5 after this
+  change — that is the counting rule K9 faults both reports for leaving unstated.
 - The standard-input gap is one statement, not a whole branch.
 - The R8 template difference is intentional. See X1.
 - **Eleven** linter checks survive gutting, not six. See X7.
@@ -396,13 +422,17 @@ The record is complete and the gate is green. Evidence, run on this branch:
 ```
 $ sh docs/adr/adr-lint.sh               -> adr-lint: OK             exit 0
 $ sh docs/prd/prd-lint.sh               -> prd-lint: OK             exit 0
-$ sh docs/tests/run-discipline-tests.sh -> 34 passed, 0 failed      exit 0
+$ sh docs/tests/run-discipline-tests.sh -> 40 passed, 0 failed      exit 0
 $ sh docs/tasks/audit-record-lint.sh    -> audit-record-lint: OK    exit 0
 $ git diff --check                      -> (no output)              exit 0
 ```
 
-All nine Definition of Done items are met, and items 1 to 6 are met by a test
-rather than by assertion — see **Test traceability** above. Every relative link and
+Eight of the nine Definition of Done items are met by a test rather than by
+assertion — see **Test traceability** above. **Item 8 is not covered and this
+record does not claim it is.** `dod-checklist.md:22-27` says an item with no row
+is not covered, so item 8 is open. Writing "all nine are met" over a table that
+covers eight would be the defect this record is about, committed in the sentence
+that certifies the fix for it. Every relative link and
 heading anchor in the changed files resolves. Seven unresolved targets remain in
 the tree and all seven are documented placeholders: `‹id›.md` and `...` inside the
 HTML comments at `backlog.md:31` and `completed.md:17`, `<id>.md` at
@@ -479,7 +509,8 @@ An independent review of the plan then ran and **rejected it**. It is recorded o
 issue #55. Its central finding is one this record should have made about itself:
 the plan's first step was a test slice that wrote nothing, and its assertion could
 not fail. The reviewer proved it rather than argued it — delete this record and
-`glossary.md` from a scratch copy and the gate still prints `34 passed, 0 failed`.
+`glossary.md` from a scratch copy of `ccc4e91` and the gate still printed
+`34 passed, 0 failed`.
 Five of the seven Definition of Done items had no step that could fail.
 
 That review found five defects in this record that neither audit and neither
@@ -494,15 +525,31 @@ not true of the thing it describes:
 | Verdict | "the three placeholders" | **seven** unresolved targets, of two forms |
 | Verdict | "249 against the 536 and 476 of the two before it" | 410 and 536; the draft skipped `T-7k3m` |
 | X2 | "most were already written up" | **16 of 44**, across 10 closed issues |
-| Corrections | "350 adoption markers", "77 markdown files" | true at `b684a96`; 354 and 78 once this record landed |
+| Corrections | "350 adoption markers", "77 markdown files" | true at `b684a96` only; the post-landing figures drifted and are now dropped |
 
-The eleven-mutant sweep against `audit-record-lint.sh` killed ten on its first run.
-The survivor was block 6: blanking the `CLI` glossary row changed nothing, because
-the check skipped every table row and excused `ID` and `HTML` on an exempt list the
-kit's own rule does not grant. Both were fixed, and the re-run kills eleven of
-eleven with every mutation confirmed applied. That confirmation is the point — the
-first run of the sweep for X7 reported survivors that had never been mutated at
-all.
+The linter was then attacked three times, and it failed the first two.
+
+The first sweep chose eleven mutants and killed ten. The survivor was block 6:
+blanking the `CLI` glossary row changed nothing, because the check skipped every
+table row and excused `ID` and `HTML` on an exempt list the abbreviation rule does
+not grant.
+
+A second, independent review then built mutants the author had not thought of, and
+they exposed the real hole. Blocks 1 to 6 checked the record's **claims**; nothing
+checked the two tables that say those claims are covered. Reverting every
+`Covered by` cell to "this file" — the literal defect the pull-request review
+blocked on — left the linter green. So did deleting the whole traceability table,
+flipping a row from `green` to `red`, citing a file that does not exist, citing a
+line past the end of a file, renaming the `## Already recorded` heading, and one
+stray code fence. Block 7, block 2b and three guards against a silently vacuous
+block were written in answer to those seven mutants.
+
+The third sweep runs nineteen mutants and kills nineteen. Its first two runs were
+themselves false greens: the scratch tree omitted `.github/` and then the root
+`README.md`, so every mutant died on a missing file rather than on the assertion
+under test. That is the X7 defect a third time, and it is why every mutation here
+is checked for having changed the file, and every kill is read for its reason.
+A sweep that reports the right number for the wrong reason is not evidence.
 
 **One correction to this record's own history.** The first commit, `f55d19a`, and
 its pull-request description both split the standing claims as "29 as written, 14

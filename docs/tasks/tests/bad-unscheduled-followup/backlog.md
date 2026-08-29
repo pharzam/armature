@@ -1,0 +1,5 @@
+# Backlog
+
+## Next
+
+- **T-8b4r** — Add fixtures that kill the surviving linter mutants ([#45](https://github.com/pharzam/armature/issues/45))

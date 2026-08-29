@@ -41,5 +41,5 @@ same summary, dated — rather than deleting it or checking it off.
 - **T-6f3w** — Fix `adr-lint`: strip the trailing slash, and check the index row's status against the record it names ([#45](https://github.com/pharzam/armature/issues/45); [detail](T-3v9q.md))
 - **T-9c5t** — Make a skipped suite fail the gate, and assert why a linter failed rather than only that it did ([#37](https://github.com/pharzam/armature/issues/37); [detail](T-3v9q.md))
 - **T-4x2k** — The self-violation sweep: the hook count, the broken link, the enforcement table, the overlong `completed.md` entries ([#40](https://github.com/pharzam/armature/issues/40); [detail](T-3v9q.md))
-- **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin the 13 floating action references ([#23](https://github.com/pharzam/armature/issues/23); [detail](T-3v9q.md))
+- **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23); [detail](T-3v9q.md))
 - **T-3d9v** — Define "fresh context" and "substantive task", and decide the scope of the abbreviation rule ([#21](https://github.com/pharzam/armature/issues/21); [detail](T-3v9q.md))

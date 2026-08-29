@@ -31,6 +31,12 @@ if [ -f docs/tests/run-discipline-tests.sh ]; then
 	sh docs/tests/run-discipline-tests.sh
 fi
 
+# 1d. Audit-record discipline — the covering test for Definition of Done items 1
+#     to 6 and 9 of docs/tasks/T-3v9q.md (see docs/tasks/audit-record-lint.sh).
+if [ -f docs/tasks/audit-record-lint.sh ]; then
+	sh docs/tasks/audit-record-lint.sh
+fi
+
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
 # ‹your-linter› || exit 1
 

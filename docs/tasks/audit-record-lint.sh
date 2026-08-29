@@ -4,16 +4,21 @@
 # quality gate.
 #
 # A domain-free discipline test: it is the covering test for Definition of Done
-# items 1 to 6 of docs/tasks/T-3v9q.md, which the task table maps to documents
-# rather than to tests. docs/tests/dod-checklist.md says a DoD item is a claim
-# and a claim is not done until a test proves it, so this file turns those six
-# items into assertions. It reads only Markdown, so it needs no toolchain and
-# runs beside adr-lint.sh and prd-lint.sh in the pre-commit hook and in CI
-# (see docs/ci/).
+# items 1 to 6 and 9 of docs/tasks/T-3v9q.md, which the task table first mapped to
+# documents rather than to tests. docs/tests/dod-checklist.md says a DoD item is a
+# claim and a claim is not done until a test proves it, so this file turns those
+# seven items into assertions. It reads only Markdown, so it needs no toolchain.
+#
+# Where it runs: .githooks/pre-commit step 1d, and .github/workflows/ci.yml as its
+# own job. It is deliberately NOT a fifth suite inside run-discipline-tests.sh:
+# that runner is a fixture harness with one case directory per assertion, and this
+# check is repo-wide. Its own fixtures live under docs/tasks/tests/ and ARE run by
+# that runner.
 #
 # Usage:  sh docs/tasks/audit-record-lint.sh [TASKS_DIR]
 #   TASKS_DIR defaults to this script's own directory. The record and the
-#   backlog are resolved inside it; the glossary is resolved from the sibling
+#   backlog are resolved inside it; the glossary is TASKS_DIR/glossary.md when
+#   that exists (a fixture case) and otherwise the sibling
 #   <dirname TASKS_DIR>/glossary.md (docs/glossary.md for the real run).
 #
 # Exit status: 0 = clean, 1 = one or more violations. Every failure names the
@@ -29,9 +34,22 @@
 #      paragraph and, spelled as words, in the "In plain terms" block.
 #   4. Every ID the "Already recorded" table names resolves to a Findings row
 #      or to an X-number, and every row of it names a closed issue.
+#   2b. Every cited path resolves to a file in the tree, at a line that file
+#      really has. Block 2 proves a citation is PRESENT; 2b proves it is not
+#      pointing at nothing. Limit: a citation by bare filename can name more
+#      than one file, and 2b accepts it when any one of them has that line.
 #   5. Every task ID under "Out of scope (follow-ups)" is exactly one line
 #      under **Next** in backlog.md.
 #   6. Every abbreviation the record uses in prose has a glossary row.
+#   7. The Definition of Done table and the Test traceability table are
+#      themselves guarded: each item names a block of this script, and each
+#      traceability row is `green` or `frozen` (docs/tests/dod-checklist.md:22-25).
+#      Without this, reverting every "Covered by" cell to "this file" -- the exact
+#      defect the review of #56 blocked on -- left this linter green.
+#   9. The task line is in completed.md and gone from backlog.md.
+#
+# Blocks 1, 4, 5 and 7 fail when they find nothing to check, rather than passing.
+# A renamed heading is a defect, not an exemption.
 #
 # How to adapt: the checks mirror the record's own Definition of Done. The
 # claim count is READ from DoD item 1, not hardcoded, so the tables and the
@@ -63,7 +81,16 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 tasks_dir=${1:-$script_dir}
 record="$tasks_dir/T-3v9q.md"
 backlog="$tasks_dir/backlog.md"
-glossary=$(dirname "$tasks_dir")/glossary.md
+# A fixture case carries its own glossary; the real run uses the sibling one.
+if [ -f "$tasks_dir/glossary.md" ]; then
+	glossary="$tasks_dir/glossary.md"
+else
+	glossary=$(dirname "$tasks_dir")/glossary.md
+fi
+# The repository root, used to resolve the paths the record cites. For a fixture
+# case there is nothing to resolve against, so citation resolution is skipped.
+repo_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
+[ -d "$repo_root/docs" ] || repo_root=""
 
 fail=0
 err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
@@ -181,6 +208,7 @@ FNR == NR {
 	if (n < 2 || is_sep() || cell[1] == "Findings here") next
 
 	rowraw = cell[1]
+	mapped++
 	if (cell[2] !~ /#[0-9]+/) {
 		print "FAIL  Already recorded: the row \"" rowraw "\" names no closed issue (DoD 4)"
 		ec = 1
@@ -214,7 +242,13 @@ FNR == NR {
 
 END {
 	# --- 1. the claim rows -------------------------------------------------
+	# A block that silently checks nothing is worse than a block that fails. If a
+	# heading is renamed, these guards say so instead of passing.
 	if (total == 0) { print "FAIL  Findings: no claim rows found under \"## Findings\" (DoD 1)"; ec = 1 }
+	if (mapped == 0) {
+		print "FAIL  Already recorded: no rows found -- is the \"## Already recorded\" heading renamed? Block 4 checked nothing (DoD 4)"
+		ec = 1
+	}
 	if (declared == 0) { print "FAIL  Definition of Done: item 1 states no claim count to check the tables against (DoD 1)"; ec = 1 }
 	else if (total != declared) {
 		print "FAIL  Findings: the tables hold " total " claim rows, but Definition of Done item 1 declares " declared " (DoD 1)"
@@ -271,7 +305,61 @@ for t in $followups; do
 		|| err "follow-up $t: $hits lines under **Next** in $(basename "$backlog") name it; there must be exactly one (DoD 5)"
 done
 
+# --- 2b. every cited path resolves, at a line the file really has ----------
+# has_citation() above proves a citation is PRESENT. It cannot prove one is TRUE:
+# `no-such-file.md:99999` matches the shape. This block resolves each cited
+# path:line against the tree and fails when the file is absent or the line is past
+# the end of it. Skipped for a fixture case, which has no tree to resolve against.
+if [ -n "$repo_root" ]; then
+	cites=$(awk '
+		/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
+		sec && /^[ \t]*\|/ {
+			line = $0
+			while (match(line, /[A-Za-z0-9_.\/-]+\.(md|sh|ya?ml|json|toml|txt):[0-9]+/)) {
+				print substr(line, RSTART, RLENGTH)
+				line = substr(line, RSTART + RLENGTH)
+			}
+		}
+	' "$record" | sort -u)
+	# Enumerate the tree once, then match each cited path as a suffix on a path
+	# component boundary. Guessing a directory order instead would resolve
+	# `README.md:54` to whichever README the guess happened to reach first.
+	all_files=$(cd "$repo_root" && find . -type f -not -path './.git/*' | sed 's|^\./||')
+	n_cites=0
+	for c in $cites; do
+		p=${c%:*}
+		ln=${c##*:}
+		# Candidates: the exact path, or any path ending in /<cited path>.
+		cands=$(printf '%s\n' "$all_files" | awk -v p="$p" '$0 == p || index($0, "/" p) == length($0) - length(p)')
+		if [ -z "$cands" ]; then
+			err "citation $c names no file in the tree (DoD 2)"
+			continue
+		fi
+		n_cites=$((n_cites + 1))
+		# The citation holds when at least one candidate really has that line.
+		# A path that matches more than one file is not itself an error -- the
+		# record cites by the shortest readable path -- but the line must exist
+		# in one of them, which is what catches a number past the end.
+		ok=0
+		best=0
+		for f in $cands; do
+			total_lines=$(awk 'END { print NR }' "$repo_root/$f")
+			[ "$total_lines" -gt "$best" ] && best=$total_lines
+			if [ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ]; then ok=1; break; fi
+		done
+		[ "$ok" -eq 1 ] \
+			|| err "citation $c points past the end of every file it can name (longest has $best lines) (DoD 2)"
+	done
+	# A block that checks nothing must say so rather than pass.
+	[ "$n_cites" -gt 0 ] || err "no resolvable citation found in the Findings tables -- block 2b checked nothing (DoD 2)"
+fi
+
 # --- 6. every abbreviation used in prose has a glossary row ----------------
+# A stray code fence would silently blind the scan below, because it toggles on
+# ```. An odd fence count is itself a defect, so fail on it rather than scan.
+fences=$(awk '/^```/ { k++ } END { print k + 0 }' "$record")
+[ $((fences % 2)) -eq 0 ] \
+	|| err "the record holds $fences code fences, an odd number -- an unclosed fence hides the rest of the file from block 6 (DoD 6)"
 gloss_abbr=$(awk '
 	/^[ \t]*\|/ {
 		m = split($0, p, "|")
@@ -325,10 +413,62 @@ for a in $rec_abbr; do
 		|| err "abbreviation \"$a\" is used in the prose of $(basename "$record") and has no row in $(basename "$glossary") (DoD 6)"
 done
 
+# --- 7. the DoD table and the traceability table are themselves guarded ----
+# Blocks 1 to 6 check the record's CLAIMS. Nothing checked the two tables that say
+# those claims are covered -- so reverting every "Covered by" cell to "this file",
+# the exact defect the review blocked on, left this linter green. This block
+# closes that hole. docs/tests/dod-checklist.md:22-25 is the rule: a Definition of
+# Done item maps to a traceability row whose status is `green` or `frozen`.
+dod_rows=$(awk '
+	/^## / { sec = ($0 ~ /^## Definition of Done/) ? 1 : 0; next }
+	sec && /^[ \t]*\|/ { print }
+' "$record")
+trace_rows=$(awk '
+	/^## / { sec = ($0 ~ /^## Test traceability/) ? 1 : 0; next }
+	sec && /^[ \t]*\|/ { print }
+' "$record")
+
+[ -n "$dod_rows" ]   || err "no '## Definition of Done' table found -- block 7 checked nothing (DoD 2)"
+[ -n "$trace_rows" ] || err "no '## Test traceability' table found; docs/tests/dod-checklist.md requires one row per DoD item (DoD 2)"
+
+# Items 1 to 6 must name the block that proves them, and item 9 likewise.
+for i in 1 2 3 4 5 6 9; do
+	row=$(printf '%s\n' "$dod_rows" | awk -F'|' -v n="$i" '{ gsub(/[ \t]/, "", $2); if ($2 == n) print }')
+	if [ -z "$row" ]; then
+		err "Definition of Done item $i has no row in the table (DoD 2)"
+		continue
+	fi
+	printf '%s' "$row" | grep -q 'audit-record-lint\.sh' \
+		|| err "Definition of Done item $i names no covering test -- its 'Covered by' cell must name an audit-record-lint.sh block, not a document (docs/tests/dod-checklist.md:22-25)"
+done
+
+# Every traceability row must carry a status the checklist accepts.
+n_trace=0
+printf '%s\n' "$trace_rows" | while IFS= read -r r; do
+	printf '%s' "$r" | grep -Eq '^\|[ \t:-]+\|' && continue
+	printf '%s' "$r" | grep -q 'Test ID' && continue
+	printf '%s' "$r" | grep -qE '\|[ \t]*(green|frozen)[ \t]*\|?[ \t]*$' \
+		|| printf 'FAIL  traceability row is not green or frozen, so it does not close its item (docs/tests/dod-checklist.md:22-25): %s\n' "$r" >&2
+done
+n_trace=$(printf '%s\n' "$trace_rows" | grep -cE '\|[ \t]*(green|frozen)[ \t]*\|?[ \t]*$' || true)
+[ "${n_trace:-0}" -ge 7 ] \
+	|| err "the traceability table holds ${n_trace:-0} green/frozen rows; Definition of Done items 1-7 each need one (docs/tests/dod-checklist.md:22-25)"
+printf '%s\n' "$trace_rows" | grep -qE '\|[ \t]*(planned|red)[ \t]*\|?[ \t]*$' \
+	&& err "a traceability row is 'planned' or 'red'; those show intent, not proof (docs/tests/dod-checklist.md:22-25)"
+
+# --- 9. the task line moved to completed.md and left the backlog -----------
+completed="$tasks_dir/completed.md"
+if [ -f "$completed" ]; then
+	grep -q 'T-3v9q' "$completed" \
+		|| err "completed.md holds no T-3v9q line (DoD 9)"
+	grep -q '^-.*\*\*T-3v9q\*\*' "$backlog" \
+		&& err "backlog.md still holds a T-3v9q line; a completed task belongs in completed.md only (DoD 9)"
+fi
+
 n_follow=$(printf '%s\n' "$followups" | awk 'NF' | wc -l | tr -d ' ')
 # The word splitting here is the point: $counts holds the four numbers block 1
 # measured, and this splits them into $1..$4 for the summary line.
 # shellcheck disable=SC2086
 set -- ${counts:-0 0 0 0}
 
-[ "$fail" -eq 0 ] && { printf 'audit-record-lint: OK  %s claims: %s Stands, %s Corrected, %s Refuted; %s follow-ups scheduled; DoD 1-6 proven\n' "$1" "$2" "$3" "$4" "$n_follow"; exit 0; } || exit 1
+[ "$fail" -eq 0 ] && { printf 'audit-record-lint: OK  %s claims: %s Stands, %s Corrected, %s Refuted; %s follow-ups scheduled; DoD 1-6 and 9 proven\n' "$1" "$2" "$3" "$4" "$n_follow"; exit 0; } || exit 1
