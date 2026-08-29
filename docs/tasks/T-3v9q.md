@@ -77,6 +77,17 @@ below, and the review that rejected the first one is recorded on the issue.
    for a test no gate runs is what
    [`dod-checklist.md:22-27`](../tests/dod-checklist.md) forbids.
 
+   **The two halves of step 5 landed in different commits, and one of them may not
+   be on the branch you are reading.** The pre-commit hook, the linter and its
+   fixtures are in the same commit as this record. The `ci.yml` job is a separate
+   commit, because the token available to the agent that wrote it has no GitHub
+   `workflow` scope and every push touching `.github/workflows/` is refused. Check
+   it before you trust this paragraph: if
+   [`ci.yml`](../../.github/workflows/ci.yml) has no `audit-record-lint` job, that
+   commit is not here yet, and the linter runs in the pre-commit hook and in the
+   fixture suite only. Saying so is cheaper than shipping the sentence S1a is
+   about.
+
 ## Definition of Done
 
 Every item names the **test** that proves it, not the document that asserts it.
