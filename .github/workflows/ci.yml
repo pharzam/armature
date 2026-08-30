@@ -53,3 +53,15 @@ jobs:
       - uses: actions/checkout@v4
       # Runs each discipline linter against its good/bad fixtures. No toolchain.
       - run: sh docs/tests/run-discipline-tests.sh
+
+  audit-record-lint:
+    name: audit-record-lint (T-3v9q record)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The covering test for Definition of Done items 1-6 and 9 of
+      # docs/tasks/T-3v9q.md. It runs as its own job rather than as a fifth suite
+      # inside run-discipline-tests.sh because that runner is a fixture harness --
+      # one case directory per assertion -- and this check is repo-wide. Its own
+      # fixtures ARE run by that runner, from docs/tasks/tests/.
+      - run: sh docs/tasks/audit-record-lint.sh
