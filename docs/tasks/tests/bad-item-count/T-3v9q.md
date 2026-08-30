@@ -20,12 +20,11 @@ This task has **seven** Definition of Done items.
 | # | Item | Covered by |
 | - | ---- | ---------- |
 | 1 | All 3 claims recorded with a verdict | `audit-record-lint.sh` block 1 |
-| 2 | Every standing claim cites a file and a line | this file, Findings |
+| 2 | Every standing claim cites a file and a line | `audit-record-lint.sh` block 2 |
 | 3 | The prose arithmetic matches the tables | `audit-record-lint.sh` block 3 |
 | 4 | Every finding an already-closed issue covers names that issue | `audit-record-lint.sh` block 4 |
 | 5 | Each follow-up is one line under **Next** with a stable ID | `audit-record-lint.sh` block 5 |
 | 6 | Every abbreviation used has a glossary row | `audit-record-lint.sh` block 6 |
-| 7 | Docs updated and the task line moved to `completed.md` | `audit-record-lint.sh` block 9 |
 
 ## Test traceability
 
@@ -37,7 +36,6 @@ This task has **seven** Definition of Done items.
 | `audit-record-lint.sh` block 4 | discipline | DoD 4 | — | `T-3v9q` | green |
 | `audit-record-lint.sh` block 5 | discipline | DoD 5 | — | `T-3v9q` | green |
 | `audit-record-lint.sh` block 6 | discipline | DoD 6 | — | `T-3v9q` | green |
-| `audit-record-lint.sh` block 9 | discipline | DoD 7 | — | `T-3v9q` | green |
 
 ## Findings
 

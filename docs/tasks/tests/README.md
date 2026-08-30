@@ -20,6 +20,7 @@ below and asserts the exit code.
 | `bad-unscheduled-followup` | FAIL, exit 1 | a follow-up named in the record with no line under **Next** (block 5) |
 | `bad-undefined-abbrev` | FAIL, exit 1 | an abbreviation used in prose with no glossary row (block 6) |
 | `bad-empty-corrections` | FAIL, exit 1 | a `Corrected` verdict with an empty Corrections section (block 8) |
+| `bad-item-count` | FAIL, exit 1 | a DoD item dropped from **both** tables, so the two agree with each other and disagree with the declared count (block 7) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 

@@ -93,9 +93,12 @@ below, and the review that rejected the first one is recorded on the issue.
 Every item names the **test** that proves it, not the document that asserts it.
 [`dod-checklist.md:22-27`](../tests/dod-checklist.md) is explicit: an item with no
 `green` or `frozen` traceability row is not covered, and the change is not done.
-Items 1 to 6, 8 and 9 are machine-checked by
-[`audit-record-lint.sh`](audit-record-lint.sh), which this task ships for that
-purpose. Item 8 is checked in part only, and the table says which part.
+This task has **nine** Definition of Done items. Items 1 to 6, 8 and 9 are
+machine-checked by [`audit-record-lint.sh`](audit-record-lint.sh), which this task
+ships for that purpose. Item 8 is checked in part only, and the table says which
+part. The count in that first sentence is not decoration: block 7 reads it and
+fails if the table stops matching, so the highest item cannot be dropped from both
+tables at once and still look consistent.
 
 | # | Item | Covered by |
 | - | ---- | ---------- |
@@ -122,7 +125,7 @@ section exists and is not empty. **The review rounds** cover the judgement half.
 That is a `uat` row under
 [`test-levels.md`](../tests/test-levels.md) — a scenario a reviewer runs and signs
 off — and [`dod-checklist.md:40`](../tests/dod-checklist.md) provides for exactly
-that shape. Four independent rounds have now run against this record. Round three
+that shape. Five independent rounds have now run against this record. Round three
 re-derived every corrected figure and found five still wrong; round four found five
 more defects, four of them in the linter rather than the record. That is what a
 working check looks like. The evidence is
@@ -132,9 +135,21 @@ The limit is stated rather than hidden: the review row does **not** re-run on ev
 commit. A future edit to a `Corrected` row is guarded by block 8's citation
 requirement and by nothing else until a reviewer looks again.
 
-Block 7 of the linter guards this table and the one below it, so reverting a
-`Covered by` cell to a document name fails the gate — the first version of the
-linter did not check that, and reverting all six rows left it green.
+Block 7 of the linter guards this table and the one below it. Reverting any
+`Covered by` cell to a document name fails the gate; so does deleting a row from
+either table, or dropping an item from both at once. It took three versions to get
+there, and the first two were fail-open in the way this block exists to prevent.
+Version one checked nothing here at all: reverting all six cells left the gate
+green. Version two checked only items 1 to 6 and 9, and built its item set **from
+the cells it was validating** — so a cell reverted to "this file" simply dropped
+out of the set and was never looked at, and items 7 and 8 were unguarded. The set
+now comes from both tables at once, each checking the other, with the item count
+anchored in the sentence above so a truncation at the top cannot pass either.
+
+The general lesson is worth more than the fix: **a check that derives its own scope
+from the data it is checking cannot fail.** That is the same shape as the "test
+slice" that opened this whole review, and as the mutation sweeps whose scratch
+trees were missing the files the mutants needed.
 
 ## Test traceability
 
@@ -460,7 +475,7 @@ The record is complete and the gate is green. Evidence, run on this branch:
 ```
 $ sh docs/adr/adr-lint.sh               -> adr-lint: OK             exit 0
 $ sh docs/prd/prd-lint.sh               -> prd-lint: OK             exit 0
-$ sh docs/tests/run-discipline-tests.sh -> 41 passed, 0 failed      exit 0
+$ sh docs/tests/run-discipline-tests.sh -> 42 passed, 0 failed      exit 0
 $ sh docs/tasks/audit-record-lint.sh    -> audit-record-lint: OK    exit 0
 $ git diff --check                      -> (no output)              exit 0
 ```
@@ -591,6 +606,28 @@ flipping a row from `green` to `red`, citing a file that does not exist, citing 
 line past the end of a file, renaming the `## Already recorded` heading, and one
 stray code fence. Block 7, block 2b and three guards against a silently vacuous
 block were written in answer to those seven mutants.
+
+**A fourth round found one more, and it was the same shape again.** The review
+confirmed the five earlier findings resolved, and then found that block 7 — the
+block written to stop a fail-open — was itself fail-open. It validated the
+`Covered by` cell for items 1 to 6 and 9 only, and it built its item set from the
+cells that already looked right. So items 7 and 8 could revert to a document name
+and pass, and deleting a whole row passed too. Three of the four mutants I wrote to
+check the claim survived.
+
+The set now comes from the Definition of Done table and the traceability table at
+once, each checking the other, with the item count anchored in prose so dropping
+the highest item from both at the same time cannot pass. A `Covered by` cell that
+claims a review round must also show the `uat` row, so the judgement half of item 8
+cannot quietly disappear behind the machine half.
+
+That is four rounds and the same defect four times, at four levels: a plan step
+that could not fail, a linter that did not check the table saying it had checked,
+a sweep whose mutants all died on the harness rather than the assertion, and a
+guard that took its scope from the thing it was guarding. The record's own thesis
+is that the rules which fire are the ones a machine checks. The corollary, learned
+the hard way here, is that a machine check only fires if something outside it
+decides what it must look at.
 
 **A third review round found five more defects, and four of them were mine.** The
 first two rounds attacked the record. This one attacked the linter, and it was

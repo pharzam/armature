@@ -457,15 +457,116 @@ trace_rows=$(awk '
 [ -n "$dod_rows" ]   || err "no '## Definition of Done' table found -- block 7 checked nothing (DoD 2)"
 [ -n "$trace_rows" ] || err "no '## Test traceability' table found; docs/tests/dod-checklist.md requires one row per DoD item (DoD 2)"
 
-# Items 1 to 6 must name the block that proves them, and item 9 likewise.
-for i in 1 2 3 4 5 6 9; do
-	row=$(printf '%s\n' "$dod_rows" | awk -F'|' -v n="$i" '{ gsub(/[ \t]/, "", $2); if ($2 == n) print }')
+# The expected item set must NOT be derived from the text being validated. An
+# earlier version built the set from rows whose "Covered by" cell already matched
+# an accepted test name -- so a cell reverted to "this file" dropped out of the
+# set and was never checked, and deleting a whole row passed too. That is the same
+# fail-open class this block exists to catch.
+#
+# The set is therefore taken from BOTH tables, and each one checks the other:
+#   * every numbered row of the Definition of Done table must name an accepted
+#     covering test and have a green/frozen traceability row that covers it;
+#   * every "DoD N" named in the traceability table must exist as a row of the
+#     Definition of Done table.
+# Deleting a row from one table leaves the other naming an item that is gone.
+dod_items=$(printf '%s\n' "$dod_rows" | awk -F'|' '
+	/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+	{ i = $2; gsub(/^[ \t]+|[ \t]+$/, "", i); if (i ~ /^[0-9]+$/) print i }
+')
+trace_items=$(printf '%s\n' "$trace_rows" | awk -F'|' '
+	/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+	{
+		cov = $4
+		while (match(cov, /DoD [0-9]+/)) {
+			print substr(cov, RSTART + 4, RLENGTH - 4)
+			cov = substr(cov, RSTART + RLENGTH)
+		}
+	}
+')
+expected_items=$(printf '%s\n%s\n' "$dod_items" "$trace_items" | awk 'NF' | sort -un)
+[ -n "$expected_items" ] \
+	|| err "neither the Definition of Done table nor the traceability table names a numbered item -- block 7 checked nothing (docs/tests/dod-checklist.md:22-25)"
+
+for i in $expected_items; do
+	row=$(printf '%s\n' "$dod_rows" | awk -F'|' -v n="$i" '
+		/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+		{ c = $2; gsub(/^[ \t]+|[ \t]+$/, "", c); if (c == n) print }
+	')
 	if [ -z "$row" ]; then
-		err "Definition of Done item $i has no row in the table (DoD 2)"
+		err "Definition of Done item $i is named by a traceability row but has no row in the Definition of Done table (docs/tests/dod-checklist.md:22-25)"
 		continue
 	fi
-	printf '%s' "$row" | grep -q 'audit-record-lint\.sh' \
-		|| err "Definition of Done item $i names no covering test -- its 'Covered by' cell must name an audit-record-lint.sh block, not a document (docs/tests/dod-checklist.md:22-25)"
+	cell=$(printf '%s' "$row" | awk -F'|' '{ c = $4; gsub(/^[ \t]+|[ \t]+$/, "", c); print c }')
+	case "$cell" in
+		*audit-record-lint.sh*|*run-discipline-tests.sh*|*adr-lint*|*prd-lint*|*review\ round*) ;;
+		*) err "Definition of Done item $i names no covering test -- its 'Covered by' cell reads \"$cell\", which is a document, not a test (docs/tests/dod-checklist.md:22-25)" ;;
+	esac
+	hit=$(printf '%s\n' "$trace_rows" | awk -F'|' -v n="$i" '
+		/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+		{
+			cov = $4; gsub(/^[ \t]+|[ \t]+$/, "", cov)
+			st  = $7; gsub(/^[ \t]+|[ \t]+$/, "", st)
+			if (cov ~ ("(^|[^0-9])DoD " n "([^0-9]|$)") && (st == "green" || st == "frozen")) k++
+		}
+		END { print k + 0 }
+	')
+	[ "${hit:-0}" -ge 1 ] \
+		|| err "Definition of Done item $i has no green or frozen traceability row that covers it (docs/tests/dod-checklist.md:22-25)"
+done
+
+# The item numbers must run from 1 with no gap.
+gap=$(printf '%s\n' "$expected_items" | awk 'BEGIN { want = 1 } { if ($1 != want) { print want; exit } want++ }')
+[ -z "$gap" ] \
+	|| err "Definition of Done item $gap is missing: the item numbers must run from 1 with no gap (docs/tests/dod-checklist.md:22-25)"
+
+# Contiguity alone cannot catch a truncation at the TOP: dropping the highest item
+# from both tables leaves a set that is still internally consistent and still
+# wrong. So the count is anchored in prose, the way block 3 anchors the claim
+# arithmetic, and read from a sentence the tables do not control.
+declared_items=$(awk '
+	/^## / { sec = ($0 ~ /^## Definition of Done/) ? 1 : 0; next }
+	sec && match($0, /\*\*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\*\* Definition of Done items/) {
+		s = substr($0, RSTART + 2, RLENGTH - 2)
+		sub(/\*\*.*/, "", s)
+		print s; exit
+	}
+' "$record")
+n_items=$(printf '%s\n' "$expected_items" | awk 'NF' | wc -l | tr -d ' ')
+if [ -z "$declared_items" ]; then
+	err "the Definition of Done section does not state how many items it has; block 7 needs that anchor to catch a table truncated at the top (docs/tests/dod-checklist.md:22-25)"
+else
+	want=$(awk -v w="$declared_items" 'BEGIN {
+		n = split("one two three four five six seven eight nine ten eleven twelve", a, " ")
+		for (i = 1; i <= n; i++) if (a[i] == w) { print i; exit }
+	}')
+	[ "${want:-0}" = "$n_items" ] \
+		|| err "the Definition of Done section says it has ${declared_items} items, but the tables name ${n_items} (docs/tests/dod-checklist.md:22-25)"
+fi
+
+# An item whose "Covered by" cell claims a review must show the uat row. Without
+# this, deleting the reviewer row leaves the machine row covering the same item,
+# so the record keeps claiming two halves while only one exists.
+for i in $expected_items; do
+	row=$(printf '%s\n' "$dod_rows" | awk -F'|' -v n="$i" '
+		/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+		{ c = $2; gsub(/^[ \t]+|[ \t]+$/, "", c); if (c == n) print }
+	')
+	case "$row" in
+		*"review round"*) ;;
+		*) continue ;;
+	esac
+	uat=$(printf '%s\n' "$trace_rows" | awk -F'|' -v n="$i" '
+		/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+		{
+			lvl = $3; gsub(/^[ \t]+|[ \t]+$/, "", lvl)
+			cov = $4; gsub(/^[ \t]+|[ \t]+$/, "", cov)
+			st  = $7; gsub(/^[ \t]+|[ \t]+$/, "", st)
+			if (lvl == "uat" && cov ~ ("(^|[^0-9])DoD " n "([^0-9]|$)") && (st == "green" || st == "frozen")) k++
+		}
+		END { print k + 0 }
+	')
+	[ "${uat:-0}" -ge 1 ] \
+		|| err "Definition of Done item $i claims a review round as part of its coverage, but no green or frozen uat row covers it (docs/tests/dod-checklist.md:22-25)"
 done
 
 # Every traceability row must carry a status the checklist accepts. This ran in a
@@ -485,33 +586,6 @@ if [ -n "$bad_status" ]; then
 	done
 	fail=1
 fi
-
-# Counting rows is not enough: a lower bound cannot tell WHICH item lost its
-# proof. Match per item instead. Every Definition of Done item whose "Covered by"
-# cell names a test must have a green or frozen traceability row that covers it.
-covered_items=$(printf '%s\n' "$dod_rows" | awk -F'|' '
-	/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
-	{
-		i = $2; gsub(/^[ \t]+|[ \t]+$/, "", i)
-		c = $4; gsub(/^[ \t]+|[ \t]+$/, "", c)
-		if (i ~ /^[0-9]+$/ && c ~ /audit-record-lint\.sh|run-discipline-tests\.sh|review round/) print i
-	}
-')
-[ -n "$covered_items" ] \
-	|| err "no Definition of Done item names a covering test -- block 7 checked nothing (docs/tests/dod-checklist.md:22-25)"
-for i in $covered_items; do
-	hit=$(printf '%s\n' "$trace_rows" | awk -F'|' -v n="$i" '
-		/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
-		{
-			cov = $4; gsub(/^[ \t]+|[ \t]+$/, "", cov)
-			st  = $7; gsub(/^[ \t]+|[ \t]+$/, "", st)
-			if (cov ~ ("(^|[^0-9])DoD " n "([^0-9]|$)") && (st == "green" || st == "frozen")) k++
-		}
-		END { print k + 0 }
-	')
-	[ "${hit:-0}" -ge 1 ] \
-		|| err "Definition of Done item $i names a covering test but has no green or frozen traceability row that covers it (docs/tests/dod-checklist.md:22-25)"
-done
 
 # --- 8. the machine-checkable half of "corrections are recorded" -----------
 # Definition of Done item 8 asks whether a claim the reports got wrong now carries
