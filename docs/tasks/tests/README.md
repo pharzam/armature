@@ -19,6 +19,7 @@ below and asserts the exit code.
 | `bad-dod-uncovered` | FAIL, exit 1 | a Definition of Done row whose `Covered by` cell names a document, not a test (block 7) |
 | `bad-unscheduled-followup` | FAIL, exit 1 | a follow-up named in the record with no line under **Next** (block 5) |
 | `bad-undefined-abbrev` | FAIL, exit 1 | an abbreviation used in prose with no glossary row (block 6) |
+| `bad-empty-corrections` | FAIL, exit 1 | a `Corrected` verdict with an empty Corrections section (block 8) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 

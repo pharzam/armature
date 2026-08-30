@@ -4,16 +4,22 @@
 # quality gate.
 #
 # A domain-free discipline test: it is the covering test for Definition of Done
-# items 1 to 6 and 9 of docs/tasks/T-3v9q.md, which the task table first mapped to
-# documents rather than to tests. docs/tests/dod-checklist.md says a DoD item is a
-# claim and a claim is not done until a test proves it, so this file turns those
-# seven items into assertions. It reads only Markdown, so it needs no toolchain.
+# items 1 to 6, 8 and 9 of docs/tasks/T-3v9q.md, which the task table first mapped
+# to documents rather than to tests. docs/tests/dod-checklist.md says a DoD item is
+# a claim and a claim is not done until a test proves it, so this file turns those
+# items into assertions. It reads only Markdown, so it needs no toolchain.
 #
-# Where it runs: .githooks/pre-commit step 1d, and .github/workflows/ci.yml as its
-# own job. It is deliberately NOT a fifth suite inside run-discipline-tests.sh:
-# that runner is a fixture harness with one case directory per assertion, and this
-# check is repo-wide. Its own fixtures live under docs/tasks/tests/ and ARE run by
-# that runner.
+# Item 8 is covered in halves. Block 8 below asserts the machine-checkable half.
+# Whether a correction is the RIGHT correction is a judgement; the record carries a
+# uat traceability row for that half and says so. Do not invent a text pattern for
+# it: a rule chosen to fit the rows that happen to exist is a fitted parameter.
+#
+# Where it runs: .githooks/pre-commit step 1d. Its own fixtures live under
+# docs/tasks/tests/ and ARE run by run-discipline-tests.sh. It is deliberately NOT
+# a fifth suite inside that runner: the runner is a fixture harness with one case
+# directory per assertion, and this check is repo-wide.
+# A CI job for it is written but not yet landed -- scheduled as T-1k9r, because the
+# credential available to the author had no GitHub workflow scope.
 #
 # Usage:  sh docs/tasks/audit-record-lint.sh [TASKS_DIR]
 #   TASKS_DIR defaults to this script's own directory. The record and the
@@ -46,10 +52,13 @@
 #      traceability row is `green` or `frozen` (docs/tests/dod-checklist.md:22-25).
 #      Without this, reverting every "Covered by" cell to "this file" -- the exact
 #      defect the review of #56 blocked on -- left this linter green.
+#   8. Every row whose verdict is Corrected cites a file and a line, and the
+#      "Corrections to the reports" section is not empty. This is the
+#      machine-checkable half of DoD 8 only; see the note above.
 #   9. The task line is in completed.md and gone from backlog.md.
 #
-# Blocks 1, 4, 5 and 7 fail when they find nothing to check, rather than passing.
-# A renamed heading is a defect, not an exemption.
+# Blocks 1, 4, 5, 7 and 8 fail when they find nothing to check, rather than
+# passing. A renamed heading is a defect, not an exemption.
 #
 # How to adapt: the checks mirror the record's own Definition of Done. The
 # claim count is READ from DoD item 1, not hardcoded, so the tables and the
@@ -311,14 +320,24 @@ done
 # path:line against the tree and fails when the file is absent or the line is past
 # the end of it. Skipped for a fixture case, which has no tree to resolve against.
 if [ -n "$repo_root" ]; then
+	# The three patterns below must stay in step with has_citation() above. A form
+	# that block 2 ACCEPTS but this block cannot EXTRACT is a hole: the citation
+	# passes the shape test and is never resolved, so `LICENSE:99999` survives.
 	cites=$(awk '
-		/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
-		sec && /^[ \t]*\|/ {
+		function harvest(re,   line) {
 			line = $0
-			while (match(line, /[A-Za-z0-9_.\/-]+\.(md|sh|ya?ml|json|toml|txt):[0-9]+/)) {
+			while (match(line, re)) {
 				print substr(line, RSTART, RLENGTH)
 				line = substr(line, RSTART + RLENGTH)
 			}
+		}
+		# The patterns are STRINGS, not /regex/ literals: a regex literal passed as
+		# a function argument is matched against $0 first and arrives as 0 or 1.
+		/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
+		sec && /^[ \t]*\|/ {
+			harvest("[A-Za-z0-9_./-]+\\.(md|sh|ya?ml|json|toml|txt):[0-9]+")
+			harvest("\\.git(hooks|hub)/[A-Za-z0-9_./-]+:[0-9]+")
+			harvest("(LICENSE|\\.gitignore|\\.gitattributes):[0-9]+")
 		}
 	' "$record" | sort -u)
 	# Enumerate the tree once, then match each cited path as a suffix on a path
@@ -330,7 +349,14 @@ if [ -n "$repo_root" ]; then
 		p=${c%:*}
 		ln=${c##*:}
 		# Candidates: the exact path, or any path ending in /<cited path>.
-		cands=$(printf '%s\n' "$all_files" | awk -v p="$p" '$0 == p || index($0, "/" p) == length($0) - length(p)')
+		# The suffix test must require a real match position. Written as
+		# `index(...) == length($0) - length(p)`, a NOT-FOUND result of 0 compares
+		# equal whenever the two paths happen to be the same length, so a citation
+		# to a file that does not exist resolves to an unrelated one.
+		cands=$(printf '%s\n' "$all_files" | awk -v p="$p" '
+			$0 == p { print; next }
+			{ i = index($0, "/" p); if (i > 0 && i == length($0) - length(p)) print }
+		')
 		if [ -z "$cands" ]; then
 			err "citation $c names no file in the tree (DoD 2)"
 			continue
@@ -442,19 +468,87 @@ for i in 1 2 3 4 5 6 9; do
 		|| err "Definition of Done item $i names no covering test -- its 'Covered by' cell must name an audit-record-lint.sh block, not a document (docs/tests/dod-checklist.md:22-25)"
 done
 
-# Every traceability row must carry a status the checklist accepts.
-n_trace=0
-printf '%s\n' "$trace_rows" | while IFS= read -r r; do
-	printf '%s' "$r" | grep -Eq '^\|[ \t:-]+\|' && continue
-	printf '%s' "$r" | grep -q 'Test ID' && continue
-	printf '%s' "$r" | grep -qE '\|[ \t]*(green|frozen)[ \t]*\|?[ \t]*$' \
-		|| printf 'FAIL  traceability row is not green or frozen, so it does not close its item (docs/tests/dod-checklist.md:22-25): %s\n' "$r" >&2
+# Every traceability row must carry a status the checklist accepts. This ran in a
+# `... | while read` pipeline once, which puts the loop in a subshell: it printed
+# FAIL and exited 0, because the parent's `fail` flag was never set. Count in the
+# subshell, decide in the parent.
+bad_status=$(printf '%s\n' "$trace_rows" | awk '
+	/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+	/Test ID/ { next }
+	NF {
+		if ($0 !~ /\|[ \t]*(green|frozen)[ \t]*\|?[ \t]*$/) print
+	}
+')
+if [ -n "$bad_status" ]; then
+	printf '%s\n' "$bad_status" | while IFS= read -r r; do
+		printf 'FAIL  traceability row is not green or frozen, so it does not close its item (docs/tests/dod-checklist.md:22-25): %s\n' "$r" >&2
+	done
+	fail=1
+fi
+
+# Counting rows is not enough: a lower bound cannot tell WHICH item lost its
+# proof. Match per item instead. Every Definition of Done item whose "Covered by"
+# cell names a test must have a green or frozen traceability row that covers it.
+covered_items=$(printf '%s\n' "$dod_rows" | awk -F'|' '
+	/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+	{
+		i = $2; gsub(/^[ \t]+|[ \t]+$/, "", i)
+		c = $4; gsub(/^[ \t]+|[ \t]+$/, "", c)
+		if (i ~ /^[0-9]+$/ && c ~ /audit-record-lint\.sh|run-discipline-tests\.sh|review round/) print i
+	}
+')
+[ -n "$covered_items" ] \
+	|| err "no Definition of Done item names a covering test -- block 7 checked nothing (docs/tests/dod-checklist.md:22-25)"
+for i in $covered_items; do
+	hit=$(printf '%s\n' "$trace_rows" | awk -F'|' -v n="$i" '
+		/^\|[ \t:-]+\|[ \t:|-]*$/ { next }
+		{
+			cov = $4; gsub(/^[ \t]+|[ \t]+$/, "", cov)
+			st  = $7; gsub(/^[ \t]+|[ \t]+$/, "", st)
+			if (cov ~ ("(^|[^0-9])DoD " n "([^0-9]|$)") && (st == "green" || st == "frozen")) k++
+		}
+		END { print k + 0 }
+	')
+	[ "${hit:-0}" -ge 1 ] \
+		|| err "Definition of Done item $i names a covering test but has no green or frozen traceability row that covers it (docs/tests/dod-checklist.md:22-25)"
 done
-n_trace=$(printf '%s\n' "$trace_rows" | grep -cE '\|[ \t]*(green|frozen)[ \t]*\|?[ \t]*$' || true)
-[ "${n_trace:-0}" -ge 7 ] \
-	|| err "the traceability table holds ${n_trace:-0} green/frozen rows; Definition of Done items 1-7 each need one (docs/tests/dod-checklist.md:22-25)"
-printf '%s\n' "$trace_rows" | grep -qE '\|[ \t]*(planned|red)[ \t]*\|?[ \t]*$' \
-	&& err "a traceability row is 'planned' or 'red'; those show intent, not proof (docs/tests/dod-checklist.md:22-25)"
+
+# --- 8. the machine-checkable half of "corrections are recorded" -----------
+# Definition of Done item 8 asks whether a claim the reports got wrong now carries
+# the correction. Whether a correction is the RIGHT one is a judgement, and the
+# traceability table records a reviewer sign-off for that half. What a machine can
+# assert is that a `Corrected` verdict is backed by evidence and that the section
+# holding the corrections has not been emptied. Nothing here is tuned to the text
+# it checks: a pattern chosen to fit the 17 rows that exist would be a decision
+# rule picked after seeing the result.
+uncited_corr=$(awk -F'|' '
+	/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
+	sec && /^[ \t]*\|/ {
+		id = $2; gsub(/^[ \t]+|[ \t]+$/, "", id)
+		v  = $4; gsub(/^[ \t]+|[ \t]+$/, "", v)
+		if (v != "Corrected") next
+		n++
+		body = $3
+		if (body !~ /[A-Za-z0-9_.\/-]+\.(md|sh|ya?ml|json|toml|txt):[0-9]+/ &&
+		    body !~ /\.git(hooks|hub)\/[A-Za-z0-9_.\/-]+:[0-9]+/ &&
+		    body !~ /(LICENSE|\.gitignore|\.gitattributes):[0-9]+/) print id
+	}
+	END { if (n == 0) print "NONE" }
+' "$record") || err "block 8: awk failed to read the record (DoD 8)"
+for id in $uncited_corr; do
+	if [ "$id" = "NONE" ]; then
+		err "no claim row carries the verdict Corrected -- block 8 checked nothing (DoD 8)"
+	else
+		err "Findings row $id is Corrected but cites no file and line; a correction with no evidence is an assertion (DoD 8)"
+	fi
+done
+corr_bullets=$(awk '
+	/^## / { sec = ($0 ~ /^## Corrections to the reports/) ? 1 : 0; next }
+	sec && /^- / { k++ }
+	END { print k + 0 }
+' "$record")
+[ "${corr_bullets:-0}" -gt 0 ] \
+	|| err "the '## Corrections to the reports' section holds no bullets; a Corrected verdict with nothing recorded against it is not a correction (DoD 8)"
 
 # --- 9. the task line moved to completed.md and left the backlog -----------
 completed="$tasks_dir/completed.md"
@@ -471,4 +565,4 @@ n_follow=$(printf '%s\n' "$followups" | awk 'NF' | wc -l | tr -d ' ')
 # shellcheck disable=SC2086
 set -- ${counts:-0 0 0 0}
 
-[ "$fail" -eq 0 ] && { printf 'audit-record-lint: OK  %s claims: %s Stands, %s Corrected, %s Refuted; %s follow-ups scheduled; DoD 1-6 and 9 proven\n' "$1" "$2" "$3" "$4" "$n_follow"; exit 0; } || exit 1
+[ "$fail" -eq 0 ] && { printf 'audit-record-lint: OK  %s claims: %s Stands, %s Corrected, %s Refuted; %s follow-ups scheduled; DoD 1-6, 8 and 9 proven\n' "$1" "$2" "$3" "$4" "$n_follow"; exit 0; } || exit 1

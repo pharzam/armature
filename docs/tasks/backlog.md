@@ -43,3 +43,4 @@ same summary, dated — rather than deleting it or checking it off.
 - **T-4x2k** — The self-violation sweep: the hook count, the broken link, the enforcement table, the overlong `completed.md` entries ([#40](https://github.com/pharzam/armature/issues/40); [detail](T-3v9q.md))
 - **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23); [detail](T-3v9q.md))
 - **T-3d9v** — Define "fresh context" and "substantive task", and decide the scope of the abbreviation rule ([#21](https://github.com/pharzam/armature/issues/21); [detail](T-3v9q.md))
+- **T-1k9r** — Add the `audit-record-lint` job to `.github/workflows/ci.yml`: the check runs in the pre-commit hook and the fixture suite, but not yet in CI ([#55](https://github.com/pharzam/armature/issues/55); [detail](T-3v9q.md))

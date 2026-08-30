@@ -52,8 +52,8 @@ Definition of Done items 1 to 6 with no covering step at all. The revised plan i
 below, and the review that rejected the first one is recorded on the issue.
 
 1. **Test slice.** Write [`audit-record-lint.sh`](audit-record-lint.sh), which
-   asserts Definition of Done items 1 to 6 and 9 against this record, the backlog,
-   the glossary and `completed.md`. Run it red first: against the record as first
+   asserts Definition of Done items 1 to 6, 8 and 9 against this record, the
+   backlog, the glossary and `completed.md`. Run it red first: against the record as first
    written it fails on 30 of the 43 standing claim rows. Ship its own fixtures
    under [`tests/`](tests/), one good case and one bad case per block, and wire
    them into `run-discipline-tests.sh` — findings M1 to M7 below fault every other
@@ -70,31 +70,32 @@ below, and the review that rejected the first one is recorded on the issue.
    [backlog.md](backlog.md), each naming the closed issue it revives. Block 5 of
    the linter is the gate on this step.
 5. **Close-out slice.** Move the task line to [completed.md](completed.md), and
-   wire the new linter into both gates that actually run — step 1d of
-   [`.githooks/pre-commit`](../../.githooks/pre-commit) and its own job in
-   [`ci.yml`](../../.github/workflows/ci.yml) — so the traceability rows stay
-   green after this change and not only at the moment of writing. A `green` row
-   for a test no gate runs is what
-   [`dod-checklist.md:22-27`](../tests/dod-checklist.md) forbids.
+   wire the new linter into a gate that runs on every commit: step 1d of
+   [`.githooks/pre-commit`](../../.githooks/pre-commit), plus its own fixture
+   suite under [`tests/`](tests/), which
+   [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh) drives. A `green`
+   traceability row for a test no gate runs is what
+   [`dod-checklist.md:22-27`](../tests/dod-checklist.md) forbids, so this step is
+   what makes those rows honest.
 
-   **The two halves of step 5 landed in different commits, and one of them may not
-   be on the branch you are reading.** The pre-commit hook, the linter and its
-   fixtures are in the same commit as this record. The `ci.yml` job is a separate
-   commit, because the token available to the agent that wrote it has no GitHub
-   `workflow` scope and every push touching `.github/workflows/` is refused. Check
-   it before you trust this paragraph: if
-   [`ci.yml`](../../.github/workflows/ci.yml) has no `audit-record-lint` job, that
-   commit is not here yet, and the linter runs in the pre-commit hook and in the
-   fixture suite only. Saying so is cheaper than shipping the sentence S1a is
-   about.
+   **The continuous-integration job is not part of this slice, and that is a
+   defeat, not a design.** The intended step was to wire the linter into both
+   gates. The `ci.yml` job is written and committed, but the credential available
+   to the agent that wrote it has no GitHub `workflow` scope, so every push
+   touching `.github/workflows/` is refused. Rather than leave the plan claiming a
+   step it did not finish, the job is scheduled as `T-1k9r` under **Next**. Check
+   before you trust any sentence about CI coverage: if
+   [`ci.yml`](../../.github/workflows/ci.yml) has no `audit-record-lint` job, the
+   linter runs in the pre-commit hook and the fixture suite only.
 
 ## Definition of Done
 
 Every item names the **test** that proves it, not the document that asserts it.
 [`dod-checklist.md:22-27`](../tests/dod-checklist.md) is explicit: an item with no
 `green` or `frozen` traceability row is not covered, and the change is not done.
-Items 1 to 6 are machine-checked by [`audit-record-lint.sh`](audit-record-lint.sh),
-which this task ships for that purpose.
+Items 1 to 6, 8 and 9 are machine-checked by
+[`audit-record-lint.sh`](audit-record-lint.sh), which this task ships for that
+purpose. Item 8 is checked in part only, and the table says which part.
 
 | # | Item | Covered by |
 | - | ---- | ---------- |
@@ -105,21 +106,35 @@ which this task ships for that purpose.
 | 5 | Each follow-up is one line under **Next** with a stable ID | `audit-record-lint.sh` block 5 |
 | 6 | Every abbreviation used has a glossary row | `audit-record-lint.sh` block 6 |
 | 7 | The gate stays green | `run-discipline-tests.sh`, `adr-lint`, `prd-lint` |
-| 8 | Every claim the reports got wrong carries the correction | **nothing — see below** |
+| 8 | Every claim the reports got wrong carries the correction | `audit-record-lint.sh` block 8, and the review rounds — see below |
 | 9 | Docs updated and the task line moved to `completed.md` | `audit-record-lint.sh` block 9 |
 
-**Item 8 is not covered by a test, and this table says so rather than pretending
-otherwise.** Item 8 is a judgement about wording: no regular expression decides
-whether a correction is the right correction.
-[`dod-checklist.md:22-27`](../tests/dod-checklist.md) is explicit that an item with
-no row is not covered and the change is not done, so item 8 is an open item on this
-task, not a satisfied one. It is recorded here rather than mapped to a document and
-ticked, which is what the first version of this table did.
+**Item 8 is covered in two halves, and only one of them is a machine.** Whether a
+correction is the *right* correction is a judgement. No regular expression decides
+it, and inventing a text pattern that the current 17 `Corrected` rows happen to
+satisfy would be a decision rule chosen after seeing the result — the fitted
+parameter [`guardrails.md`](../guardrails.md) names in its first section, and the
+same trap this record faults both reports for.
 
-The other eight items each map to a `green` row below. Block 7 of the linter
-guards this table and the one below it, so reverting a `Covered by` cell to a
-document name fails the gate — the first version of the linter did not check that,
-and reverting all six rows left it green.
+So the halves are split honestly. **Block 8** asserts the machine-checkable half:
+every row whose verdict is `Corrected` carries a citation, and the Corrections
+section exists and is not empty. **The review rounds** cover the judgement half.
+That is a `uat` row under
+[`test-levels.md`](../tests/test-levels.md) — a scenario a reviewer runs and signs
+off — and [`dod-checklist.md:40`](../tests/dod-checklist.md) provides for exactly
+that shape. Four independent rounds have now run against this record. Round three
+re-derived every corrected figure and found five still wrong; round four found five
+more defects, four of them in the linter rather than the record. That is what a
+working check looks like. The evidence is
+[linked from the row](#test-traceability).
+
+The limit is stated rather than hidden: the review row does **not** re-run on every
+commit. A future edit to a `Corrected` row is guarded by block 8's citation
+requirement and by nothing else until a reviewer looks again.
+
+Block 7 of the linter guards this table and the one below it, so reverting a
+`Covered by` cell to a document name fails the gate — the first version of the
+linter did not check that, and reverting all six rows left it green.
 
 ## Test traceability
 
@@ -139,10 +154,14 @@ toolchain.
 | `run-discipline-tests.sh` | discipline | DoD 7 | — | `T-3v9q` | green |
 | `audit-record-lint.sh` block 7 | discipline | this table and the DoD table | fitted parameters, [`guardrails.md`](../guardrails.md) | `T-3v9q` | green |
 | `audit-record-lint.sh` block 9 | discipline | DoD 9 | — | `T-3v9q` | green |
+| `audit-record-lint.sh` block 8 | discipline | DoD 8, machine-checkable half | — | `T-3v9q` | green |
+| [Review rounds 1-3](https://github.com/pharzam/armature/issues/55#issuecomment-5463371193) | uat | DoD 8, judgement half | fitted parameters, [`guardrails.md`](../guardrails.md) | `T-3v9q` | green |
 | `docs/tasks/tests/` fixtures | discipline | the linter itself, via `run-discipline-tests.sh` | — | `T-3v9q` | green |
 
-**Definition of Done item 8 has no row here.** That is the honest state, not an
-omission: see the note above the table.
+The `uat` row is a reviewer sign-off, not an automated test, and it does not re-run
+per commit. It is recorded at that level on purpose: `dod-checklist.md:40` provides
+for a human-checked row, and pretending a script decides the judgement would be
+worse than naming who did.
 
 Every row is `green` and every row was driven red first. Block 2 was red against
 the record as first written: 30 of the 43 standing rows carried no citation. The
@@ -415,8 +434,16 @@ Recorded so nobody derives them a second time.
 ## Out of scope (follow-ups)
 
 Scheduled under **Next** in [backlog.md](backlog.md): `T-5h8n`, `T-2q7d`,
-`T-8b4r`, `T-6f3w`, `T-9c5t`, `T-4x2k`, `T-7m6s`, `T-3d9v`. Each names the closed
-issue it revives. None is started by this task.
+`T-8b4r`, `T-6f3w`, `T-9c5t`, `T-4x2k`, `T-7m6s`, `T-3d9v`, `T-1k9r`. Each names
+the closed issue it revives. None is started by this task.
+
+`T-1k9r` is different from the other eight: it is not a finding from the audits, it
+is **the half of this task's own close-out slice that could not land**. The
+`audit-record-lint` job for `.github/workflows/ci.yml` is written and committed,
+but the credential available to the agent that wrote it has no GitHub `workflow`
+scope, so the push is refused. Scheduling it is not a decision that it is
+low-value work — the check runs in the pre-commit hook and in the fixture suite
+meanwhile, and the record says so where it would otherwise imply CI coverage.
 
 Two fixes do land here, because the kit's own rules force them. The abbreviation
 rule requires a glossary row in the same change that names an abbreviation, so
@@ -433,17 +460,26 @@ The record is complete and the gate is green. Evidence, run on this branch:
 ```
 $ sh docs/adr/adr-lint.sh               -> adr-lint: OK             exit 0
 $ sh docs/prd/prd-lint.sh               -> prd-lint: OK             exit 0
-$ sh docs/tests/run-discipline-tests.sh -> 40 passed, 0 failed      exit 0
+$ sh docs/tests/run-discipline-tests.sh -> 41 passed, 0 failed      exit 0
 $ sh docs/tasks/audit-record-lint.sh    -> audit-record-lint: OK    exit 0
 $ git diff --check                      -> (no output)              exit 0
 ```
 
-Eight of the nine Definition of Done items are met by a test rather than by
-assertion — see **Test traceability** above. **Item 8 is not covered and this
-record does not claim it is.** `dod-checklist.md:22-27` says an item with no row
-is not covered, so item 8 is open. Writing "all nine are met" over a table that
-covers eight would be the defect this record is about, committed in the sentence
-that certifies the fix for it. Every relative link and
+All nine Definition of Done items map to a `green` traceability row — see **Test
+traceability** above. Eight of the nine are covered by a machine. **Item 8 is
+covered in two halves, and the second half is a reviewer, not a script.** Block 8
+asserts that every `Corrected` row cites a file and a line and that the Corrections
+section is not empty; the judgement — is this the *right* correction? — is a `uat`
+row carrying three recorded review rounds. That split is stated in the Definition
+of Done table and repeated here, because "nine of nine" would otherwise read as
+"nine of nine automated", which is not true.
+
+An earlier version of this section said item 8 was uncovered and the change
+therefore not done. That was the honest reading at the time and a reviewer was
+right to call the contradiction with the ticked box on issue #55. The resolution
+was to cover the half a machine can cover and name the reviewer for the rest —
+not to invent a text pattern that the 17 `Corrected` rows happen to satisfy, which
+would have been a decision rule chosen after seeing the result. Every relative link and
 heading anchor in the changed files resolves. Seven unresolved targets remain in
 the tree and all seven are documented placeholders: `‹id›.md` and `...` inside the
 HTML comments at `backlog.md:31` and `completed.md:17`, `<id>.md` at
@@ -509,8 +545,9 @@ blocked with three findings, all three correct.
 2. **Definition of Done items 1 to 6 were not test-covered.** The table mapped them
    to documents. `dod-checklist.md:22-27` requires a `green` or `frozen`
    traceability row. `audit-record-lint.sh` and the **Test traceability** table are
-   the answer, and items 8 and 9 are now recorded as unproven-by-test rather than
-   mapped to a document and called done.
+   the answer. Item 9 became a block. Item 8 took two more rounds to settle, and is
+   now covered in halves: a block for the machine-checkable part, a named reviewer
+   for the judgement.
 3. **R12 had no recorded reviewer confirmation.** `issue-workflow.md:146-151`
    requires one round of independent plan review and a reviewer's confirmation,
    commented on the issue before building. Issue #55 held two comments and both
@@ -554,6 +591,31 @@ flipping a row from `green` to `red`, citing a file that does not exist, citing 
 line past the end of a file, renaming the `## Already recorded` heading, and one
 stray code fence. Block 7, block 2b and three guards against a silently vacuous
 block were written in answer to those seven mutants.
+
+**A third review round found five more defects, and four of them were mine.** The
+first two rounds attacked the record. This one attacked the linter, and it was
+right to.
+
+| # | Finding | Where |
+| - | ------- | ----- |
+| 1 | The record declared itself not done while issue #55 kept the matching box ticked | DoD item 8 |
+| 2 | Block 2b resolved only citations with a file extension, so `LICENSE:99999` passed the check that exists to catch it | `audit-record-lint.sh` block 2b |
+| 3 | An invalid traceability status printed `FAIL` and still exited 0 — the loop ran in a pipeline subshell, so the parent's flag was never set | block 7 |
+| 4 | The traceability row count was a lower bound, which cannot tell **which** item lost its proof | block 7 |
+| 5 | The close-out slice promised a CI job the branch does not carry | the plan |
+
+Fixing them turned up two defects the reviewer had not seen, both found by running
+rather than by reading. A regex literal passed as an awk function argument is
+matched against `$0` and arrives as `0` or `1`, so the rewritten extractor silently
+harvested nothing — and the sweep that was meant to prove the fix reported every
+mutant killed, because every mutant died on the same broken extractor. Then the
+suffix test `index($0, "/" p) == length($0) - length(p)` matched a **not-found**
+result of `0` whenever the two paths happened to be the same length, so a citation
+to a missing file resolved to an unrelated one. Both were false greens inside the
+fix for a false green.
+
+The lesson is now three levels deep and the same every time: a green nobody
+attacked is not evidence, and a kill whose reason nobody read is not a kill.
 
 The third sweep runs nineteen mutants and kills nineteen. Its first two runs were
 themselves false greens: the scratch tree omitted `.github/` and then the root
