@@ -9,20 +9,22 @@
 # the thing under test is *which hook file git chose to run*, which depends on
 # `core.hooksPath` and on being inside a real worktree. There is no directory of
 # text that reproduces it. So this builds a repository, adds a worktree, and drives
-# real commits under three settings.
+# real commits under each setting worth distinguishing. It reports how many cases it
+# ran rather than carrying a count in this header, where the count goes stale the
+# first time a case is added -- which is exactly what happened to it once already.
 #
 # It creates its work in a fresh `mktemp -d` and removes it afterwards. It never
 # touches the repository it lives in, and it never reads or writes your git config.
 #
 # WHY IT IS NOT WIRED INTO THE GATE. It needs `git init`, a writable temp
-# directory and three real commits — far past the "reads only text, needs no
+# directory and real commits — far past the "reads only text, needs no
 # toolchain" bar every check in docs/tests/run-discipline-tests.sh meets. Running
 # it in the pre-commit hook would put a repository-creating test inside the commit
 # path. Run it by hand when block 0 changes, the way docs/links/tests/expect-check.sh
 # is run when that suite changes.
 #
 # Usage:  sh .githooks/tests/provenance-check.sh
-# Exit status: 0 = all three cases behaved, 1 = one or more did not.
+# Exit status: 0 = every case behaved, 1 = one or more did not.
 
 set -u
 
