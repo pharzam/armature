@@ -560,3 +560,57 @@ follow-up. Doing the move in the landing PR keeps the two files from ever drifti
 (a task is never both "Now" and done at once), and the reviewer sees the backlog
 bookkeeping alongside the change that earns it. The task's own detail file stays
 where it is — only the one-line index entry moves.
+
+## Agent entry points
+
+The repository's rules bind every operator, human and LLM alike — but an agent
+only follows rules it finds when it starts. Two files at the repository root close
+that gap: [`AGENTS.md`](../AGENTS.md), the vendor-neutral guide, and
+[`CLAUDE.md`](../CLAUDE.md), which holds the single line `@AGENTS.md` so Claude
+Code loads the same guide with no second copy. The decision, the rejected
+alternatives and the tradeoffs are [ADR-0004](adr/0004-ship-agent-entry-points.md).
+
+`AGENTS.md` is a **summary and an index, not a governance document.** The
+documents in this folder stay authoritative for their own subject; the guide names
+which one, for each class of rule, in its own sources-of-truth table. Where the
+two disagree, the document wins, and the disagreement is a defect fixed in the
+same change — the [R10](issue-workflow.md#r10--sync-with-governance) case of
+[Keeping documentation current](#keeping-documentation-current). A rule that
+exists in no document here does not belong in the guide.
+
+Instruction precedence: a higher-priority platform or operator instruction stays
+higher priority; within its scope the guide governs work in this repository; a
+nested instruction file may add a local constraint and may never weaken the
+[quality gate](#working-a-task-under-the-quality-gate).
+
+[`agents/agents-lint.sh`](agents/agents-lint.sh) keeps the guide honest by
+deriving its expectations from these documents rather than copying them — so a
+renamed rule or a deleted gate step turns the gate red. It checks coverage, not
+semantic agreement; see [`agents/README.md`](agents/README.md) for what that does
+and does not prove.
+
+## Safety limits
+
+Some mistakes cannot be undone by a later commit. These four are prohibitions, not
+preferences, and they bind every operator:
+
+- **Never commit a secret** — a credential, token, private key, or password —
+  and never write one into a document, a fixture, or a log. A secret that reaches
+  history is compromised even after it is deleted, so the fix is a rotated
+  credential, not a revert.
+- **Never expose sensitive data.** Customer material lives under
+  [`facts/`](facts/) by the two-layer rule; do not copy it into an issue, a
+  commit message, or an external service.
+- **Never rewrite published history.** No force-push, no rebase of a branch
+  others have pulled, no amend of a landed commit. Correct a mistake with a new
+  commit that says what it corrects.
+- **Never run a destructive, costly, or irreversible operation without explicit
+  authorization** — a mass delete, a production migration, a paid call at scale,
+  a deployment. Ask first, and review the code that will do the work *before* it
+  runs, under
+  [Review before a costly or irreversible action](#review-before-a-costly-or-irreversible-action).
+
+The [security checks](tests/security-checklist.md) wired into the hook and CI are
+the mechanized half of this section — a secret scan catches what a rule alone
+cannot. A scan is a check with a pass condition; the four rules above are the
+policy it serves, and they hold whether or not a scanner is configured.
