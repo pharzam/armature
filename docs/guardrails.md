@@ -48,6 +48,29 @@ kind of thing that goes here:›`
 - ❌ `‹pitfall 3 — e.g. an environment or scale difference between test and
   production›`
 
+### Gate pitfalls (kit-wide — keep these)
+
+The gate is only as real as the thing that runs it. These traps let it report
+success without having done its job.
+
+- ❌ **An absolute `core.hooksPath`.** Worktrees **share** `.git/config`, so an
+  absolute path binds every worktree to one checkout's hooks. A check added on a
+  branch then does not run on that branch's own commits: the hook reports success
+  having run something other than what the branch says it runs. It is silent
+  because the hook still runs, still passes, and still uses the *right* files —
+  only the *set of checks* comes from elsewhere. **The check:** install with a
+  **relative** path, `git config core.hooksPath .githooks`, which git resolves per
+  working tree; the `pre-commit` hook's own block 0 refuses to run when the path
+  resolves outside the tree being committed to, and
+  [`.githooks/tests/provenance-check.sh`](../.githooks/tests/provenance-check.sh)
+  proves it. **Bound on the damage:** CI invokes each check script directly and
+  never through `core.hooksPath`, so this costs a local round trip, not a landed
+  bug — it is a developer-experience gap, not an open gate.
+- ❌ **A check that cannot fail.** A grep whose pattern also matches its own error
+  message, a fixture harness that compares only exit codes, a coverage floor that
+  counts zero as success. The check: for every assertion, make it fail on purpose
+  once and read the reason — a green nobody attacked is not evidence.
+
 ### Testing pitfalls (kit-wide — keep these)
 
 These traps are not domain-specific: they hurt every project's test suite, so the

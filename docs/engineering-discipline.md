@@ -72,8 +72,10 @@ Wire in the two enforcement layers so a violation is caught automatically, not b
 memory:
 
 - **Install the git hooks** — run `git config core.hooksPath .githooks` once per
-  clone. This turns on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
-  [commit format](#commit-messages), and the `pre-commit` hook runs the four
+  clone, and **keep that path relative**: `.git/config` is shared by every
+  worktree, so an absolute value binds them all to one checkout's hooks. This turns
+  on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
+  [commit format](#commit-messages), and the `pre-commit` hook runs the five
   repo-file [discipline linters](#testing) and their self-tests, plus the fast
   gate you fill in. See [Git hooks](#git-hooks).
 - **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
@@ -569,8 +571,11 @@ Two hooks ship with the kit:
 
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
-- **`pre-commit`** — runs the four repo-file [discipline linters](#testing) — ADR,
-  PRD, audit-record and agent-entry — and their fixture self-tests,
+- **`pre-commit`** — first refuses to run at all if `core.hooksPath` resolves
+  outside the working tree being committed to (see
+  [`guardrails.md`](guardrails.md)), then runs the five repo-file
+  [discipline linters](#testing) — ADR, PRD, audit-record, agent-entry and link —
+  and their fixture self-tests,
   then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
   `‹integration test command›`), and the `‹security scanner›` step you fill in for
   your stack. Keep it cheap-first; the full suite — the end-to-end level and the
