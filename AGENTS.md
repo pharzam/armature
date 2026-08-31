@@ -78,13 +78,14 @@ file.
 ## Checks you can run
 
 These read only text, so they need no toolchain. Install the hooks once per clone
-with `git config core.hooksPath .githooks`; the first five then run before every
+with `git config core.hooksPath .githooks`; the first six then run before every
 commit, and in CI. The last one you run yourself.
 
 ```
 sh docs/adr/adr-lint.sh
 sh docs/prd/prd-lint.sh
 sh docs/agents/agents-lint.sh
+sh docs/links/link-lint.sh
 sh docs/tasks/audit-record-lint.sh
 sh docs/tests/run-discipline-tests.sh
 git diff --check

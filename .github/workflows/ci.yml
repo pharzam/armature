@@ -79,3 +79,15 @@ jobs:
       # docs/agents/tests/. Unlike audit-record-lint this check DOES apply to an
       # adopter, so it also ships in both templates under docs/ci/.
       - run: sh docs/agents/agents-lint.sh
+  link-lint:
+    name: link-lint (in-tree links and anchors)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Resolves every in-tree Markdown link and heading anchor, so a renamed
+      # heading or a moved file goes red rather than leaving a document pointing
+      # at nothing. Its own job for the same reason as the two above -- the
+      # runner is a fixture harness and this check is repo-wide; its fixtures ARE
+      # run there, from docs/links/tests/. It needs no network: external links
+      # are out of scope by design, which is what keeps it offline-runnable.
+      - run: sh docs/links/link-lint.sh

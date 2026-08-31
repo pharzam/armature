@@ -67,6 +67,17 @@ jobs:
       # subject is missing, because a check that skips its own subject proves
       # nothing. If you drop the agent entry points, delete this job with them.
       - run: sh docs/agents/agents-lint.sh
+  link-lint:
+    name: link-lint (in-tree links and anchors)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — it reads only text and needs no network, because
+      # external links are out of scope by design. It resolves your documents'
+      # relative links and heading anchors, so a renamed heading goes red instead
+      # of leaving a reader at a dead link. Keep it whatever else you drop: it is
+      # the one check here that stays useful with no Armature documents at all.
+      - run: sh docs/links/link-lint.sh
 
   lint:
     name: lint (‹your linter/formatter›)
