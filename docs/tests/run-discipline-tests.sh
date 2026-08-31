@@ -16,8 +16,11 @@
 # bad-argument exit) is caught rather than mistaken for a rejection.
 #
 # Fixtures come in two shapes, so the runner dispatches per suite:
-#   directory — the linter is pointed at a case directory (adr-lint, prd-lint)
-#   file      — the linter reads a single file argument     (pr-link-lint, commit-msg)
+#   directory — the linter is pointed at a case directory
+#   file      — the linter reads a single file argument
+# Which suite takes which shape is the dispatch list at the foot of this file.
+# That list is deliberately the only place it is written down: naming the suites
+# here as well gives a second copy that goes stale the next time one is added.
 #
 # Coverage floor. A test that never runs proves nothing, so the runner fails if a
 # wired suite yields no recognized cases — it requires every present suite to keep

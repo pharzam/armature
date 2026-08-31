@@ -68,6 +68,7 @@ fixed.
 | `bad-source-row-blank` | FAIL, exit 1 | a sources-of-truth row naming a real document with an empty `Authoritative for` cell (A20) |
 | `bad-source-row-unresolved` | FAIL, exit 1 | a sources-of-truth row whose first column is a bare path — not a Markdown link, so A19 never harvests it — that resolves to nothing (A20) |
 | `bad-source-row-empty-target` | FAIL, exit 1 | a sources-of-truth row whose link target is empty, so the existence test would become `[ -e "$root/" ]` and always pass (A20) |
+| `bad-source-row-marker` | FAIL, exit 1 | a row whose `Authoritative for` cell is still the shipped `‹…›` placeholder. It must be named as an unreplaced marker rather than merely as a thin cell — the row failed either way, but the message named the symptom instead of the cause (A20) |
 | `bad-unnamed-check` | FAIL, exit 1 | a second shipped `*-lint.sh` in the tree that `## Checks you can run` does not name (A21) |
 | `bad-invented-command` | FAIL, exit 1 | a plausible product command in **inline backticks**, in a section that is not the checks section (A22) |
 | `bad-missing-literal` | FAIL, exit 1 | `git diff --check` removed from the checks section (A23) |

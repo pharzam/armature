@@ -140,12 +140,18 @@
 # ksh and busybox ash, and under both LC_ALL=C and a UTF-8 locale. RUN IT WITH
 # `sh` — every wired invocation does. zsh in its native, non-POSIX mode splits
 # and globs differently and reports failures that are not there. No bash-isms,
-# no gensub, no
-# ERE interval expressions, no /dev/stderr, no `find -maxdepth`. An unmatched
-# glob stays literal in POSIX sh, so every glob loop carries an `[ -e ]` guard.
-# Pathname expansion is off (`set -f`) except where A21 needs it, so a target or
-# a literal containing `*` cannot glob. FAIL lines are printed by the shell to
-# standard error, so the whole script reports on one stream.
+# no gensub, no ERE interval expressions, no /dev/stderr, no `find -maxdepth`.
+# An unmatched glob stays literal in POSIX sh, so every glob loop carries an
+# `[ -e ]` guard. Pathname expansion is off (`set -f`) except where A21 needs it,
+# so a target or a literal containing `*` cannot glob. FAIL lines are printed by
+# the shell to standard error, so the whole script reports on one stream.
+#
+# No `--` end-of-options delimiter is passed to any utility. POSIX does not
+# require `cd`, `dirname` or `basename` to accept one, so `$0` is split with
+# parameter expansion instead, and a path that could begin with a hyphen is made
+# explicitly relative. Where a PATTERN could begin with a hyphen — a required
+# literal is data, and could — `grep -e` does the job `--` would, and POSIX
+# defines it for exactly that purpose.
 
 set -u
 set -f
@@ -166,9 +172,26 @@ case $# in
 *)   printf 'agents-lint: usage: sh %s [ROOT]\n' "$0" >&2; exit 2 ;;
 esac
 
-script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-self="$script_dir/$(basename -- "$0")"
-default_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
+# $0 split into its directory and its last component by parameter expansion,
+# rather than by dirname and basename. Two reasons: it needs no external command,
+# and it avoids passing the `--` end-of-options delimiter to utilities that POSIX
+# does not require to accept one. Every implementation to hand does accept it,
+# but the header claims POSIX and nothing here needs the claim weakened.
+case $0 in
+*/*) script_rel=${0%/*} ;;
+*)   script_rel=. ;;
+esac
+[ -n "$script_rel" ] || script_rel=/          # $0 was "/name" — the root itself
+script_base=${0##*/}
+# A leading hyphen would look like an option to cd. Making the path explicitly
+# relative does the same job as `cd --` with nothing non-POSIX in it.
+case $script_rel in
+-*) script_rel=./$script_rel ;;
+esac
+script_dir=$(CDPATH= cd "$script_rel" && pwd) || exit 1
+self="$script_dir/$script_base"
+# Absolute by construction, so it needs no such guard.
+default_root=$(CDPATH= cd "$script_dir/../.." && pwd) || exit 1
 root=${1:-$default_root}
 root=${root%/}
 [ -n "$root" ] || root=/
@@ -779,8 +802,12 @@ S_OUT=$(printf '%s\n' "$SSEC" | awk -F'|' '
 		n = split(t2, w, /[ \t]+/)
 		c = 0
 		for (j = 1; j <= n; j++) if (w[j] ~ /[A-Za-z0-9]/) c++
-		if (c < MIN) printf "E|the row for \"%s\" has a thin \"Authoritative for\" cell (%d words; a row needs at least %d) — the table must assign an authority, not name a file\n", p, c, MIN
-		else if (index(t2, "\342\200\271") == 1) printf "E|the row for \"%s\" fills its \"Authoritative for\" cell with an unreplaced marker\n", p
+		# The marker test comes FIRST. Ordered the other way, a short marker
+		# cell — `‹authority›` — is caught by the word floor and reported as
+		# merely thin, which names the symptom and not the cause. The row fails
+		# either way; this is about telling the author what to do.
+		if (index(t2, "\342\200\271") == 1) printf "E|the row for \"%s\" fills its \"Authoritative for\" cell with an unreplaced ‹…› marker\n", p
+		else if (c < MIN) printf "E|the row for \"%s\" has a thin \"Authoritative for\" cell (%d words; a row needs at least %d) — the table must assign an authority, not name a file\n", p, c, MIN
 	}
 	END {
 		if (!hdr) print "E|the sources-of-truth table has no header row whose second column reads exactly \"Authoritative for\"; that literal is what tells a header from a data row"
@@ -909,7 +936,9 @@ for pair in $A23_PAIRS; do
 	if [ -z "$body" ]; then
 		err A23 "section \"$h\" is empty, so the literal \"$lit\" cannot be found in it"
 	else
-		printf '%s\n' "$body" | grep -Fq -- "$lit" || err A23 "section \"$h\" does not carry the required literal \"$lit\""
+		# -e, not --: POSIX defines -e as the way to give grep a pattern that
+		# begins with a hyphen, and a required literal is data that could.
+		printf '%s\n' "$body" | grep -Fq -e "$lit" || err A23 "section \"$h\" does not carry the required literal \"$lit\""
 	fi
 	IFS=$nl
 done
@@ -1000,7 +1029,7 @@ IFS=$oldIFS
 # the message below -- so the assertion was green for every possible content of
 # the header, which is exactly the check-that-cannot-fail this kit forbids.
 own_header=$(awk 'substr($0, 1, 1) == "#" { print; next } { exit }' "$self")
-printf '%s\n' "$own_header" | grep -Fq -- 'coverage, not semantic agreement' \
+printf '%s\n' "$own_header" | grep -Fq -e 'coverage, not semantic agreement' \
 	|| err A25 "agents-lint.sh's own leading comment block no longer states what it does not prove"
 
 # --- summary ----------------------------------------------------------------
