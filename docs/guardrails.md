@@ -92,8 +92,9 @@ Notes on how to read a failure: `‹which checks catch which class of bug; which
 cheap enough to wire into CI; which run once per change of a given kind›`.
 
 **The automated gate is this validation layer, mechanized.** The cheap, always-on
-checks — the [ADR linter](engineering-discipline.md#testing), the
-[PRD linter](engineering-discipline.md#testing), the
+checks — the [discipline linters](engineering-discipline.md#testing) the kit
+ships (ADR, PRD and agent-entry) and their
+[fixture self-tests](engineering-discipline.md#testing), the
 [test levels](engineering-discipline.md#testing), lint, a security
 scan, and the [commit-format](engineering-discipline.md#commit-messages)
 check — run in the [`pre-commit` hook](engineering-discipline.md#git-hooks) for

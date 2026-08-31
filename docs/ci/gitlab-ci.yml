@@ -38,6 +38,15 @@ discipline-tests:          # run each discipline linter against its fixtures
   script:
     - sh docs/tests/run-discipline-tests.sh   # concrete and ready — no toolchain needed
 
+agents-lint:               # the root AGENTS.md and CLAUDE.md against their sources
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  # Concrete and ready, but it NEEDS a root AGENTS.md: unlike the linters above
+  # it hard-fails when its subject is missing. Delete this job if you drop the
+  # agent entry points.
+  script:
+    - sh docs/agents/agents-lint.sh
+
 mr-link:                   # R1 — the MR description must link an issue
   stage: check
   image: alpine:3          # any image with POSIX sh + grep/awk/sed

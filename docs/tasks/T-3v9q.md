@@ -306,6 +306,13 @@ number records two decisions on two branches and none on `main`.
 immutable", and IDs are assigned once and never renumbered. `adr-lint` cannot see
 this, because it only ever reads one branch.
 
+> **Update, 2026-08-31 (T-4b7p).** `main` now carries a *third*, different decision
+> at this number — the one that ships the root agent entry points. The finding
+> above is dated evidence and stands as written for the tree it measured; what
+> changed is that restoring either branch record under its own number is now
+> foreclosed. The branch-level duplication it describes is unchanged, so the
+> follow-up stays open.
+
 **X4 — two of the things the reports recommend building already existed.** The
 pre-reset branch holds 124 files against the 105 on `main`. Gone from `main`:
 `AGENTS.md`, `CLAUDE.md`, `docs/glossary-lint.sh` with **five** fixture

@@ -36,7 +36,7 @@ same summary, dated — rather than deleting it or checking it off.
 <!-- Deliberately deferred tasks, same one-line shape. -->
 
 - **T-5h8n** — Triage the 23 issues closed `NOT_PLANNED`: reopen, supersede, or record a decision for each ([#16](https://github.com/pharzam/armature/issues/16); [detail](T-3v9q.md))
-- **T-2q7d** — Restore or re-decide ADR-0004: an `Accepted` record left `main` with no supersession, and the number now holds two decisions on two branches ([#17](https://github.com/pharzam/armature/issues/17); [detail](T-3v9q.md))
+- **T-2q7d** — Decide what to do with the two branch-only ADR-0004 records: an `Accepted` record left `main` with no supersession, and the number now holds a different decision on each of two branches and a third on `main` ([#17](https://github.com/pharzam/armature/issues/17); [detail](T-3v9q.md))
 - **T-8b4r** — Add fixtures that kill all eleven surviving linter mutants, including a piped standard-input case for `pr-link-lint`, and make the harness prove each mutant applied ([#45](https://github.com/pharzam/armature/issues/45); [detail](T-3v9q.md))
 - **T-6f3w** — Fix `adr-lint`: strip the trailing slash, and check the index row's status against the record it names ([#45](https://github.com/pharzam/armature/issues/45); [detail](T-3v9q.md))
 - **T-9c5t** — Make a skipped suite fail the gate, and assert why a linter failed rather than only that it did ([#37](https://github.com/pharzam/armature/issues/37); [detail](T-3v9q.md))

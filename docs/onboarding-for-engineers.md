@@ -67,6 +67,7 @@ Consequences you will meet immediately, and which are not negotiable:
 | Path | What |
 |------|------|
 | `‹path›` | `‹what lives there›` |
+| [`AGENTS.md`](../AGENTS.md) | The agent entry point — the whole gate and R1–R12 in one short file. [`CLAUDE.md`](../CLAUDE.md) imports it for Claude Code. |
 | [`engineering-discipline.md`](engineering-discipline.md) | **How we work**: the quality gate, solution selection, branches, worktrees, commits, tests, reviews, and ADRs. Read before your first commit. |
 | [`glossary.md`](glossary.md) | The shared vocabulary. Skim it; come back constantly. |
 | [`facts/`](facts/) | Facts collected from the customer, stored as-is as immutable evidence. Derived requirements cite them by `F-NNNN` ID. |
@@ -76,6 +77,8 @@ Consequences you will meet immediately, and which are not negotiable:
 
 ### What to read next, in order
 
+0. [`AGENTS.md`](../AGENTS.md) — the one-page summary, if you are a coding agent
+   (or a human who wants the shape before the detail).
 1. [`engineering-discipline.md`](engineering-discipline.md) — how we work.
 2. [`issue-workflow.md`](issue-workflow.md) — the issue-first rules the gate assumes.
 3. [`glossary.md`](glossary.md) — skim, then reference.

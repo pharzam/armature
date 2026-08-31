@@ -57,6 +57,17 @@ jobs:
       # fixtures. No toolchain needed.
       - run: sh docs/tests/run-discipline-tests.sh
 
+  agents-lint:
+    name: agents-lint (root AGENTS.md and CLAUDE.md)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Concrete and ready — the agent-entry linter needs no toolchain. It DOES
+      # need a root AGENTS.md: unlike the linters above it hard-fails when its
+      # subject is missing, because a check that skips its own subject proves
+      # nothing. If you drop the agent entry points, delete this job with them.
+      - run: sh docs/agents/agents-lint.sh
+
   lint:
     name: lint (‹your linter/formatter›)
     runs-on: ubuntu-latest

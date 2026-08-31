@@ -16,8 +16,11 @@
 # bad-argument exit) is caught rather than mistaken for a rejection.
 #
 # Fixtures come in two shapes, so the runner dispatches per suite:
-#   directory — the linter is pointed at a case directory (adr-lint, prd-lint)
-#   file      — the linter reads a single file argument     (pr-link-lint, commit-msg)
+#   directory — the linter is pointed at a case directory
+#   file      — the linter reads a single file argument
+# Which suite takes which shape is the dispatch list at the foot of this file.
+# That list is deliberately the only place it is written down: naming the suites
+# here as well gives a second copy that goes stale the next time one is added.
 #
 # Coverage floor. A test that never runs proves nothing, so the runner fails if a
 # wired suite yields no recognized cases — it requires every present suite to keep
@@ -130,6 +133,7 @@ run_dir_suite  docs/prd/prd-lint.sh    docs/prd/tests              prd-lint
 run_file_suite docs/ci/pr-link-lint.sh docs/ci/tests/pr-link  .md  pr-link-lint
 run_file_suite .githooks/commit-msg    .githooks/tests/commit-msg  .txt  commit-msg
 run_dir_suite  docs/tasks/audit-record-lint.sh docs/tasks/tests    audit-record-lint
+run_dir_suite  docs/agents/agents-lint.sh      docs/agents/tests   agents-lint
 
 # Global floor: if nothing ran at all, the runner is misconfigured (wrong working
 # directory, an invocation via a symlink, or a kit with every suite deleted) — a
