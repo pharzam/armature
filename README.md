@@ -35,11 +35,17 @@ the frame that gives a thing its strength.
 2. **[`docs/engineering-discipline.md`](docs/engineering-discipline.md)** — how we work: the
    quality gate every substantive task passes, plus branches, tests, reviews, and
    ADRs. Read before your first commit.
+3. **[`AGENTS.md`](AGENTS.md)** — if you are a coding agent, start here instead. It
+   is the short, accurate summary of the two documents above, and the index to the
+   rest. The long documents stay authoritative.
 
 ## What's inside
 
 | Piece | What it holds |
 |-------|---------------|
+| [`AGENTS.md`](AGENTS.md) | The agent entry point: the quality gate, R1–R12, the checks, and which document is authoritative for each rule — in under 1,500 words. |
+| [`CLAUDE.md`](CLAUDE.md) | One line, `@AGENTS.md`, so Claude Code loads the same guide. No second copy to drift. |
+| [`docs/agents/`](docs/agents/) | What the entry points are and what they may not become, plus [`agents-lint.sh`](docs/agents/agents-lint.sh), the discipline test that derives its expectations from the documents they summarise ([ADR-0004](docs/adr/0004-ship-agent-entry-points.md)). |
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate, the reusable solution-selection standard, and every working practice. |
 | [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R12): the ticket policy the gate assumes. |
