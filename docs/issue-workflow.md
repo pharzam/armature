@@ -148,7 +148,20 @@ its own.
   is a review of the *plan* — lighter than, and separate from, the uncapped
   [code review rounds](engineering-discipline.md#reviewing-until-findings-decay)
   that come after the code works. **Comment the plan and the confirmation on the
-  issue**, so the next context sees both the plan and that it was checked.
+  issue**, so the next context sees both the plan and that it was checked. The
+  reviewer may be a person or a fresh agent session; see
+  [Who may review](engineering-discipline.md#who-may-review).
+- **The plan review is architecture and scope — not implementation approval.**
+  It asks whether the slicing is right, whether the steps cover the DoD, whether
+  the approach fits the [guardrails](guardrails.md) and the
+  [ADRs](adr/), and **how big the result is allowed to get**. It does not approve
+  the implementation, which does not exist yet. A reviewer who agreed to a plan's
+  shape has *not* thereby agreed to whatever size arrives under it: a step that
+  grows past the scale the plan implied goes back to the issue as a new slice or
+  a child sub-issue under [R11](#r11--single-goal-issues), not through on the
+  strength of the earlier confirmation. Where scale is a real risk, the plan says
+  the bound out loud — and an approach whose size cannot be bounded in advance is
+  itself a finding.
 
 R12 makes [R8](#r8--test-driven-strict-red-then-green)'s "plan first" concrete: R8
 says a plan goes on the issue before the first test; R12 says what that plan is — an
@@ -170,6 +183,7 @@ kit already ships the green rows.
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |
+| Reviewer independence and the review record (commit, reviewer, lens, verdict) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md) | — | ‹check the issue carries a review record› | — | Written rule until wired |
 | The agent entry points cover the gate and the numbered rules | [ADR-0004](adr/0004-ship-agent-entry-points.md) | [`pre-commit`](../.githooks/pre-commit) | [`agents-lint`](agents/agents-lint.sh) | — | Enforced |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:

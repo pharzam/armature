@@ -42,13 +42,14 @@ Sources of truth, written once.
 
 Every substantive task passes **eight** ordered steps, in this order. Before step
 1, an issue is open, and the work is sliced into an ordered, Definition-of-Done
-covering, test-first plan that is reviewed once and recorded on the issue.
+covering, test-first plan that is reviewed once and recorded on the issue. That
+plan review is architecture and scope, never implementation approval.
 
 1. **Isolate.** Work in a per-task git worktree branched off `origin/main`, never in the operator's own checkout.
 2. **Honor the guardrails.** Before you write code, read the acceptance criteria, [`docs/guardrails.md`](docs/guardrails.md), and the [ADRs](docs/adr/) the ticket references.
 3. **Test first.** Write the failing test, watch it fail for the right reason, then write the code.
 4. **Make long tasks visible.** Anything that can run over ten seconds shows which step runs and that it lives.
-5. **Review until findings decay.** Independent blind rounds, a different lens each round, until one finds nothing material.
+5. **Review until findings decay.** Independent blind rounds, a different lens each round, until one finds nothing material. A reviewer is a person or a fresh agent session — the requirement is [independence](docs/adr/0005-independent-review-may-be-an-agent.md), not reviewer type — and summarised text gets a clause-by-clause semantic pass.
 6. **Be honest, keep evidence.** Report a failure as a failure, and review the producing code before a costly action.
 7. **Keep the documentation current.** Every document the change leaves stale is fixed in the same pull request.
 8. **Close out in the same PR.** Tick the boxes, write the verdict, and move the task line from backlog to completed.

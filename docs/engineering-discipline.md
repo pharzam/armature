@@ -123,7 +123,11 @@ the plan, the tests, or another technical part of the task.
 
 5. **Review until findings decay.** After the code works, run rounds of
    independent blind reviews — see
-   [Reviewing until findings decay](#reviewing-until-findings-decay).
+   [Reviewing until findings decay](#reviewing-until-findings-decay). A reviewer
+   is a person **or** a fresh agent session; what the round must have is
+   [independence](#who-may-review), not a particular kind of reviewer. Text that
+   summarises another document gets a
+   [clause-by-clause semantic pass](#reviewing-for-semantic-agreement).
 
 6. **Be honest, keep evidence.** State outcomes plainly and commit run evidence
    under `‹evidence store›` — see [Honesty and evidence](#honesty-and-evidence).
@@ -195,11 +199,112 @@ fresh — it does not see your reasoning — and each round applies a different 
   for example data leakage, race conditions, off-by-one, unhandled errors›`,
 - guardrails and acceptance criteria,
 - clean and simple,
-- adversarial bug-hunt.
+- adversarial bug-hunt,
+- semantic agreement — does each changed sentence still mean what its source
+  means? See [Reviewing for semantic agreement](#reviewing-for-semantic-agreement).
 
 Fix every real finding. Keep the rounds running until one round finds nothing
 material. One pass is never enough. Each round catches a different class of
 error.
+
+### Who may review
+
+A reviewer is a **human or a fresh agent session**. The requirement is
+independence, not the reviewer's species —
+[ADR-0005](adr/0005-independent-review-may-be-an-agent.md). Human review is an
+escalation, not a universal requirement.
+
+Independence has four levels. A review claims only the ones it actually had:
+
+| Level | What it means | Required for |
+| ----- | ------------- | ------------ |
+| **Context** | A fresh session whose brief is the issue's problem statement, the acceptance criteria, the source documents and the diff — and **not** the author's reasoning or any earlier round's verdict. | Every review |
+| **Method** | A different lens and a different prompt from the round before it. | Every round after the first |
+| **Execution** | A separate run with its own record on the issue. | Every review |
+| **Model** | A different model, or a different provider. | High-risk work — a governance change, a change to the checks themselves, or anything feeding a [costly or irreversible action](#review-before-a-costly-or-irreversible-action) — **where the adopter has a second model to reach for** |
+
+Two agents given the same prompt, the same context and the same model are not two
+reviewers. They are one reviewer run twice, and they share every blind spot. The
+levels turn "a fresh context reviewed it" into a specific claim instead of a
+comfortable one.
+
+Be exact about what that buys. **No mechanism verifies any of it.** Nothing reads
+a review record, and nothing can prove a reviewer truly did not see the author's
+reasoning. What the levels buy is a claim precise enough to be *checked by a
+reader who bothers*, and precise enough to be **wrong** — which an unfalsifiable
+"it was reviewed" never was. That is a real gain and a small one, and overstating
+it here would be the same defect this section exists to catch.
+
+**The issue holds both halves, so a brief must say which half.** R7 puts the
+author's action, reasons and tradeoffs on the issue, and R12 puts the plan there;
+context independence says the reviewer must not read them. They live in the same
+thread. So the reviewer's brief **names what it may read** — the issue's problem
+statement and acceptance criteria, the source documents, and the diff at a fixed
+commit — and the author's decision comments are outside it. On a forge where one
+thread carries everything this is a discipline, not a mechanism: a reviewer can
+always scroll, and an honest record says what it was handed rather than what it
+was meant to avoid.
+
+**Where the adopter runs out of levels, the ladder stops and the record says so.**
+A one-person team with one model cannot reach model independence, and cannot put a
+second human operator on top of a tie. That is a limit of the adopter, not a
+failure of the review: claim the levels you had, name the ones you could not
+reach, and let a later reader weigh the distance. A limit recorded can be judged;
+a limit implied cannot.
+
+A [deterministic check](issue-workflow.md#r5--deterministic-over-llm-based) still
+outranks any reviewer, human or agent. Review is what is left after every claim a
+script can settle has been settled by a script — never a reason to leave a
+mechanizable claim to judgement.
+
+### What a round records
+
+A verdict that does not say what it read is not evidence. Each round comments on
+the issue with:
+
+- the **commit** it reviewed — a fixed one; a moving target cannot be reviewed,
+- the **reviewer** — the model and version, or the person,
+- the **lens** and the input it was given,
+- its **raw findings**, before triage,
+- the **fixes** made, and its **verdict**.
+
+### When reviewers disagree
+
+Escalate by the task's risk: a second reviewer at a higher independence level,
+and a human operator at the top. Two reviewers who disagree do not average their
+verdicts, and the author does not break the tie.
+
+Where an adopter has no second operator to escalate to, the disagreement is
+**recorded unresolved** and carried into the adopter's own decision process. An
+unresolved disagreement written down is a known risk; one silently broken by the
+author is a false green.
+
+## Reviewing for semantic agreement
+
+A check that passes proves what it measures, not what you meant. The kit's own
+linters are explicit about this: [`agents-lint.sh`](agents/agents-lint.sh) proves
+presence, structure and coverage over the agent entry points and
+[says plainly](agents/README.md) that it does *not* prove that a compressed
+sentence means what its source paragraph means.
+
+So when a change edits a summary, a rule, a checklist or any text that stands in
+for another document, one round reviews it **clause by clause** against its
+source. Not the file as a whole — clause by clause, because that is the grain at
+which a summary goes wrong: a qualifier dropped, a "must" softened to "should", a
+count left behind after the thing it counts changed.
+
+For each changed clause, the reviewer answers three questions and records the
+answers with the round:
+
+1. **Does it still mean what the source means?** A narrower or broader claim is a
+   defect, not a paraphrase.
+2. **Does the source still say it?** A summary of a paragraph that moved or went
+   away is stale, and staleness in a summary reads exactly like currency.
+3. **Is anything asserted that no source supports?** An invented number, path or
+   command is the worst class of this defect, because it is the most convincing.
+
+This is the review the [DoD checklist](tests/dod-checklist.md) collects, and it is
+the residual the deterministic checks hand over by design.
 
 ## Review before a costly or irreversible action
 
