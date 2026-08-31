@@ -65,3 +65,17 @@ jobs:
       # one case directory per assertion -- and this check is repo-wide. Its own
       # fixtures ARE run by that runner, from docs/tasks/tests/.
       - run: sh docs/tasks/audit-record-lint.sh
+
+  agents-lint:
+    name: agents-lint (root AGENTS.md and CLAUDE.md)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Lints the root agent entry points against the documents they summarise,
+      # deriving the gate steps, the rules and the shipped-check set from the
+      # tree rather than holding a second copy of them. Its own job for the same
+      # reason as audit-record-lint above -- the runner is a fixture harness and
+      # this check is repo-wide; its fixtures ARE run there, from
+      # docs/agents/tests/. Unlike audit-record-lint this check DOES apply to an
+      # adopter, so it also ships in both templates under docs/ci/.
+      - run: sh docs/agents/agents-lint.sh

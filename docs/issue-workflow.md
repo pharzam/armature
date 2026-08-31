@@ -170,6 +170,7 @@ kit already ships the green rows.
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |
+| The agent entry points cover the gate and the numbered rules | [ADR-0004](adr/0004-ship-agent-entry-points.md) | [`pre-commit`](../.githooks/pre-commit) | [`agents-lint`](agents/agents-lint.sh) | — | Enforced |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in

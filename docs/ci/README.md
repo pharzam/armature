@@ -14,7 +14,8 @@ into the place it expects.
 **Live example — the kit runs its own.** Armature's repo activates the *ready-as-is*
 subset for itself, under [`.github/workflows/`](../../.github/workflows/):
 [`ci.yml`](../../.github/workflows/ci.yml) (`adr-lint`, `prd-lint`,
-`discipline-tests`), [`pr-title.yml`](../../.github/workflows/pr-title.yml), and
+`discipline-tests`, `audit-record-lint`, `agents-lint`),
+[`pr-title.yml`](../../.github/workflows/pr-title.yml), and
 [`pr-link.yml`](../../.github/workflows/pr-link.yml). It omits the `lint`, `tests`,
 and `security` jobs because the kit ships no product code to run them against — a
 worked instance of "delete any job your project does not need." Use those files as a
@@ -48,6 +49,7 @@ branch + "pipelines must succeed").
 | `adr-lint` | `docs/adr/` discipline, via [`adr-lint.sh`](../adr/adr-lint.sh). | Ready as-is. |
 | `prd-lint` | `docs/prd/` discipline, via [`prd-lint.sh`](../prd/prd-lint.sh). | Ready as-is. |
 | `discipline-tests` | Runs each discipline linter against its good/bad fixtures, via [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). | Ready as-is. |
+| `agents-lint` | The root `AGENTS.md` and `CLAUDE.md` against the documents they summarise, via [`agents-lint.sh`](../agents/agents-lint.sh). | Ready as-is — but it **needs a root `AGENTS.md`**. It is the one job here that hard-fails on a slimmed kit; delete it if you drop the [agent entry points](../agents/README.md). |
 | `lint` | Your formatter/linter. | Fill `‹…›`. |
 | `tests` | The test ladder, cheap → expensive — unit → integration → end-to-end (see [`test-levels.md`](../tests/test-levels.md)). | Fill each `‹…›`. |
 | `security` | Secret, dependency, and static-analysis scans over full history, behind `‹security scanner›` (see [`security-checklist.md`](../tests/security-checklist.md)). | Fill `‹…›`. |

@@ -3,7 +3,8 @@
 # pre-commit — run the cheap quality-gate checks before a commit is recorded,
 # so a violation is caught here rather than in CI (docs/ci/) or review.
 #
-# It runs the ADR and PRD linters out of the box (docs-only, no toolchain needed). The
+# It runs the ADR, PRD, audit-record and agent-entry linters, plus the discipline
+# self-tests, out of the box (docs-only, no toolchain needed). The
 # lint, test-level, and security steps are ‹…› placeholders you fill for your stack —
 # keep them cheap-first (unit before integration before end-to-end), so a failure
 # stops the expensive checks; see docs/tests/test-levels.md. This hook is inert until
@@ -35,6 +36,15 @@ fi
 #     to 6 and 9 of docs/tasks/T-3v9q.md (see docs/tasks/audit-record-lint.sh).
 if [ -f docs/tasks/audit-record-lint.sh ]; then
 	sh docs/tasks/audit-record-lint.sh
+fi
+
+# 1e. Agent-entry discipline — keeps the root AGENTS.md and CLAUDE.md honest
+#     against the documents they summarise (see docs/agents/agents-lint.sh).
+#     The `if [ -f ]` guards only whether the SCRIPT runs, which is how a kit
+#     that dropped the entry points still commits; the check itself hard-fails
+#     on every missing input, and CI carries no such guard.
+if [ -f docs/agents/agents-lint.sh ]; then
+	sh docs/agents/agents-lint.sh
 fi
 
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›

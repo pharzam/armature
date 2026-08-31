@@ -73,9 +73,9 @@ memory:
 
 - **Install the git hooks** — run `git config core.hooksPath .githooks` once per
   clone. This turns on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
-  [commit format](#commit-messages), and the `pre-commit` hook runs the
-  [ADR linter](#testing) and the [PRD linter](#testing) plus the fast gate you
-  fill in. See [Git hooks](#git-hooks).
+  [commit format](#commit-messages), and the `pre-commit` hook runs the four
+  repo-file [discipline linters](#testing) and their self-tests, plus the fast
+  gate you fill in. See [Git hooks](#git-hooks).
 - **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
   commands from [`tests/test-levels.md`](tests/test-levels.md)
   (`‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`),
@@ -434,9 +434,10 @@ each one into the hook and CI wherever its input is available.
 ## Continuous integration (optional)
 
 CI runs this whole gate automatically on every change, so it is enforced by the
-forge rather than by memory. It is the **authority**: its checks — the
-[ADR linter](#testing), the [PRD linter](#testing), the
-[PR-link check](#testing), the [test levels](#testing), lint, a security scan, and
+forge rather than by memory. It is the **authority**: its checks — the five
+[discipline linters](#testing) (ADR, PRD, agent-entry, audit-record and the
+PR-link check), their [fixture self-tests](#testing), the
+[test levels](#testing), lint, a security scan, and
 the [commit-format](#commit-messages) check — are the ones you make *required*
 before a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
 
@@ -460,7 +461,8 @@ Two hooks ship with the kit:
 
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
-- **`pre-commit`** — runs the [ADR linter](#testing) and the [PRD linter](#testing),
+- **`pre-commit`** — runs the four repo-file [discipline linters](#testing) — ADR,
+  PRD, audit-record and agent-entry — and their fixture self-tests,
   then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
   `‹integration test command›`), and the `‹security scanner›` step you fill in for
   your stack. Keep it cheap-first; the full suite — the end-to-end level and the
