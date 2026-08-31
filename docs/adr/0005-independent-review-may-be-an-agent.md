@@ -89,7 +89,12 @@ Two further rules bound it:
 
 Unresolved disagreement escalates by the task's risk: a second reviewer at a
 higher independence level, and a human operator at the top. Two reviewers who
-disagree do not average their verdicts, and the author does not break the tie.
+disagree do not average their verdicts, and the author does not break the tie —
+and where there is no second operator to escalate to, the disagreement is
+**recorded unresolved** rather than settled by the author. That carve-out, and
+the one on level 4 above, are the same rule: claim the independence you had, name
+the level you could not reach, and let a later reader weigh the distance. See
+[Consequences](#consequences).
 
 We reject three alternatives:
 
