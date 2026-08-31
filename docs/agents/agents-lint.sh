@@ -75,22 +75,26 @@
 #   A16 no rule is named that the SOURCE does not define.
 #   A17 the spelled rule count equals the SOURCE count.
 #   A18 a rule line ends with ` (written rule)` exactly when the SOURCE
-#       enforcement table gives it no mechanism, and never contains that
-#       phrase when it does.
+#       enforcement table gives it no mechanism in any of its three mechanism
+#       columns, and never contains that phrase when it does. A mechanism cell
+#       this check cannot read is reported, never guessed either way.
 #   A19 every relative link target resolves under ROOT.
 #   A20 the sources-of-truth table names real documents, assigns each a
 #       substantive authority, and names the two documents this check derives
 #       from in rows of their own.
 #   A21 every ready-to-run check the TREE ships is named as its own command
 #       line, so the section cannot go stale when a linter is added.
-#   A22 every `sh <path>` the file presents that names a repository shell
-#       script, anywhere in the file, resolves to a real file.
+#   A22 every `sh <path>` the file presents whose path ends in `.sh`, anywhere
+#       in the file, resolves to a real file. (A presented command with no
+#       `.sh` suffix — `sh scripts/build` — is outside the harvest.)
 #   A23 every required literal in the A23_PAIRS table below appears, each
 #       inside its own named section. (No count is written here on purpose: a
 #       spelled count in a comment is the same drift A13 and A17 exist to stop,
 #       and nothing would check it. The table is the count.)
-#   A24 README.md and docs/onboarding-for-engineers.md LINK the entry point
-#       from the section a new operator reads.
+#   A24 README.md and docs/onboarding-for-engineers.md LINK the entry point —
+#       from the section a new operator reads where that section exists, and
+#       from anywhere in the file where it does not, because an adopter owns
+#       its own README's shape. The target is resolved, not matched by suffix.
 #   A25 this script's own leading comment block states what it does not prove.
 #   A26 AGENTS.md holds no HTML comment. (Runs beside A9 — same class of hole.)
 #
@@ -463,15 +467,27 @@ n_rules=$(printf '%s' "$RULES" | awk 'NF { n++ } END { print n + 0 }')
 # rule's honest marking.
 MECH_OUT=$(sect "$workflow" '## What is enforced where' | awk -F'|' '
 	function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
-	# A cell names a real mechanism unless it is empty, a dash, or an unfilled
-	# ‹…› marker. The dashes and the marker are compared as UTF-8 byte strings,
-	# so the result is identical under LC_ALL=C and under a UTF-8 locale.
+	# Does a mechanism cell name a mechanism? Three answers, not two.
+	#   0  a recognised "nothing here" token: empty, a dash, or a ‹…› marker
+	#   1  a named mechanism: a Markdown link or a code span
+	#  -1  unrecognised — REPORTED, never guessed
+	# Guessing either way is wrong. Reading unrecognised text as a mechanism
+	# would make this check demand that AGENTS.md drop an honest
+	# " (written rule)" marking; reading it as nothing would let the file claim
+	# a genuinely enforced rule is unenforced, and pass. So say so instead, the
+	# way beyond_vocabulary() does for a spelled count it does not know.
+	# NOTE: no apostrophe anywhere in this awk program -- it is single-quoted.
+	# The dashes and the marker are compared as UTF-8 byte strings, so the
+	# result is identical under LC_ALL=C and under a UTF-8 locale.
 	function mech(s,   t) {
 		t = trim(s)
 		if (t == "" || t == "-" || t == "--") return 0
 		if (t == "\342\200\224" || t == "\342\200\223") return 0
 		if (index(t, "\342\200\271") == 1) return 0
-		return 1
+		# "\140" is a backtick. Written as an escape because a lone backtick
+		# inside this $( … ) command substitution would open a nested one.
+		if (index(t, "\140") > 0 || index(t, "](") > 0) return 1
+		return -1
 	}
 	/^\|[ \t:|-]*$/ { next }
 	/^\|/ {
@@ -483,9 +499,16 @@ MECH_OUT=$(sect "$workflow" '## What is enforced where' | awk -F'|' '
 		# data. Reading the prose would classify every unrecognised wording --
 		# "Not enforced", "Planned", "None" -- as enforced, which is the wrong
 		# default: it would make this check demand that AGENTS.md drop a rule s
-		# honest " (written rule)" marking. So read the Local hook and CI cells,
-		# and use the Status cell only to catch a table that contradicts itself.
-		backed = (mech($4) || mech($5))
+		# honest " (written rule)" marking. So read all THREE mechanism columns
+		# -- Local hook, CI and Branch protection; a rule an adopter enforces by
+		# branch protection alone is enforced -- and use the Status cell only to
+		# catch a table that contradicts itself.
+		backed = 0
+		for (col = 4; col <= 6; col++) {
+			m = mech($col)
+			if (m < 0) { printf "E|enforcement-table row \"%s\": mechanism cell \"%s\" is neither a named mechanism (a link or a code span) nor a recognised empty cell (—, or a ‹…› marker); this check will not guess whether it enforces anything\n", trim($2), trim($col); continue }
+			if (m > 0) backed = 1
+		}
 		if (backed && st ~ /^Written rule/)
 			printf "E|enforcement-table row \"%s\" names a mechanism but its Status still reads \"%s\"; the table contradicts itself\n", trim($2), st
 		if (!backed) next
@@ -507,7 +530,6 @@ IFS=$oldIFS
 RSEC=$(sect "$agents" '## The issue rules')
 
 # --- A14, A15, A18. one line per rule, with anchor, title, prose and marker -
-FOUND=' '
 if [ "$n_rules" -eq 0 ]; then
 	err A14 'no rule could be derived from docs/issue-workflow.md — its "## R<n> — Title" headings were renamed, so this assertion checked nothing'
 else
@@ -523,21 +545,37 @@ else
 		if [ "$cnt" -ne 1 ]; then
 			err A14 "rule $id has $cnt lines in \"## The issue rules\"; it must have exactly one, shaped \`- **$id** — [$title](docs/issue-workflow.md#$anchor): …\`"
 		else
-			FOUND="$FOUND$id "
-			# Compared against the link TARGET, and for an exact ending, not as
-			# a substring of the line: a containment test accepts a corrupted
-			# anchor that merely starts with the derived one.
-			anchored=$(printf '%s\n' "$rline" | awk -v want="issue-workflow.md#$anchor" '
+			# The link TARGET is RESOLVED and compared for equality — both the
+			# path and the fragment. A tail match would accept a decoy: this
+			# change itself ships in-tree copies of docs/issue-workflow.md under
+			# docs/agents/tests/, so a rule line could link a fixture stub and
+			# pass. A containment test would also accept an anchor that merely
+			# STARTS with the derived one.
+			anchored=$(printf '%s\n' "$rline" | awk -v wantpath="docs/issue-workflow.md" -v wantfrag="$anchor" '
+				function norm(p,   n, parts, i, k, out, s) {
+					n = split(p, parts, "/")
+					k = 0
+					for (i = 1; i <= n; i++) {
+						if (parts[i] == "" || parts[i] == ".") continue
+						if (parts[i] == "..") { if (k > 0) k--; else return "" ; continue }
+						out[++k] = parts[i]
+					}
+					s = ""
+					for (i = 1; i <= k; i++) s = (i == 1) ? out[i] : s "/" out[i]
+					return s
+				}
 				{
 					line = $0
 					while (match(line, /\]\([^)]*\)/)) {
 						t = substr(line, RSTART + 2, RLENGTH - 3)
 						line = substr(line, RSTART + RLENGTH)
-						if (length(t) >= length(want) && substr(t, length(t) - length(want) + 1) == want) found = 1
+						frag = ""
+						if (match(t, /#.*$/)) { frag = substr(t, RSTART + 1); t = substr(t, 1, RSTART - 1) }
+						if (norm(t) == wantpath && frag == wantfrag) found = 1
 					}
 				}
 				END { print found ? 1 : 0 }')
-			[ "$anchored" -eq 1 ] || err A14 "rule $id's line does not link its own derived anchor issue-workflow.md#$anchor"
+			[ "$anchored" -eq 1 ] || err A14 "rule $id's line does not link docs/issue-workflow.md#$anchor — its own derived anchor, in the real document"
 			case $rline in
 			*"$title"*) : ;;
 			*) err A14 "rule $id's line does not carry its source title \"$title\"; an anchor alone lets a line describe the wrong rule" ;;
@@ -576,10 +614,14 @@ if [ -n "$RSEC" ]; then
 		}
 		{
 			line = $0
-			while (match(line, /issue-workflow\.md#r[0-9]+[-a-z0-9]*/)) {
+			# [Rr] and the mixed-case class: every anchor this check knows is
+			# derived through tolower(), so an anchor written with a capital R
+			# can never be known — and a lowercase-only scan could not even see
+			# it to report it.
+			while (match(line, /issue-workflow\.md#[Rr][0-9]+[-A-Za-z0-9]*/)) {
 				a = substr(line, RSTART, RLENGTH)
 				sub(/^.*#/, "", a)
-				if (!(a in okanchor)) print "AGENTS.md links issue-workflow.md#" a ", which docs/issue-workflow.md does not define"
+				if (!(tolower(a) in okanchor)) print "AGENTS.md links issue-workflow.md#" a ", which docs/issue-workflow.md does not define"
 				line = substr(line, RSTART + RLENGTH)
 			}
 		}
@@ -624,9 +666,15 @@ oldIFS=$IFS; IFS=$nl
 for t in $LINKS; do
 	n_links=$((n_links + 1))
 	IFS=$oldIFS
+	# The wrapping is what makes a bare `..` a component rather than a prefix:
+	# `*../*` alone requires a slash AFTER the dots, so a target of exactly ".."
+	# fell through and `[ -e "$root/.." ]` is always true.
 	case $t in
-	/* | *../*) err A19 "AGENTS.md links $t, which leaves the repository root" ;;
-	*) [ -e "$root/$t" ] || err A19 "AGENTS.md links $t, which is not a path in this repository" ;;
+	/*) err A19 "AGENTS.md links $t, which is an absolute path, not a path in this repository" ;;
+	esac
+	case "/$t/" in
+	*/../*) err A19 "AGENTS.md links $t, which leaves the repository root" ;;
+	*)      [ -e "$root/$t" ] || err A19 "AGENTS.md links $t, which is not a path in this repository" ;;
 	esac
 	IFS=$nl
 done
@@ -727,10 +775,14 @@ CMDS=$(awk '
 			line = substr(line, RSTART + RLENGTH)
 			# Trailing sentence punctuation belongs to the prose, not the path.
 			sub(/[.,;:)]+$/, "", c)
-			# Only a token that names a repository shell script is a command.
-			# Without this, the English word "sh" in ordinary prose -- "POSIX sh
-			# and POSIX awk" -- harvested "and" and failed a correct document.
-			if (c ~ /\// && c ~ /\.sh$/) print c
+			# Only a token that names a shell script is a command. Without this,
+			# the English word "sh" in ordinary prose -- "POSIX sh and POSIX
+			# awk" -- harvested "and" and failed a correct document.
+			# No slash is required: an invented `sh setup.sh` at the repository
+			# root must be caught too, and no English word ends in ".sh".
+			# LIMIT, recorded rather than hidden: a presented command with no
+			# .sh suffix -- `sh scripts/build` -- is outside this harvest.
+			if (c ~ /\.sh$/) print c
 		}
 	}' "$agents")
 n_cmds=0
@@ -794,8 +846,16 @@ IFS=$oldIFS
 # The link target is RESOLVED against the directory of the file that carries it
 # and compared for equality with the root deliverable. A suffix test would have
 # accepted a link to any path ending in the name -- and this change itself ships
-# 27 other files called AGENTS.md under docs/agents/tests/, so the decoy set is
-# real and in-tree.
+# in-tree copies of AGENTS.md under docs/agents/tests/, so the decoy set is real.
+# (No count is written here: the fixture suite grows, and a spelled count in a
+# comment is the drift A13 and A17 exist to stop.)
+#
+# THE HEADING IS A PREFERENCE, THE LINK IS THE REQUIREMENT. Armature owns the
+# shape of its own docs/ files, but README.md is the first file an adopter
+# replaces wholesale -- so a missing SECTION falls back to the whole file rather
+# than failing. What may never be missing is the link itself. Requiring
+# `## Start here` by name would go red on every adopter that rewrote its README,
+# for a heading this kit has no business dictating.
 A24_TRIPLES='README.md|## Start here|AGENTS.md
 README.md|## What'"'"'s inside|AGENTS.md
 README.md|## What'"'"'s inside|CLAUDE.md
@@ -812,8 +872,13 @@ for t in $A24_TRIPLES; do
 	*)   fdir='' ;;
 	esac
 	body=$(sect "$root/$f" "$h")
+	scope="under \"$h\""
 	if [ -z "$body" ]; then
-		err A24 "$f has no body under \"$h\" — the heading was renamed, so a reader is no longer pointed at $want"
+		body=$(cat "$root/$f")
+		scope="anywhere in it (it carries no \"$h\" section)"
+	fi
+	if [ -z "$body" ]; then
+		err A24 "$f is empty, so it points a reader at nothing"
 	else
 		printf '%s\n' "$body" | awk -v want="$want" -v dir="$fdir" '
 			function norm(p,   n, parts, i, k, out, s) {
@@ -835,11 +900,14 @@ for t in $A24_TRIPLES; do
 					line = substr(line, RSTART + RLENGTH)
 					sub(/#.*$/, "", t)
 					if (t == "" || t ~ /^https?:/ || t ~ /^mailto:/ || t ~ /^\//) continue
+					# A trailing slash names a directory, not this file; norm()
+					# drops empty components, so "AGENTS.md/" would compare equal.
+					if (t ~ /\/$/) continue
 					if (norm(dir == "" ? t : dir "/" t) == want) found = 1
 				}
 			}
 			END { exit found ? 0 : 1 }' \
-			|| err A24 "$f does not link the root $want under \"$h\"; a deliverable nobody is pointed to is the same failure as no deliverable"
+			|| err A24 "$f does not link the root $want $scope; a deliverable nobody is pointed to is the same failure as no deliverable"
 	fi
 	IFS=$nl
 done

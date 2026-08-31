@@ -85,8 +85,11 @@ memory:
   [Continuous integration](#continuous-integration-optional). CI is optional but
   recommended; it is the authority the hooks give you fast feedback against.
 - **Confirm the discipline linters run** — `sh docs/adr/adr-lint.sh` should print
-  `adr-lint: OK` and `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`. Both
-  ship wired into the hook and the CI templates.
+  `adr-lint: OK`, `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`, and
+  `sh docs/agents/agents-lint.sh` should print `agents-lint: OK`. All three ship
+  wired into the hook and the CI templates. The third needs a root
+  [`AGENTS.md`](../AGENTS.md): keep the [agent entry points](agents/README.md),
+  or drop that check along with them.
 
 ## Working a task under the quality gate
 
@@ -434,8 +437,8 @@ each one into the hook and CI wherever its input is available.
 ## Continuous integration (optional)
 
 CI runs this whole gate automatically on every change, so it is enforced by the
-forge rather than by memory. It is the **authority**: its checks — the five
-[discipline linters](#testing) (ADR, PRD, agent-entry, audit-record and the
+forge rather than by memory. It is the **authority**: its checks — the
+[discipline linters](#testing) the templates ship (ADR, PRD, agent-entry and the
 PR-link check), their [fixture self-tests](#testing), the
 [test levels](#testing), lint, a security scan, and
 the [commit-format](#commit-messages) check — are the ones you make *required*

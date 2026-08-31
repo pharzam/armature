@@ -9,7 +9,7 @@ them honest. The decision behind them is
 | [`AGENTS.md`](../../AGENTS.md) | The vendor-neutral agent guide, loaded at the repository root. A short, accurate index and summary of the rules an operator must know before changing this repository. |
 | [`CLAUDE.md`](../../CLAUDE.md) | The Claude Code compatibility entry point. Exactly one line, `@AGENTS.md`, so the same guide loads with no second copy that can drift. |
 | [`agents-lint.sh`](agents-lint.sh) | The deterministic check over both files. Runs in the [`pre-commit` hook](../../.githooks/pre-commit) and in [CI](../ci/). |
-| [`tests/`](tests/) | Its fixtures — one `good` case and 33 `bad-*` cases, run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
+| [`tests/`](tests/) | Its fixtures — one `good` case and one `bad-*` case per assertion, run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
 
 ## In plain terms
 

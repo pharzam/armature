@@ -66,6 +66,10 @@ pass the prose floor on its mandated title alone.
 | `bad-missing-literal` | FAIL, exit 1 | `git diff --check` removed from the checks section (A23) |
 | `bad-readme-no-pointer` | FAIL, exit 1 | the mini-root `README.md` keeps its `## Start here` prose but drops the link to `AGENTS.md` (A24) |
 | `bad-readme-decoy-pointer` | FAIL, exit 1 | `README.md` links `sub/AGENTS.md` — a real file with the right name that is **not** the root deliverable. A suffix test accepted it; the target is now resolved against the linking file's directory (A24) |
+| `bad-rule-decoy-link` | FAIL, exit 1 | a rule line linking `sub/docs/issue-workflow.md#r1--alpha-rule` — a real document, with the right anchor, that is not the one the expectations derive from. The same decoy shape as above, in the rules section (A14) |
+| `bad-enforcement-cell-unrecognised` | FAIL, exit 1 | a mechanism cell reading `none`. Honest English, but neither a named mechanism nor a recognised empty cell — so the check reports it instead of guessing which it means (A18) |
+| `bad-invented-command-root` | FAIL, exit 1 | an invented `sh setup.sh` — a repository-root script with no directory part. The first narrowing of the harvest required a slash, so this slipped through (A22) |
+| `bad-link-escapes-root` | FAIL, exit 1 | a link whose target is exactly `..`. The escape guard required a slash after the dots, so this fell through to an existence test that always succeeds (A19) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 
@@ -110,7 +114,8 @@ applied") own that residual.
 ## What these fixtures do NOT exercise
 
 A fixture cannot reach everything, and a suite that implies otherwise is worse
-than one that says so:
+than one that says so. This list names the **classes** of unfixtured branch, not
+every line of the script:
 
 - **A25 cannot be fixtured.** It reads the running script's own leading comment
   block, and a fixture case cannot vary the running script. It *can* now fail —
@@ -118,13 +123,19 @@ than one that says so:
   nothing recurring proves that.
 - **A21's empty-set floor is unreachable in the real tree**, because
   `agents-lint.sh` is itself one of the files the glob finds.
-- **A19's root-escape guard and its "no links at all" floor**, A22's "no commands
-  at all" floor, and the "section is empty" branches of A23 and A24 have no case
-  of their own.
-- **A22's narrowing has no case.** A22 harvests only a token that contains a `/`
-  and ends in `.sh`, so ordinary prose containing the word "sh" no longer fails.
-  That is a *green* property, not a red one, so it is verified by hand rather
-  than by a `bad-*` case.
+- **The "checked nothing" floors** have no cases: A19's "no links at all", A22's
+  "no commands at all", A20's "no data rows", A14's "no rule derived", A11's "no
+  gate step derived", A18's "empty mechanized set" and its "table holds no rows",
+  and the malformed-row branches of A18 and A20.
+- **The "section is empty" branches** of A10, A23 and A24, and A24's whole-file
+  fallback when a heading is absent.
+- **The `beyond_vocabulary` branch** of A13 and A17, which needs a source
+  declaring more than twenty steps or rules.
+- **Green properties are verified by hand, not by a `bad-*` case**, because a
+  fixture can only assert a failure. Those are: A22 no longer failing on ordinary
+  prose containing the word "sh" or on a sentence-final period; A18 staying green
+  when only the Status *prose* changes with no mechanism wired; and A24 accepting
+  an adopter README that carries the link outside the kit's own headings.
 - **Three of A24's four inbound-pointer triples**, and the individual pairs of
   A23's literal table. One fixture proves the **mechanism**; the pairs and triples
   are data, exactly as the thirteen required headings are.
