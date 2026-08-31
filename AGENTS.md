@@ -45,7 +45,7 @@ Every substantive task passes **eight** ordered steps, in this order. Before ste
 covering, test-first plan that is reviewed once and recorded on the issue.
 
 1. **Isolate.** Work in a per-task git worktree branched off `origin/main`, never in the operator's own checkout.
-2. **Honor the guardrails.** Read the acceptance criteria and [`docs/guardrails.md`](docs/guardrails.md) before you write code.
+2. **Honor the guardrails.** Before you write code, read the acceptance criteria, [`docs/guardrails.md`](docs/guardrails.md), and the [ADRs](docs/adr/) the ticket references.
 3. **Test first.** Write the failing test, watch it fail for the right reason, then write the code.
 4. **Make long tasks visible.** Anything that can run over ten seconds shows which step runs and that it lives.
 5. **Review until findings decay.** Independent blind rounds, a different lens each round, until one finds nothing material.

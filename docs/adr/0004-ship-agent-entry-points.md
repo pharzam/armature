@@ -123,7 +123,10 @@ design; a check placed deeper is not seen, which
   number is taken. The open backlog task about that collision is partly, not
   wholly, discharged: the branch-level duplication it describes still exists.
 - **Two governance sections now exist that did not before** — `## Agent entry
-  points` and `## Safety limits` in `engineering-discipline.md`. The second closes
-  a real hole: before this change the kit prohibited nothing about secrets,
-  sensitive data, history rewriting, or destructive operations. It had only a
-  security *scan* placeholder, which is a check, not a rule.
+  points` and `## Safety limits` in `engineering-discipline.md`. The second
+  closes a real hole: before this change the kit prohibited nothing about
+  secrets, sensitive data, or history rewriting, and had only a security *scan*
+  placeholder for them, which is a check rather than a rule. Destructive and
+  irreversible actions were the exception — the kit already governed those in
+  [Review before a costly or irreversible action](../engineering-discipline.md#review-before-a-costly-or-irreversible-action),
+  which the new section links rather than restates.

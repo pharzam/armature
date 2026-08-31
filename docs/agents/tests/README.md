@@ -39,7 +39,7 @@ fixed.
 
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
-| `good` | `agents-lint: OK`, exit 0 | a valid mini-root: thirteen headings in order, one H1 and no other heading-shaped line, three numbered gate steps under `**three** ordered steps`, three rule lines with derived anchors and source titles under `**three** numbered rules`, resolving links, a sources table, and every required literal |
+| `good` | `agents-lint: OK`, exit 0 | a valid mini-root: every required heading in order, one H1 and no other heading-shaped line, three numbered gate steps under `**three** ordered steps`, three rule lines with derived anchors and source titles under `**three** numbered rules`, resolving links, a sources table, and every required literal |
 | `bad-no-agents` | FAIL, exit 1 | `AGENTS.md` deleted — the deliverable-absent case, and the same failure the real tree produced before this work landed (A1) |
 | `bad-no-claude` | FAIL, exit 1 | `CLAUDE.md` deleted; the Claude entry point is a deliverable, not an option (A2) |
 | `bad-no-gate-source` | FAIL, exit 1 | `docs/engineering-discipline.md` deleted, so the gate steps cannot be derived (A3) |
@@ -149,6 +149,6 @@ every line of the script:
   an adopter README that carries the link outside the kit's own headings.
 - **Three of A24's four inbound-pointer triples**, and the individual pairs of
   A23's literal table. One fixture proves the **mechanism**; the pairs and triples
-  are data, exactly as the thirteen required headings are.
+  are data, exactly as the required headings are.
 
 Run one case: `sh docs/agents/agents-lint.sh docs/agents/tests/good`

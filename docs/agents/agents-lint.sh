@@ -204,6 +204,16 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 sect() {
 	awk -v h="$2" '
 		function lvl(s,   n) { n = 0; while (substr(s, n + 1, 1) == "#") n++; return n }
+		# A fence may carry up to three leading spaces and still be a fence
+		# (CommonMark), and the kit own README opens one that way inside a
+		# numbered list item. Spelled out rather than written with an interval
+		# expression, which POSIX awk does not have.
+		function isfence(s) {
+			return (s ~ /^```/    || s ~ /^~~~/ ||
+			        s ~ /^ ```/   || s ~ /^ ~~~/ ||
+			        s ~ /^  ```/  || s ~ /^  ~~~/ ||
+			        s ~ /^   ```/ || s ~ /^   ~~~/)
+		}
 		# Fence-aware: a `#` line inside a fenced code block is a shell comment,
 		# not a heading, and must not end the section above it. A9 bans such a
 		# line from AGENTS.md, but this primitive also reads README.md and
@@ -211,7 +221,7 @@ sect() {
 		# and a fenced quickstart whose first line is a comment is the most
 		# ordinary README edit there is. Without this, a section was truncated
 		# and A24 reported a link absent that sat four lines below.
-		/^```/ || /^~~~/ { fence = !fence }
+		isfence($0) { fence = !fence }
 		$0 == h && !fence { s = 1; hl = lvl($0); next }
 		s && !fence && substr($0, 1, 1) == "#" && lvl($0) <= hl { s = 0 }
 		s
@@ -268,7 +278,7 @@ prose_words() {
 		}'
 }
 
-# The thirteen required headings, in order. Held here the way adr-lint.sh holds
+# The required headings, in order. Held here the way adr-lint.sh holds
 # the Nygard sections: change AGENTS.md's shape and change this list in the SAME
 # change.
 HEADINGS='## What this repository is
@@ -722,7 +732,13 @@ for entry in $LINKS; do
 					gsub(/ /, "-", x)
 					return x
 				}
-				/^```/ || /^~~~/ { fence = !fence }
+				function isfence(s) {
+					return (s ~ /^```/    || s ~ /^~~~/ ||
+					        s ~ /^ ```/   || s ~ /^ ~~~/ ||
+					        s ~ /^  ```/  || s ~ /^  ~~~/ ||
+					        s ~ /^   ```/ || s ~ /^   ~~~/)
+				}
+				isfence($0) { fence = !fence }
 				!fence && /^#+ / { print slug($0) }
 			' "$root/$t")
 			case $nl$anchors$nl in
@@ -858,7 +874,7 @@ IFS=$oldIFS
 # a pattern as alternation. These pairs are the machine floor under the
 # issue-required content items that carry no derivation of their own; the
 # MECHANISM is proven by one fixture, and the pairs themselves are data, exactly
-# as A8's thirteen headings are. No count is written in prose anywhere: a spelled
+# as the required headings are. No count is written in prose anywhere: a spelled
 # count in a comment is the drift A13 and A17 exist to stop, and nothing would
 # check it. The table is the count.
 A23_PAIRS='## What this repository is|no product code
