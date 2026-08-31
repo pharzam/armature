@@ -81,12 +81,12 @@ below, and the review that rejected the first one is recorded on the issue.
    **The continuous-integration job is not part of this slice, and that is a
    defeat, not a design.** The intended step was to wire the linter into both
    gates. The `ci.yml` job is written and committed, but the credential available
-   to the agent that wrote it has no GitHub `workflow` scope, so every push
-   touching `.github/workflows/` is refused. Rather than leave the plan claiming a
-   step it did not finish, the job is scheduled as `T-1k9r` under **Next**. Check
-   before you trust any sentence about CI coverage: if
-   [`ci.yml`](../../.github/workflows/ci.yml) has no `audit-record-lint` job, the
-   linter runs in the pre-commit hook and the fixture suite only.
+   to the agent that wrote it had no GitHub `workflow` scope, so every push
+   touching `.github/workflows/` was refused. Rather than leave the plan claiming a
+   step it did not finish, the job was scheduled as `T-1k9r`. A maintainer pushed
+   it and it merged in `0f2a7b9`, so
+   [`ci.yml`](../../.github/workflows/ci.yml) now carries the `audit-record-lint`
+   job and this slice is complete.
 
 ## Definition of Done
 
@@ -106,7 +106,7 @@ tables at once and still look consistent.
 | 2 | Every standing claim cites a file and a line | `audit-record-lint.sh` block 2 |
 | 3 | The prose arithmetic matches the tables | `audit-record-lint.sh` block 3 |
 | 4 | Every finding an already-closed issue covers names that issue | `audit-record-lint.sh` block 4 |
-| 5 | Each follow-up is one line under **Next** with a stable ID | `audit-record-lint.sh` block 5 |
+| 5 | Each follow-up is exactly one line across its lifecycle — `## Now`, `## Next`, or a dated `## Log` entry | `audit-record-lint.sh` block 5 |
 | 6 | Every abbreviation used has a glossary row | `audit-record-lint.sh` block 6 |
 | 7 | The gate stays green | `run-discipline-tests.sh`, `adr-lint`, `prd-lint` |
 | 8 | Every claim the reports got wrong carries the correction | `audit-record-lint.sh` block 8, and the review rounds — see below |
@@ -448,17 +448,30 @@ Recorded so nobody derives them a second time.
 
 ## Out of scope (follow-ups)
 
-Scheduled under **Next** in [backlog.md](backlog.md): `T-5h8n`, `T-2q7d`,
-`T-8b4r`, `T-6f3w`, `T-9c5t`, `T-4x2k`, `T-7m6s`, `T-3d9v`, `T-1k9r`. Each names
-the closed issue it revives. None is started by this task.
+Nine follow-ups came out of this task: `T-5h8n`, `T-2q7d`, `T-8b4r`, `T-6f3w`,
+`T-9c5t`, `T-4x2k`, `T-7m6s`, `T-3d9v`, `T-1k9r`. Each names the closed issue it
+revives. None was started by this task.
 
-`T-1k9r` is different from the other eight: it is not a finding from the audits, it
-is **the half of this task's own close-out slice that could not land**. The
-`audit-record-lint` job for `.github/workflows/ci.yml` is written and committed,
-but the credential available to the agent that wrote it has no GitHub `workflow`
-scope, so the push is refused. Scheduling it is not a decision that it is
-low-value work — the check runs in the pre-commit hook and in the fixture suite
-meanwhile, and the record says so where it would otherwise imply CI coverage.
+This list is dated evidence of what the audits produced, so it keeps every ID
+even after an item finishes. It is **not** the live state. For that, read
+[backlog.md](backlog.md) — `## Now` and `## Next` — and the `## Log` in
+[completed.md](completed.md). `audit-record-lint.sh` block 5 holds the two in
+step: every ID here must be named by exactly one line across those three
+sections.
+
+`T-1k9r` was different from the other eight: it was not a finding from the audits,
+it was **the half of this task's own close-out slice that could not land**. The
+`audit-record-lint` job for `.github/workflows/ci.yml` was written and committed,
+but the credential available to the agent that wrote it had no GitHub `workflow`
+scope, so the push was refused. A maintainer pushed it, and it merged with this
+record in `0f2a7b9`. `T-1k9r` is **done** and its line is in
+[completed.md](completed.md).
+
+Closing it found a second defect, which [#57](https://github.com/pharzam/armature/issues/57)
+records: block 5 of the linter knew only `## Next`, so it failed the gate on both
+the documented `Next` to `Now` promotion and on completion itself. It required a
+task to stay deferred for ever. The first follow-up to finish was the one that
+exposed it.
 
 Two fixes do land here, because the kit's own rules force them. The abbreviation
 rule requires a glossary row in the same change that names an abbreviation, so

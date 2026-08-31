@@ -18,8 +18,6 @@
 # docs/tasks/tests/ and ARE run by run-discipline-tests.sh. It is deliberately NOT
 # a fifth suite inside that runner: the runner is a fixture harness with one case
 # directory per assertion, and this check is repo-wide.
-# A CI job for it is written but not yet landed -- scheduled as T-1k9r, because the
-# credential available to the author had no GitHub workflow scope.
 #
 # Usage:  sh docs/tasks/audit-record-lint.sh [TASKS_DIR]
 #   TASKS_DIR defaults to this script's own directory. The record and the
@@ -44,8 +42,10 @@
 #      really has. Block 2 proves a citation is PRESENT; 2b proves it is not
 #      pointing at nothing. Limit: a citation by bare filename can name more
 #      than one file, and 2b accepts it when any one of them has that line.
-#   5. Every task ID under "Out of scope (follow-ups)" is exactly one line
-#      under **Next** in backlog.md.
+#   5. Every task ID under "Out of scope (follow-ups)" is named by exactly
+#      one line across the follow-up lifecycle: `## Now` or `## Next` in
+#      backlog.md, or a dated `## Log` entry in completed.md carrying an
+#      issue link. Two of those is an error; none is an error.
 #   6. Every abbreviation the record uses in prose has a glossary row.
 #   7. The Definition of Done table and the Test traceability table are
 #      themselves guarded: each item names a block of this script, and each
@@ -90,6 +90,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 tasks_dir=${1:-$script_dir}
 record="$tasks_dir/T-3v9q.md"
 backlog="$tasks_dir/backlog.md"
+completed="$tasks_dir/completed.md"
 # A fixture case carries its own glossary; the real run uses the sibling one.
 if [ -f "$tasks_dir/glossary.md" ]; then
 	glossary="$tasks_dir/glossary.md"
@@ -107,6 +108,10 @@ err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 [ -f "$record" ]   || { printf 'FAIL  audit record not found: %s\n' "$record" >&2; exit 1; }
 [ -f "$backlog" ]  || { printf 'FAIL  backlog not found: %s (DoD 5 cannot resolve)\n' "$backlog" >&2; exit 1; }
 [ -f "$glossary" ] || { printf 'FAIL  glossary not found: %s (DoD 6 cannot resolve)\n' "$glossary" >&2; exit 1; }
+# completed.md is a hard dependency of block 5, not an optional extra: a
+# follow-up may be satisfied by an entry in it. Block 9 once wrapped it in a soft
+# `if [ -f ]`, which would silently skip both checks when the file was missing.
+[ -f "$completed" ] || { printf 'FAIL  completed log not found: %s (DoD 5 and DoD 9 cannot resolve)\n' "$completed" >&2; exit 1; }
 
 # --- 1 to 4. the record against itself -------------------------------------
 # The record is read twice: pass one collects the claim rows, the X-numbers and
@@ -305,13 +310,37 @@ followups=$(awk '
 	}
 ' "$record" | sort -u)
 
+# A follow-up has a lifecycle, and the check has to know all of it. backlog.md
+# documents three states: `## Next` (deferred), `## Now` (being worked, and
+# ":an ID stays with its task when promoted from Next to Now"), and a move to
+# completed.md `## Log` when it is done. An earlier version of this block knew
+# only `## Next`, so it failed the gate on BOTH the documented promotion and the
+# documented completion -- it required a task to stay deferred for ever.
+#
+# The rule: exactly one line names the ID, across the three sections. Not two
+# (in Next and also logged as done), and not none (dropped without a trace).
+now_block=$(awk '/^## / { sec = ($0 ~ /^## Now/) ? 1 : 0; next } sec' "$backlog")
 next_block=$(awk '/^## / { sec = ($0 ~ /^## Next/) ? 1 : 0; next } sec' "$backlog")
+log_block=$(awk '/^## / { sec = ($0 ~ /^## Log/) ? 1 : 0; next } sec' "$completed")
 
 [ -n "$followups" ] || err "Out of scope (follow-ups): the section names no task ID (DoD 5)"
 for t in $followups; do
-	hits=$(printf '%s\n' "$next_block" | awk -v id="$t" '/^-[ \t]/ && index($0, "**" id "**") { k++ } END { print k + 0 }')
-	[ "$hits" -eq 1 ] \
-		|| err "follow-up $t: $hits lines under **Next** in $(basename "$backlog") name it; there must be exactly one (DoD 5)"
+	# The backlog sides: an anchored list line naming the bolded ID.
+	n_now=$(printf '%s\n' "$now_block" | awk -v id="$t" '/^-[ \t]/ && index($0, "**" id "**") { k++ } END { print k + 0 }')
+	n_next=$(printf '%s\n' "$next_block" | awk -v id="$t" '/^-[ \t]/ && index($0, "**" id "**") { k++ } END { print k + 0 }')
+	# The completed side has a higher bar. completed.md:8-9 documents the entry
+	# shape, and without it a bare `- **T-6f3w** — done` would turn a red gate
+	# green with no work behind it. So the line must also carry the leading
+	# completion date and at least one issue reference.
+	n_done=$(printf '%s\n' "$log_block" | awk -v id="$t" '
+		/^-[ \t]/ && index($0, "**" id "**") \
+			&& /\*\*[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\*\*/ \
+			&& /#[0-9]+/ { k++ }
+		END { print k + 0 }
+	')
+	total=$((n_now + n_next + n_done))
+	[ "$total" -eq 1 ] \
+		|| err "follow-up $t: $total lines name it (## Now $n_now, ## Next $n_next, completed ## Log $n_done); there must be exactly one -- a follow-up is scheduled, in progress, or done, never two of those and never none (DoD 5)"
 done
 
 # --- 2b. every cited path resolves, at a line the file really has ----------
@@ -625,18 +654,30 @@ corr_bullets=$(awk '
 	|| err "the '## Corrections to the reports' section holds no bullets; a Corrected verdict with nothing recorded against it is not a correction (DoD 8)"
 
 # --- 9. the task line moved to completed.md and left the backlog -----------
-completed="$tasks_dir/completed.md"
-if [ -f "$completed" ]; then
-	grep -q 'T-3v9q' "$completed" \
-		|| err "completed.md holds no T-3v9q line (DoD 9)"
-	grep -q '^-.*\*\*T-3v9q\*\*' "$backlog" \
-		&& err "backlog.md still holds a T-3v9q line; a completed task belongs in completed.md only (DoD 9)"
-fi
+# No soft `if [ -f ]` wrapper: the file is a hard dependency, guarded above.
+grep -q 'T-3v9q' "$completed" \
+	|| err "completed.md holds no T-3v9q line (DoD 9)"
+grep -q '^-.*\*\*T-3v9q\*\*' "$backlog" \
+	&& err "backlog.md still holds a T-3v9q line; a completed task belongs in completed.md only (DoD 9)"
 
+# The summary must not call a finished follow-up "scheduled". $followups is read
+# from the record, which lists every follow-up the task ever raised, so counting it
+# alone would report nine scheduled when eight are scheduled and one is done.
 n_follow=$(printf '%s\n' "$followups" | awk 'NF' | wc -l | tr -d ' ')
+n_done_total=0
+for t in $followups; do
+	d=$(printf '%s\n' "$log_block" | awk -v id="$t" '
+		/^-[ \t]/ && index($0, "**" id "**") \
+			&& /\*\*[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\*\*/ \
+			&& /#[0-9]+/ { k++ }
+		END { print k + 0 }
+	')
+	n_done_total=$((n_done_total + d))
+done
+n_open=$((n_follow - n_done_total))
 # The word splitting here is the point: $counts holds the four numbers block 1
 # measured, and this splits them into $1..$4 for the summary line.
 # shellcheck disable=SC2086
 set -- ${counts:-0 0 0 0}
 
-[ "$fail" -eq 0 ] && { printf 'audit-record-lint: OK  %s claims: %s Stands, %s Corrected, %s Refuted; %s follow-ups scheduled; DoD 1-6, 8 and 9 proven\n' "$1" "$2" "$3" "$4" "$n_follow"; exit 0; } || exit 1
+[ "$fail" -eq 0 ] && { printf 'audit-record-lint: OK  %s claims: %s Stands, %s Corrected, %s Refuted; %s follow-ups open, %s done; DoD 1-6, 8 and 9 proven\n' "$1" "$2" "$3" "$4" "$n_open" "$n_done_total"; exit 0; } || exit 1
