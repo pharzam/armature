@@ -36,8 +36,9 @@ the frame that gives a thing its strength.
    quality gate every substantive task passes, plus branches, tests, reviews, and
    ADRs. Read before your first commit.
 3. **[`AGENTS.md`](AGENTS.md)** — if you are a coding agent, start here instead. It
-   is the short, accurate summary of the two documents above, and the index to the
-   rest. The long documents stay authoritative.
+   summarises [`docs/engineering-discipline.md`](docs/engineering-discipline.md)
+   and [`docs/issue-workflow.md`](docs/issue-workflow.md), and indexes the rest.
+   The long documents stay authoritative.
 
 ## What's inside
 
@@ -93,8 +94,12 @@ To stand up a new project:
    `git config core.hooksPath .githooks`, fill their `‹…›` steps, and — if you use
    GitHub or GitLab — activate CI by copying a template from
    [`docs/ci/`](docs/ci/) into place. This makes the quality gate self-enforcing;
-   the [ADR linter](docs/adr/adr-lint.sh) and [PRD linter](docs/prd/prd-lint.sh)
-   run green out of the box.
+   the [ADR](docs/adr/adr-lint.sh), [PRD](docs/prd/prd-lint.sh),
+   [agent-entry](docs/agents/agents-lint.sh) and
+   [audit-record](docs/tasks/audit-record-lint.sh) linters and their
+   [fixture self-tests](docs/tests/run-discipline-tests.sh) run green out of the
+   box. The agent-entry linter is the one that needs its subject: keep a root
+   `AGENTS.md`, or drop the check with it.
 4. Search for `‹` to find everything still unfilled; delete every "How to adapt" note
    when the real content is in.
 5. Grow it — each new practice gets its own short section, with a fuller reference

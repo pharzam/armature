@@ -25,9 +25,10 @@ This directory holds the tests; the **conventions** for writing them live in
 - [`docs/tests/traceability-template.md`](../docs/tests/traceability-template.md) —
   the row that ties each test back to the requirement it proves.
 
-The kit's own [discipline tests](../docs/tests/test-levels.md) — the ADR, PRD, and
-PR-link linters — are not product tests and do **not** live here; they stay beside
-the conventions they enforce, under [`docs/`](../docs/).
+The kit's own [discipline tests](../docs/tests/test-levels.md) — the ADR, PRD,
+agent-entry, audit-record and PR-link linters — are not product tests and do
+**not** live here; they stay beside the conventions they enforce, under
+[`docs/`](../docs/).
 
 > **How to adapt this directory.** Add your product tests here, mirror your
 > source layout if that is your stack's convention, and fill the `‹test

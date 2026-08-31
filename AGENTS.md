@@ -136,7 +136,7 @@ time, never directly. An architecturally significant decision becomes an
 | Document | Authoritative for |
 |----------|-------------------|
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate, solution selection, testing, reviews, commits and the safety limits. |
-| [`docs/issue-workflow.md`](docs/issue-workflow.md) | The twelve numbered rules, and the honest table of what a mechanism backs today. |
+| [`docs/issue-workflow.md`](docs/issue-workflow.md) | The numbered rules themselves, and the honest table of what a mechanism backs today. |
 | [`docs/guardrails.md`](docs/guardrails.md) | Known pitfalls, pre-registered pass and fail rules, and how a result is validated. |
 | [`docs/glossary.md`](docs/glossary.md) | The shared vocabulary, and the rule that every abbreviation earns an entry. |
 | [`docs/adr/`](docs/adr/) | Architecture decisions, with the context and the consequences of each one. |

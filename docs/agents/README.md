@@ -9,7 +9,7 @@ them honest. The decision behind them is
 | [`AGENTS.md`](../../AGENTS.md) | The vendor-neutral agent guide, loaded at the repository root. A short, accurate index and summary of the rules an operator must know before changing this repository. |
 | [`CLAUDE.md`](../../CLAUDE.md) | The Claude Code compatibility entry point. Exactly one line, `@AGENTS.md`, so the same guide loads with no second copy that can drift. |
 | [`agents-lint.sh`](agents-lint.sh) | The deterministic check over both files. Runs in the [`pre-commit` hook](../../.githooks/pre-commit) and in [CI](../ci/). |
-| [`tests/`](tests/) | Its fixtures — one `good` case and 27 `bad-*` cases, run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
+| [`tests/`](tests/) | Its fixtures — one `good` case and 33 `bad-*` cases, run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
 
 ## In plain terms
 
@@ -77,7 +77,7 @@ names the backlog tasks that own the gap.
 
 ## What it costs the author of `AGENTS.md`
 
-Four constraints, each enforced by an assertion. They are real, and an adopter
+Five constraints, each enforced by an assertion. They are real, and an adopter
 meets them the first time it extends the file:
 
 1. **The heading sequence must equal the required list exactly** — same headings,
@@ -93,6 +93,10 @@ meets them the first time it extends the file:
    so the derived step count is eight; a ninth numbered line would go red.
 4. **The `## Sources of truth` table's second column header reads exactly
    `Authoritative for`** — that literal is what tells a header row from a data row.
+5. **No HTML comment.** Text inside `<!-- … -->` is invisible to a reader but
+   still counts toward the word budget, the section-body floor and the required
+   literals, so a whole required section could be commented out with the gate
+   still green. Same class of hole as constraint 2, closed the same way.
 
 ## Two different fives
 
@@ -113,11 +117,13 @@ Same size, different membership.
 ## If you slim the kit
 
 `agents-lint.sh` **hard-fails** when `AGENTS.md` is absent. That is deliberate —
-a check that skips its own subject proves nothing — but it makes this the one
-check in the kit that is not silently satisfied by a smaller repository. Compare
-[`adr-lint.sh`](../adr/adr-lint.sh), which exits 0 on an empty `adr/`, and
+a check that skips its own subject proves nothing — but it makes this the first
+check an adopter *inherits* that a smaller repository does not silently satisfy.
+Compare [`adr-lint.sh`](../adr/adr-lint.sh), which exits 0 on an empty `adr/`, and
 [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh), which skips an
-absent suite.
+absent suite. ([`audit-record-lint.sh`](../tasks/audit-record-lint.sh) hard-fails
+the same way, but it is specific to this repository's own audit record, so an
+adopter deletes it rather than inheriting it.)
 
 So if you drop the agent entry points, drop them together: delete `AGENTS.md`,
 `CLAUDE.md`, this directory, the `pre-commit` step and the CI job in one change.

@@ -36,7 +36,7 @@ not this file.
 
 - **R1** — [Alpha rule](docs/issue-workflow.md#r1--alpha-rule): open an issue before any commit lands.
 - **R2** — [Gamma rule](docs/issue-workflow.md#r2--beta-rule): search the open and the closed issues first (written rule)
-- **R3** — [Gamma rule](docs/issue-workflow.md#r3--gamma-rule): record the chosen option and the rejected ones (written rule)
+- **R3** — [Gamma rule with a deliberately long title](docs/issue-workflow.md#r3--gamma-rule-with-a-deliberately-long-title): record the chosen option and the rejected ones (written rule)
 
 ## Checks you can run
 

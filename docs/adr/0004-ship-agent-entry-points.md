@@ -101,13 +101,16 @@ the summary and the check agreeing with each other and disagreeing with the kit.
   The kit already accepts this trade for its [ADR template](README.md), but this
   cost falls on **adopters**, who are the most likely to want a domain section of
   their own. Adding one means editing the check in the same change.
-- **The check is the one in the kit that hard-fails on a slimmed repository.**
-  `adr-lint.sh` exits 0 on an empty `adr/`, and the fixture runner skips an absent
-  suite; `agents-lint.sh` fails when `AGENTS.md` is missing, because a check that
-  skips its own subject proves nothing. An adopter who drops the entry points must
-  drop them together — the two root files, `docs/agents/`, the hook step and the
-  CI job — in one change. [`../agents/README.md`](../agents/README.md) documents
-  that path.
+- **The check hard-fails on a slimmed repository, and it is the first
+  kit-generic check that does.** `adr-lint.sh` exits 0 on an empty `adr/`, and the
+  fixture runner skips an absent suite; `agents-lint.sh` fails when `AGENTS.md` is
+  missing, because a check that skips its own subject proves nothing.
+  `tasks/audit-record-lint.sh` hard-fails the same way on a missing record, but it
+  is repository-specific — it lints *this* repository's audit record and an
+  adopter deletes it — so this is the first check an adopter *inherits* that has
+  the property. An adopter who drops the entry points must drop them together —
+  the two root files, `docs/agents/`, the hook step and the CI job — in one
+  change. [`../agents/README.md`](../agents/README.md) documents that path.
 - **Restoring the historical `0004-ship-a-root-agents-file.md` under its own
   number is now foreclosed.** Its content is superseded by this record, and the
   number is taken. The open backlog task about that collision is partly, not

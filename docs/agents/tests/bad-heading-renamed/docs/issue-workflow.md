@@ -2,7 +2,7 @@
 
 ## R2 — Beta rule
 
-## R3 — Gamma rule
+## R3 — Gamma rule with a deliberately long title
 
 ## What is enforced where
 

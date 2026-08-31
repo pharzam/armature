@@ -24,7 +24,9 @@ below and asserts the exit code.
 **The stub sources declare three gate steps and three rules, and none of the
 kit's real names.** That is what makes the `good` case positive proof that
 nothing is hardcoded: a linter expecting eight steps and R1–R12 would fail it.
-In the stubs, R1 is the mechanized rule and R2 and R3 are written-rule-only.
+In the stubs, R1 is the mechanized rule and R2 and R3 are written-rule-only, and
+R3's title is deliberately long — long enough that a rule line could otherwise
+pass the prose floor on its mandated title alone.
 
 ## The cases
 
@@ -39,31 +41,39 @@ In the stubs, R1 is the mechanized rule and R2 and R3 are written-rule-only.
 | `bad-claude-wrong-import` | FAIL, exit 1 | `CLAUDE.md` holding exactly one line, `@AGENT.md`: right count, right shape, wrong target (A6) |
 | `bad-over-budget` | FAIL, exit 1 | the guide padded past the pre-registered 1,500-word budget, inside an existing section and adding no heading (A7) |
 | `bad-heading-renamed` | FAIL, exit 1 | one required heading renamed, everything else intact (A8) |
-| `bad-hidden-tail` | FAIL, exit 1 | a single `# note` line inside `## Checks you can run`, followed by an invented command. Without A8's companion assertion this line would truncate the section and hide everything after it (A9) |
+| `bad-hidden-tail` | FAIL, exit 1 | a single `# note` line inside `## Checks you can run`, followed by an invented command. Without A9 this line would truncate the section and hide everything after it (A9) |
+| `bad-html-comment` | FAIL, exit 1 | an HTML comment in `AGENTS.md`. Comment text is invisible to a reader but still counts as section body, so a required section could be emptied with the gate green (A26) |
 | `bad-empty-section` | FAIL, exit 1 | a required heading kept with its body cut to four words (A10) |
 | `bad-gate-step-missing` | FAIL, exit 1 | the guide lists two of the source's three steps, renumbered so they look complete (A11) |
 | `bad-gate-step-bare` | FAIL, exit 1 | a gate step reduced to a bare title with no prose (A12) |
 | `bad-gate-count-word` | FAIL, exit 1 | all three steps listed, but the prose says `**two** ordered steps` — the anti-truncation anchor (A13) |
 | `bad-rule-missing` | FAIL, exit 1 | the line for R2 omitted (A14) |
-| `bad-rule-wrong-title` | FAIL, exit 1 | R2's link text reads `Gamma rule` while its anchor is still R2's. An anchor alone would let a line describe the wrong rule (A14) |
+| `bad-rule-wrong-title` | FAIL, exit 1 | R2's link text reads `Gamma rule…` while its anchor is still R2's. An anchor alone would let a line describe the wrong rule (A14) |
+| `bad-rule-anchor-suffix` | FAIL, exit 1 | a rule anchor with extra characters after the derived one. They sit **outside** `[-a-z0-9]` on purpose, so A16's harvest stops at the valid prefix and finds it known — only A14's exact-ending test can catch this (A14) |
 | `bad-rule-listing-only` | FAIL, exit 1 | a rule line reduced to its number, title and link, with no summary — listing the identifier is not covering the rule (A15) |
+| `bad-rule-title-as-prose` | FAIL, exit 1 | R3 carrying its deliberately long source title and a link, and nothing else. A14 already mandates that title, so counting it as prose would let the line say nothing at all (A15) |
 | `bad-rule-invented` | FAIL, exit 1 | an `R4` line whose anchor the source never defines (A16) |
 | `bad-rule-count-word` | FAIL, exit 1 | all three rules listed, but the prose says `**four** numbered rules` (A17) |
 | `bad-false-enforcement` | FAIL, exit 1 | the trailing ` (written rule)` dropped from a rule the enforcement table backs with nothing — the false enforcement claim (A18) |
 | `bad-enforcement-hedged` | FAIL, exit 1 | the same rule rewritten to "more than a written rule; the continuous integration job enforces it". It *contains* the phrase while making the false claim, which is why the marker is pinned line-final (A18) |
+| `bad-enforcement-table-contradiction` | FAIL, exit 1 | an enforcement-table row naming a hook **and** a CI job while its Status still reads `Written rule until wired`. Deriving from the Status prose would skip the row and silently accept a now-false marking (A18) |
 | `bad-dead-link` | FAIL, exit 1 | one link repointed at a document the root does not hold — the rot a rename leaves behind (A19) |
 | `bad-source-row-blank` | FAIL, exit 1 | a sources-of-truth row naming a real document with an empty `Authoritative for` cell (A20) |
 | `bad-source-row-unresolved` | FAIL, exit 1 | a sources-of-truth row whose first column is a bare path — not a Markdown link, so A19 never harvests it — that resolves to nothing (A20) |
+| `bad-source-row-empty-target` | FAIL, exit 1 | a sources-of-truth row whose link target is empty, so the existence test would become `[ -e "$root/" ]` and always pass (A20) |
 | `bad-unnamed-check` | FAIL, exit 1 | a second shipped `*-lint.sh` in the tree that `## Checks you can run` does not name (A21) |
 | `bad-invented-command` | FAIL, exit 1 | a plausible product command in **inline backticks**, in a section that is not the checks section (A22) |
 | `bad-missing-literal` | FAIL, exit 1 | `git diff --check` removed from the checks section (A23) |
 | `bad-readme-no-pointer` | FAIL, exit 1 | the mini-root `README.md` keeps its `## Start here` prose but drops the link to `AGENTS.md` (A24) |
+| `bad-readme-decoy-pointer` | FAIL, exit 1 | `README.md` links `sub/AGENTS.md` — a real file with the right name that is **not** the root deliverable. A suffix test accepted it; the target is now resolved against the linking file's directory (A24) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 
-`bad-rule-invented` is the one case that prints **two** lines, both `A16`: the
-invented anchor and the invented rule number are the two halves of the same
-equality, and each names what it found. Every other case prints exactly one.
+Two cases print more than one line, and in both every line names the **same**
+assertion. `bad-rule-invented` prints two `A16` lines — the invented anchor and
+the invented rule number are the two halves of one equality, and each names what
+it found. `bad-enforcement-table-contradiction` prints three `A18` lines — the
+self-contradicting row, plus the two rule lines whose marking it falsifies.
 
 ## The `EXPECT` convention
 
@@ -102,13 +112,19 @@ applied") own that residual.
 A fixture cannot reach everything, and a suite that implies otherwise is worse
 than one that says so:
 
-- **A25 cannot be fixtured at all.** It reads the running script's own header, and
-  a fixture case cannot vary the running script.
+- **A25 cannot be fixtured.** It reads the running script's own leading comment
+  block, and a fixture case cannot vary the running script. It *can* now fail —
+  it is checked by deleting the sentence from a scratch copy of the script — but
+  nothing recurring proves that.
 - **A21's empty-set floor is unreachable in the real tree**, because
   `agents-lint.sh` is itself one of the files the glob finds.
 - **A19's root-escape guard and its "no links at all" floor**, A22's "no commands
   at all" floor, and the "section is empty" branches of A23 and A24 have no case
   of their own.
+- **A22's narrowing has no case.** A22 harvests only a token that contains a `/`
+  and ends in `.sh`, so ordinary prose containing the word "sh" no longer fails.
+  That is a *green* property, not a red one, so it is verified by hand rather
+  than by a `bad-*` case.
 - **Three of A24's four inbound-pointer triples**, and the individual pairs of
   A23's literal table. One fixture proves the **mechanism**; the pairs and triples
   are data, exactly as the thirteen required headings are.

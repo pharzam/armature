@@ -83,11 +83,16 @@
 #       from in rows of their own.
 #   A21 every ready-to-run check the TREE ships is named as its own command
 #       line, so the section cannot go stale when a linter is added.
-#   A22 every `sh <path>` the file presents, anywhere, resolves to a real file.
-#   A23 fifteen required literals appear, each inside its own named section.
+#   A22 every `sh <path>` the file presents that names a repository shell
+#       script, anywhere in the file, resolves to a real file.
+#   A23 every required literal in the A23_PAIRS table below appears, each
+#       inside its own named section. (No count is written here on purpose: a
+#       spelled count in a comment is the same drift A13 and A17 exist to stop,
+#       and nothing would check it. The table is the count.)
 #   A24 README.md and docs/onboarding-for-engineers.md LINK the entry point
 #       from the section a new operator reads.
-#   A25 this script's own header states what it does not prove.
+#   A25 this script's own leading comment block states what it does not prove.
+#   A26 AGENTS.md holds no HTML comment. (Runs beside A9 — same class of hole.)
 #
 # A13, A17, A11 and A14 together are the anti-truncation anchors: without the
 # spelled counts, deleting a step or a rule from the SOURCE and from AGENTS.md
@@ -197,26 +202,48 @@ sect() {
 	' "$1"
 }
 
-# word_to_int WORD — the spelled numbers A13 and A17 read out of prose.
+# word_to_int WORD — the spelled numbers A13 and A17 read out of prose. The
+# vocabulary runs past the counts the tree holds today (8 steps, 12 rules) on
+# purpose: a vocabulary that stopped at twelve would make the thirteenth rule
+# fail with "the section states no count" when the section states one correctly.
+# NUMBER_WORDS must stay in step with this case; A13 and A17 build their match
+# patterns from it, so the two cannot drift.
+NUMBER_WORDS='one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty'
 word_to_int() {
 	case $1 in
 	one) echo 1 ;; two) echo 2 ;; three) echo 3 ;; four) echo 4 ;;
 	five) echo 5 ;; six) echo 6 ;; seven) echo 7 ;; eight) echo 8 ;;
 	nine) echo 9 ;; ten) echo 10 ;; eleven) echo 11 ;; twelve) echo 12 ;;
+	thirteen) echo 13 ;; fourteen) echo 14 ;; fifteen) echo 15 ;;
+	sixteen) echo 16 ;; seventeen) echo 17 ;; eighteen) echo 18 ;;
+	nineteen) echo 19 ;; twenty) echo 20 ;;
 	*) echo -1 ;;
 	esac
 }
 
+# beyond_vocabulary N LABEL — a derived count past the spelled vocabulary would
+# make A13 or A17 report "no count stated" for a file that states one correctly.
+# Say so instead, and name the fix.
+beyond_vocabulary() {
+	[ "$1" -le 20 ] && return 1
+	err "$2" "the source declares $1, past the spelled vocabulary this check knows (one to twenty); extend NUMBER_WORDS and word_to_int in the same change"
+	return 0
+}
+
 # prose_words LINE PREFIX_ERE — count the words a summary line carries once its
-# marker prefix, its link targets and the enforcement marker are removed. Only
-# tokens holding an ASCII alphanumeric count, so an em dash is not a word.
+# marker prefix, its WHOLE Markdown links and the enforcement marker are removed.
+# Only tokens holding an ASCII alphanumeric count, so an em dash is not a word.
+#
+# The link TEXT is removed, not only the target: A14 already requires each rule
+# line to carry its source title, so counting that title as prose would let a
+# rule whose title is six words long carry no summary at all and still pass.
 prose_words() {
 	printf '%s\n' "$1" | awk -v pre="$2" '
 		{
 			line = $0
 			sub(pre, "", line)
 			sub(/ \(written rule\)$/, "", line)
-			while (match(line, /\]\([^)]*\)/))
+			while (match(line, /\[[^]]*\]\([^)]*\)/))
 				line = substr(line, 1, RSTART - 1) " " substr(line, RSTART + RLENGTH)
 			n = split(line, w, /[ \t]+/)
 			c = 0
@@ -324,6 +351,16 @@ if [ -n "$hashlines" ]; then
 	IFS=$oldIFS
 fi
 
+# --- A26. no HTML comment ---------------------------------------------------
+# Runs here, beside A9, because it closes the same class of hole: text inside an
+# HTML comment is invisible to every reader but still counts toward the word
+# budget, the section-body floor and the required literals. Without this, a whole
+# required section can be commented out with the gate still green — the exact
+# bypass the bad-empty-section fixture exists to catch. Numbered A26 because it
+# was added after A25; the order here is execution order, not numeric order.
+comment_line=$(awk 'index($0, "<!--") { print NR; exit }' "$agents")
+[ -n "$comment_line" ] && err A26 "AGENTS.md holds an HTML comment at line $comment_line; a comment is invisible to a reader but still counts as body, so this file carries none"
+
 # --- A10. every required section has a real body ---------------------------
 oldIFS=$IFS; IFS=$nl
 for h in $HEADINGS; do
@@ -378,7 +415,7 @@ if [ "$n_got_steps" -gt 0 ]; then
 		{
 			line = $0
 			sub(/^[0-9]+\. \*\*[^*]*\*\*/, "", line)
-			while (match(line, /\]\([^)]*\)/))
+			while (match(line, /\[[^]]*\]\([^)]*\)/))
 				line = substr(line, 1, RSTART - 1) " " substr(line, RSTART + RLENGTH)
 			n = split(line, w, /[ \t]+/)
 			c = 0
@@ -390,13 +427,15 @@ if [ "$n_got_steps" -gt 0 ]; then
 fi
 
 # --- A13. the spelled step count matches the source ------------------------
-spelled=$(printf '%s\n' "$GATE" | awk '
-	match($0, /\*\*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\*\* ordered steps/) {
+spelled=$(printf '%s\n' "$GATE" | awk -v nw="$NUMBER_WORDS" '
+	match($0, "\\*\\*(" nw ")\\*\\* ordered steps") {
 		m = substr($0, RSTART, RLENGTH)
 		sub(/^\*\*/, "", m); sub(/\*\*.*$/, "", m)
 		print m; exit
 	}')
-if [ -z "$spelled" ]; then
+if beyond_vocabulary "$n_steps" A13; then
+	:
+elif [ -z "$spelled" ]; then
 	err A13 'the gate section states no spelled step count; it must say "**<number>** ordered steps", so deleting a step from both the source and this file cannot pass unnoticed'
 else
 	got_n=$(word_to_int "$spelled")
@@ -424,13 +463,32 @@ n_rules=$(printf '%s' "$RULES" | awk 'NF { n++ } END { print n + 0 }')
 # rule's honest marking.
 MECH_OUT=$(sect "$workflow" '## What is enforced where' | awk -F'|' '
 	function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+	# A cell names a real mechanism unless it is empty, a dash, or an unfilled
+	# ‹…› marker. The dashes and the marker are compared as UTF-8 byte strings,
+	# so the result is identical under LC_ALL=C and under a UTF-8 locale.
+	function mech(s,   t) {
+		t = trim(s)
+		if (t == "" || t == "-" || t == "--") return 0
+		if (t == "\342\200\224" || t == "\342\200\223") return 0
+		if (index(t, "\342\200\271") == 1) return 0
+		return 1
+	}
 	/^\|[ \t:|-]*$/ { next }
 	/^\|/ {
 		rows++
 		if (NF != 8) { printf "E|enforcement-table row does not split into six columns (NF=%d): %s\n", NF, $0; next }
 		st = trim($7)
 		if (st == "Status") next
-		if (st ~ /^Written rule/) next
+		# The MECHANISM columns are the data; the Status cell is prose ABOUT the
+		# data. Reading the prose would classify every unrecognised wording --
+		# "Not enforced", "Planned", "None" -- as enforced, which is the wrong
+		# default: it would make this check demand that AGENTS.md drop a rule s
+		# honest " (written rule)" marking. So read the Local hook and CI cells,
+		# and use the Status cell only to catch a table that contradicts itself.
+		backed = (mech($4) || mech($5))
+		if (backed && st ~ /^Written rule/)
+			printf "E|enforcement-table row \"%s\" names a mechanism but its Status still reads \"%s\"; the table contradicts itself\n", trim($2), st
+		if (!backed) next
 		n = split($3, a, /[^A-Za-z0-9]+/)
 		for (i = 1; i <= n; i++) if (a[i] ~ /^R[0-9]+$/) printf "M|%s\n", a[i]
 	}
@@ -439,8 +497,8 @@ MECH=' '
 oldIFS=$IFS; IFS=$nl
 for m in $MECH_OUT; do
 	case $m in
-	'M|'*) case $MECH in *" ${m#M|} "*) : ;; *) MECH="$MECH${m#M|} " ;; esac ;;
-	'E|'*) IFS=$oldIFS; err A18 "${m#E|}"; IFS=$nl ;;
+	'M|'*) case $MECH in *" ${m#"M|"} "*) : ;; *) MECH="$MECH${m#"M|"} " ;; esac ;;
+	'E|'*) IFS=$oldIFS; err A18 "${m#"E|"}"; IFS=$nl ;;
 	esac
 done
 IFS=$oldIFS
@@ -455,10 +513,10 @@ if [ "$n_rules" -eq 0 ]; then
 else
 	oldIFS=$IFS; IFS=$nl
 	for r in $RULES; do
-		id=${r%%|*}
-		rest=${r#*|}
-		anchor=${rest%%|*}
-		title=${rest#*|}
+		id=${r%%"|"*}
+		rest=${r#*"|"}
+		anchor=${rest%%"|"*}
+		title=${rest#*"|"}
 		cnt=$(printf '%s\n' "$RSEC" | awk -v p="^- [*][*]$id[*][*] " '$0 ~ p { n++ } END { print n + 0 }')
 		rline=$(printf '%s\n' "$RSEC" | awk -v p="^- [*][*]$id[*][*] " '$0 ~ p { print; exit }')
 		IFS=$oldIFS
@@ -466,10 +524,20 @@ else
 			err A14 "rule $id has $cnt lines in \"## The issue rules\"; it must have exactly one, shaped \`- **$id** — [$title](docs/issue-workflow.md#$anchor): …\`"
 		else
 			FOUND="$FOUND$id "
-			case $rline in
-			*"issue-workflow.md#$anchor"*) : ;;
-			*) err A14 "rule $id's line does not link its own derived anchor issue-workflow.md#$anchor" ;;
-			esac
+			# Compared against the link TARGET, and for an exact ending, not as
+			# a substring of the line: a containment test accepts a corrupted
+			# anchor that merely starts with the derived one.
+			anchored=$(printf '%s\n' "$rline" | awk -v want="issue-workflow.md#$anchor" '
+				{
+					line = $0
+					while (match(line, /\]\([^)]*\)/)) {
+						t = substr(line, RSTART + 2, RLENGTH - 3)
+						line = substr(line, RSTART + RLENGTH)
+						if (length(t) >= length(want) && substr(t, length(t) - length(want) + 1) == want) found = 1
+					}
+				}
+				END { print found ? 1 : 0 }')
+			[ "$anchored" -eq 1 ] || err A14 "rule $id's line does not link its own derived anchor issue-workflow.md#$anchor"
 			case $rline in
 			*"$title"*) : ;;
 			*) err A14 "rule $id's line does not carry its source title \"$title\"; an anchor alone lets a line describe the wrong rule" ;;
@@ -525,13 +593,15 @@ if [ -n "$RSEC" ]; then
 fi
 
 # --- A17. the spelled rule count matches the source ------------------------
-spelled=$(printf '%s\n' "$RSEC" | awk '
-	match($0, /\*\*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\*\* numbered rules/) {
+spelled=$(printf '%s\n' "$RSEC" | awk -v nw="$NUMBER_WORDS" '
+	match($0, "\\*\\*(" nw ")\\*\\* numbered rules") {
 		m = substr($0, RSTART, RLENGTH)
 		sub(/^\*\*/, "", m); sub(/\*\*.*$/, "", m)
 		print m; exit
 	}')
-if [ -z "$spelled" ]; then
+if beyond_vocabulary "$n_rules" A17; then
+	:
+elif [ -z "$spelled" ]; then
 	err A17 'the rules section states no spelled rule count; it must say "**<number>** numbered rules", so deleting a rule from both the source and this file cannot pass unnoticed'
 else
 	got_n=$(word_to_int "$spelled")
@@ -576,6 +646,10 @@ S_OUT=$(printf '%s\n' "$SSEC" | awk -F'|' '
 		p = c1
 		if (match(c1, /\]\([^)]*\)/)) { p = substr(c1, RSTART + 2, RLENGTH - 3); sub(/#.*$/, "", p) }
 		else { gsub(/`/, "", p); p = trim(p) }
+		# An empty target would make the shell test [ -e "$root/" ], which is
+		# always true, so an empty or fragment-only link would name no document
+		# at all and still pass.
+		if (p == "") { printf "E|a sources-of-truth row names no document at all: %s\n", $0; next }
 		printf "P|%s\n", p
 		t2 = c2; gsub(/`/, "", t2); t2 = trim(t2)
 		n = split(t2, w, /[ \t]+/)
@@ -593,9 +667,9 @@ oldIFS=$IFS; IFS=$nl
 for s in $S_OUT; do
 	IFS=$oldIFS
 	case $s in
-	'E|'*) err A20 "${s#E|}" ;;
+	'E|'*) err A20 "${s#"E|"}" ;;
 	'P|'*)
-		p=${s#P|}
+		p=${s#"P|"}
 		s_paths="$s_paths$p "
 		[ -e "$root/$p" ] || err A20 "the sources-of-truth table names \"$p\", which is not a path in this repository"
 		;;
@@ -647,11 +721,16 @@ CMDS=$(awk '
 	{
 		line = $0
 		gsub(/`/, "", line)
-		while (match(line, /(^|[ \t])sh [A-Za-z0-9_.\/-]+/)) {
+		while (match(line, /(^|[ \t])sh[ \t]+[A-Za-z0-9_.\/-]+/)) {
 			c = substr(line, RSTART, RLENGTH)
-			sub(/^[ \t]*sh /, "", c)
-			print c
+			sub(/^[ \t]*sh[ \t]+/, "", c)
 			line = substr(line, RSTART + RLENGTH)
+			# Trailing sentence punctuation belongs to the prose, not the path.
+			sub(/[.,;:)]+$/, "", c)
+			# Only a token that names a repository shell script is a command.
+			# Without this, the English word "sh" in ordinary prose -- "POSIX sh
+			# and POSIX awk" -- harvested "and" and failed a correct document.
+			if (c ~ /\// && c ~ /\.sh$/) print c
 		}
 	}' "$agents")
 n_cmds=0
@@ -667,10 +746,13 @@ IFS=$oldIFS
 
 # --- A23. the required literals, each in its own section -------------------
 # section|literal. The separator is `|` because no heading and no literal here
-# holds one. These fifteen are the machine floor under the issue-required
-# content items that carry no derivation of their own; the MECHANISM is proven
-# by one fixture, and the pairs themselves are data, exactly as A8's thirteen
-# headings are.
+# holds one; every split below quotes it, because ksh93 reads an unquoted `|` in
+# a pattern as alternation. These pairs are the machine floor under the
+# issue-required content items that carry no derivation of their own; the
+# MECHANISM is proven by one fixture, and the pairs themselves are data, exactly
+# as A8's thirteen headings are. No count is written in prose anywhere: a spelled
+# count in a comment is the drift A13 and A17 exist to stop, and nothing would
+# check it. The table is the count.
 A23_PAIRS='## What this repository is|no product code
 ## How these instructions rank|higher priority
 ## How these instructions rank|nested
@@ -692,8 +774,8 @@ A23_PAIRS='## What this repository is|no product code
 ## Keeping this file honest|coverage, not semantic agreement'
 oldIFS=$IFS; IFS=$nl
 for pair in $A23_PAIRS; do
-	h=${pair%%|*}
-	lit=${pair#*|}
+	h=${pair%%"|"*}
+	lit=${pair#*"|"}
 	IFS=$oldIFS
 	body=$(sect "$agents" "$h")
 	if [ -z "$body" ]; then
@@ -706,34 +788,58 @@ done
 IFS=$oldIFS
 
 # --- A24. the entry point is discoverable ----------------------------------
-# file|heading|link-target suffix. One fixture proves the mechanism; the four
+# file|heading|root-relative target. One fixture proves the mechanism; the four
 # triples are data. A bare mention of the filename in prose does not satisfy it.
+#
+# The link target is RESOLVED against the directory of the file that carries it
+# and compared for equality with the root deliverable. A suffix test would have
+# accepted a link to any path ending in the name -- and this change itself ships
+# 27 other files called AGENTS.md under docs/agents/tests/, so the decoy set is
+# real and in-tree.
 A24_TRIPLES='README.md|## Start here|AGENTS.md
 README.md|## What'"'"'s inside|AGENTS.md
 README.md|## What'"'"'s inside|CLAUDE.md
 docs/onboarding-for-engineers.md|### What to read next, in order|AGENTS.md'
 oldIFS=$IFS; IFS=$nl
 for t in $A24_TRIPLES; do
-	f=${t%%|*}
-	rest=${t#*|}
-	h=${rest%%|*}
-	sfx=${rest#*|}
+	f=${t%%"|"*}
+	rest=${t#*"|"}
+	h=${rest%%"|"*}
+	want=${rest#*"|"}
 	IFS=$oldIFS
+	case $f in
+	*/*) fdir=${f%/*} ;;
+	*)   fdir='' ;;
+	esac
 	body=$(sect "$root/$f" "$h")
 	if [ -z "$body" ]; then
-		err A24 "$f has no body under \"$h\" — the heading was renamed, so a reader is no longer pointed at $sfx"
+		err A24 "$f has no body under \"$h\" — the heading was renamed, so a reader is no longer pointed at $want"
 	else
-		printf '%s\n' "$body" | awk -v s="$sfx" '
+		printf '%s\n' "$body" | awk -v want="$want" -v dir="$fdir" '
+			function norm(p,   n, parts, i, k, out, s) {
+				n = split(p, parts, "/")
+				k = 0
+				for (i = 1; i <= n; i++) {
+					if (parts[i] == "" || parts[i] == ".") continue
+					if (parts[i] == "..") { if (k > 0) k--; else return "" ; continue }
+					out[++k] = parts[i]
+				}
+				s = ""
+				for (i = 1; i <= k; i++) s = (i == 1) ? out[i] : s "/" out[i]
+				return s
+			}
 			{
 				line = $0
 				while (match(line, /\]\([^)]*\)/)) {
 					t = substr(line, RSTART + 2, RLENGTH - 3)
-					if (length(t) >= length(s) && substr(t, length(t) - length(s) + 1) == s) found = 1
 					line = substr(line, RSTART + RLENGTH)
+					sub(/#.*$/, "", t)
+					if (t == "" || t ~ /^https?:/ || t ~ /^mailto:/ || t ~ /^\//) continue
+					if (norm(dir == "" ? t : dir "/" t) == want) found = 1
 				}
 			}
 			END { exit found ? 0 : 1 }' \
-			|| err A24 "$f does not link $sfx under \"$h\"; a deliverable nobody is pointed to is the same failure as no deliverable"
+			|| err A24 "$f does not link the root $want under \"$h\"; a deliverable nobody is pointed to is the same failure as no deliverable"
 	fi
 	IFS=$nl
 done
@@ -745,15 +851,20 @@ IFS=$oldIFS
 # are none of them inputs to any assertion, so all three could be emptied with a
 # green gate. This assertion cannot be given a fixture, because a fixture case
 # cannot vary the running script; the suite README records that.
-grep -Fq -- 'coverage, not semantic agreement' "$self" \
-	|| err A25 "agents-lint.sh's own header no longer states that it checks coverage, not semantic agreement"
+# Scan ONLY the leading comment block, not the whole file. A whole-file grep for
+# this literal matched the A23 data table, this comment, the grep line itself and
+# the message below -- so the assertion was green for every possible content of
+# the header, which is exactly the check-that-cannot-fail this kit forbids.
+own_header=$(awk 'substr($0, 1, 1) == "#" { print; next } { exit }' "$self")
+printf '%s\n' "$own_header" | grep -Fq -- 'coverage, not semantic agreement' \
+	|| err A25 "agents-lint.sh's own leading comment block no longer states what it does not prove"
 
 # --- summary ----------------------------------------------------------------
 if [ "$fail" -eq 0 ]; then
 	n_written=0
 	oldIFS=$IFS; IFS=$nl
 	for r in $RULES; do
-		id=${r%%|*}
+		id=${r%%"|"*}
 		case $MECH in
 		*" $id "*) : ;;
 		*) n_written=$((n_written + 1)) ;;
