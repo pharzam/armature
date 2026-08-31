@@ -36,12 +36,18 @@ for the gate steps, 10 for the rules, 30 for the enforcement table: **49 lines,
 7.9% of the code**. Eleven of those 30 are `mech()`, which returns *three* answers
 so an unrecognised cell is reported rather than guessed in either direction; that
 is semantic care, not parsing, and it survives any serialisation. The realistic
-ceiling for metadata is **~38 code lines — 3.6% of the file**.
+ceiling for metadata is **~38 lines: 6.2% of the code, 3.6% of the whole file**.
+Both denominators are given because quoting the parsing share against *code* and
+the ceiling against the *file* would flatter the conclusion; it holds either way.
 
-The premise was that the size lives in the parsing. It does not. `err`/`die`/`emit`
-fire on 50 lines, and the largest assertions are link resolution (65), entry-point
-discoverability (54) and the sources-of-truth table (46). The file is long because
-it explains itself and reports honestly. Metadata touches none of that.
+The premise was that the size lives in the parsing. It does not. The largest
+assertions are link resolution (65 code lines), entry-point discoverability (54)
+and the sources-of-truth table (46), and violations are reported from **49 call
+sites** — 48 naming an assertion id literally, plus one at `agents-lint.sh:282`
+passing the id in a variable. That figure is given with its method because an
+unqualified count of it is method-sensitive: an independent re-derivation of this
+ADR reached 49 where a first pass said 50, and a third method 48. The file is long
+because it explains itself and reports honestly. Metadata touches none of that.
 
 ## Decision
 
