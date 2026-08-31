@@ -25,6 +25,11 @@ set -e
 #    RELATIVE path, git resolves it per working tree, which is what the install
 #    instruction has always said.
 #
+#    The same fault arrives with core.hooksPath UNSET: git falls back to .git/hooks,
+#    which a linked worktree reaches through the shared COMMON git directory. So this
+#    judges the resolved hooks directory whatever set it, and the message names the
+#    source it actually found rather than a setting the operator may never have set.
+#
 #    `git rev-parse --git-path hooks` is used rather than $0 on purpose: under a
 #    correct install $0 is RELATIVE, so comparing it would need `readlink -f`,
 #    which is not POSIX and differs between BSD and GNU. Git resolves this itself.
@@ -68,9 +73,21 @@ if [ -n "$_hooks" ]; then
 	fi
 	case $_hr/ in
 	"$_tr"/*) : ;;
-	*)	printf 'FAIL  hook provenance: core.hooksPath resolves to %s, outside this working tree (%s).\n' "$_hr" "$_tr" >&2
-		printf '      Every worktree shares .git/config, so those hooks run here too — and a check\n' >&2
-		printf '      added on this branch does not run on this branch.\n' >&2
+	*)	# Name where the hooks ACTUALLY came from. With core.hooksPath unset git falls
+		# back to .git/hooks, which a linked worktree reaches through the SHARED common
+		# git directory -- the same fault by another route. Blaming core.hooksPath there
+		# would send the operator to read a setting they never set, in the one check
+		# whose whole job is to say honestly which hooks ran.
+		if [ -n "$(git config core.hooksPath 2>/dev/null || :)" ]; then
+			printf 'FAIL  hook provenance: core.hooksPath resolves to %s, outside this working tree (%s).\n' "$_hr" "$_tr" >&2
+			printf '      Every worktree shares .git/config, so those hooks run here too — and a check\n' >&2
+			printf '      added on this branch does not run on this branch.\n' >&2
+		else
+			printf 'FAIL  hook provenance: these hooks come from %s, outside this working tree (%s).\n' "$_hr" "$_tr" >&2
+			printf '      core.hooksPath is unset, so git fell back to .git/hooks — which every worktree\n' >&2
+			printf '      shares through the common git directory, so a check added on this branch\n' >&2
+			printf '      does not run on this branch either.\n' >&2
+		fi
 		printf '      Fix with a path inside the tree:  git config core.hooksPath .githooks\n' >&2
 		exit 1 ;;
 	esac

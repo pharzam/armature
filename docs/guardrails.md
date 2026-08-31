@@ -61,13 +61,18 @@ success without having done its job.
   only the *set of checks* comes from elsewhere. **The check:** install with a
   **relative** path, `git config core.hooksPath .githooks`, which git resolves per
   working tree. The `pre-commit` hook's own block 0 then refuses to run when the
-  configured path resolves outside the tree being committed to, and
+  resolved hooks directory lies outside the tree being committed to, and
   [`.githooks/tests/provenance-check.sh`](../.githooks/tests/provenance-check.sh)
   proves it against real worktrees, reporting how many cases it ran rather than a
   count written down here to go stale.
   **A relative path escapes just as surely:** `../elsewhere/.githooks` is as
   foreign as any absolute one, so the check resolves the value instead of trusting
   that relative means local.
+  **No path at all is the same trap:** with `core.hooksPath` unset git falls back
+  to `.git/hooks`, which a linked worktree reaches through the shared *common* git
+  directory. So block 0 judges the resolved directory whatever set it, and names
+  the source it actually found — telling an operator to fix a setting they never
+  set is its own dishonest report.
   **Bound on the damage:** CI invokes each check script directly and never through
   `core.hooksPath`, so this costs a local round trip, not a landed bug — a
   developer-experience gap, not an open gate.

@@ -108,6 +108,35 @@ case_run "$base/wt/.githooks"   pass   absolute-inside-this-worktree
 case_run '../foreign'           refuse relative-escaping-worktree
 case_run '.githooks/../.githooks' pass relative-with-dotdot-staying-inside
 
+# The classic install -- a hook copied into .git/hooks, core.hooksPath never set --
+# is the SAME fault by another route: a linked worktree reaches .git/hooks through
+# the shared common git directory, so a check added on the branch does not run here
+# either. Block 0 must refuse it AND must not blame a setting the operator never set:
+# `git config core.hooksPath` prints nothing, so a message naming it sends them off to
+# read an empty value. This case asserts the WORDING, not only the refusal, because a
+# refusal that misnames its cause is the honest-reporting failure this check exists
+# to prevent.
+git config --unset core.hooksPath || :
+mkdir -p "$base/main/.git/hooks"
+cp "$base/main/.githooks/pre-commit" "$base/main/.git/hooks/pre-commit"
+chmod +x "$base/main/.git/hooks/pre-commit"
+echo probe > probe-hookspath-unset.txt
+git add -A
+_out=$(git commit -q -m hookspath-unset 2>&1 || :)
+seen=$((seen + 1))
+if printf '%s\n' "$_out" | grep -q 'core.hooksPath is unset'; then
+	printf 'ok    hookspath-unset-in-worktree (refuse, and names the real source)\n'
+elif printf '%s\n' "$_out" | grep -q 'hook provenance'; then
+	printf 'FAIL  hookspath-unset-in-worktree: refused, but blamed core.hooksPath, which is unset\n' >&2
+	bad=1
+elif printf '%s\n' "$_out" | grep -q 'PROVENANCE-RAN'; then
+	printf 'FAIL  hookspath-unset-in-worktree: wanted refuse, got pass\n' >&2
+	bad=1
+else
+	printf 'FAIL  hookspath-unset-in-worktree: wanted refuse, got no-hook-ran\n' >&2
+	bad=1
+fi
+
 # Block 0 must survive being run where git can tell it nothing. This runs the whole
 # hook outside any repository: `git rev-parse` fails, so `_hooks` is empty and block
 # 0 skips, and the linters below it are skipped by their own `if [ -f ]` guards.
