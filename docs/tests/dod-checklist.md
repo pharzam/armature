@@ -31,6 +31,28 @@ process rule ("every commit follows the message format") as easily as a
 product capability. Either way, the same test applies: name the test, or the
 item is unproven.
 
+### The one item a test cannot close: semantic agreement
+
+Every claim a script can settle is settled by a script
+([R5](../issue-workflow.md#r5--deterministic-over-llm-based)). One claim resists
+it: that a changed sentence still **means** what its source means. A linter can
+prove a summary covers every rule, in the right order, with the right anchors —
+[`agents-lint.sh`](../agents/agents-lint.sh) does exactly that — and a stub of
+filler words with the right headings would still pass it. Meaning is the residual.
+
+So semantic agreement is a DoD item whose evidence is a **recorded review round**
+rather than an automated test: the clause-by-clause pass described in
+[Reviewing for semantic agreement](../engineering-discipline.md#reviewing-for-semantic-agreement),
+reviewed by an independent reviewer — a person or a fresh agent session — under
+[ADR-0005](../adr/0005-independent-review-may-be-an-agent.md).
+
+Its traceability row cites that review record: the commit reviewed, the reviewer,
+the lens, and the verdict. This is the **only** item the checklist closes on a
+review record instead of a test, and it is stated here rather than left implicit,
+because an item with no row and no reason is indistinguishable from one that was
+forgotten. If a check that can settle part of it is ever written, that part stops
+being a review item and becomes a test — the residual only ever shrinks.
+
 ## The DoD, mapped to tests
 
 | DoD item | Test level | Traceability row | Done? |
@@ -40,6 +62,7 @@ item is unproven.
 | `‹a delivered feature is signed off by a person›` | `‹uat›` | `‹a UAT row, human-checked›` | `‹✓ / ✗›` |
 | `‹a bug fix has a test that fails on the old code›` | `‹unit \| integration›` | `‹a row citing the bug's task ID›` | `‹✓ / ✗›` |
 | `‹a known pitfall from guardrails.md is defended against›` | `‹unit \| integration \| e2e›` | `‹a row with a Guardrail cell filled in›` | `‹✓ / ✗›` |
+| Every changed clause of a summary, rule or checklist still means what its source means | review record | `‹the review round citing commit, reviewer, lens and verdict›` | `‹✓ / ✗›` |
 
 ## Checklist
 
@@ -54,3 +77,13 @@ Run this at task close, before the change is called done:
   longer holds.
 - [ ] The traceability table's ID set matches the requirement set: no `REQ`/`NFR`
   is missing a row, and no row cites an ID that does not exist.
+- [ ] Every document this change edited that **summarises** another document — an
+  agent entry point, a rule digest, a checklist — had a clause-by-clause
+  [semantic-agreement review](../engineering-discipline.md#reviewing-for-semantic-agreement)
+  against its source, and the review record is on the issue.
+- [ ] That review was **independent**: a fresh context that did not see the
+  author's reasoning or an earlier verdict, at the levels
+  [ADR-0005](../adr/0005-independent-review-may-be-an-agent.md) requires for this
+  task's risk.
+- [ ] No deterministic check that *could* have settled a claim was left to that
+  review instead (R5).

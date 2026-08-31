@@ -39,5 +39,6 @@ this template's shape, change the linter in the same change — the two must agr
 | [0002](0002-record-product-requirements.md)     | Record product requirements as PRDs | Accepted |
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 | [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted |
+| [0005](0005-independent-review-may-be-an-agent.md) | Independent review may be an agent | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
