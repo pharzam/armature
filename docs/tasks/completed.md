@@ -13,6 +13,7 @@ a changelog narrative. The git history and commit messages hold the blow-by-blow
 
 ## Log
 
+- **2026-08-31** — **T-4b7p** — Shipped the root `AGENTS.md` and `CLAUDE.md` entry points and `agents-lint`, which derives every expectation it holds — the gate steps, the rules, their anchors and titles, which rules a mechanism backs, and the shipped-check set — from the documents and the tree, so the summary cannot drift from its sources without the gate going red ([#58](https://github.com/pharzam/armature/issues/58))
 - **2026-08-31** — **T-1k9r** — Added the `audit-record-lint` job to `.github/workflows/ci.yml`, so the record's covering test runs in CI and not only in the pre-commit hook ([#57](https://github.com/pharzam/armature/issues/57); [detail](T-3v9q.md))
 <!-- Most recent first. Example shape:
 - **YYYY-MM-DD** — **‹ID›** — ‹one-sentence summary of what the task found or delivered› ([‹link›](...); [detail](‹id›.md))

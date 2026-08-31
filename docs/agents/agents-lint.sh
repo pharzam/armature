@@ -136,7 +136,11 @@
 # per assertion, and this check is repo-wide — the same split audit-record-lint
 # documents.
 #
-# Portability: POSIX sh and POSIX awk/sed/grep only. No bash-isms, no gensub, no
+# Portability: POSIX sh and POSIX awk/sed/grep only. Verified under dash, bash,
+# ksh and busybox ash, and under both LC_ALL=C and a UTF-8 locale. RUN IT WITH
+# `sh` — every wired invocation does. zsh in its native, non-POSIX mode splits
+# and globs differently and reports failures that are not there. No bash-isms,
+# no gensub, no
 # ERE interval expressions, no /dev/stderr, no `find -maxdepth`. An unmatched
 # glob stays literal in POSIX sh, so every glob loop carries an `[ -e ]` guard.
 # Pathname expansion is off (`set -f`) except where A21 needs it, so a target or

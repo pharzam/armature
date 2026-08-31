@@ -138,6 +138,17 @@ every line of the script:
   "no commands at all", A20's "no data rows", A14's "no rule derived", A11's "no
   gate step derived", A18's "empty mechanized set" and its "table holds no rows",
   and the malformed-row branches of A18 and A20.
+- **Six more named branches**, each broken by hand during the fresh-context
+  confirmation and each red for its own assertion: the empty-but-present file
+  branches of A1 and A2 (a fixture deletes the file instead), the "no spelled
+  count at all" branches of A13 and A17 (the fixtures write a *wrong* count),
+  A19's absolute-path branch, and A20's "names no row for a document this check
+  derives from" branch.
+- **A21's harvest is glob-shaped, not "every check in the tree"**: it reads
+  `docs/*/*-lint.sh` and `docs/*/run-*-tests.sh`, one directory deep, minus
+  `docs/ci/`. A check shipped deeper, or under another name, is not seen — and
+  so is not required to appear in the guide. That is a scope limit, not a bug,
+  but nothing here would catch it.
 - **The "section is empty" branches** of A10, A23 and A24, and A24's whole-file
   fallback when a heading is absent.
 - **The `beyond_vocabulary` branch** of A13 and A17, which needs a source
