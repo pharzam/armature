@@ -50,6 +50,15 @@ deleted gate step, or a newly shipped linter at `docs/<dir>/<name>-lint.sh` turn
 the gate **red** — rather than leaving `AGENTS.md` and the check agreeing with
 each other and disagreeing with the kit.
 
+Deriving was weighed against having the documents **declare** their structure as
+machine-readable metadata, and kept — [ADR-0006](../adr/0006-derive-expectations-from-prose.md)
+records the measurement. Reading a source document is **49 of this script's 617
+code lines, 7.9%**; the file is long because it explains itself and reports
+honestly, not because parsing is hard. The larger saving available is not a format
+change but a duplication: `A19` and
+[`link-lint`](../links/link-lint.sh) now both resolve this file's links
+([#67](https://github.com/pharzam/armature/issues/67)).
+
 That glob is **one level deep**, which is a real limit: a check placed at
 `docs/<dir>/<sub>/<name>-lint.sh`, or named in some other shape, is not seen and
 so is not required to appear in the guide. The spelled counts (`**eight** ordered steps`, `**twelve** numbered
