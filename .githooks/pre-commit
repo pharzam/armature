@@ -38,25 +38,39 @@ set -e
 #    shared across genuinely separate repositories looks identical to the fault.
 #    That is why the message says what to do instead of only refusing.
 _hooks=$(git rev-parse --git-path hooks 2>/dev/null || echo)
-case $_hooks in
-'')	: ;;                     # not in a repo, or git said nothing — nothing to judge
-/*)	_top=$(git rev-parse --show-toplevel 2>/dev/null || echo)
-	# Resolve BOTH through `cd … && pwd -P` before comparing. git echoes the
-	# configured path back unresolved but resolves --show-toplevel, so a repo
-	# reached through a symlink (/var vs /private/var on macOS, a symlinked
-	# home or projects directory anywhere) would otherwise look foreign to
-	# itself. `pwd -P` is POSIX; `readlink -f` is not.
-	_hr=$(CDPATH= cd -- "$_hooks" 2>/dev/null && pwd -P); [ -n "$_hr" ] || _hr=$_hooks
-	_tr=$(CDPATH= cd -- "$_top" 2>/dev/null && pwd -P);   [ -n "$_tr" ] || _tr=$_top
-	case ${_tr:+$_hr/} in
+_top=$(git rev-parse --show-toplevel 2>/dev/null || echo)
+if [ -n "$_hooks" ]; then
+	# git returns the value as configured: absolute as given, relative as given.
+	# A RELATIVE value is resolved against the working tree — which is what makes
+	# the relative install correct per worktree — so resolve it the same way here.
+	# Branching on absolute-vs-relative instead would miss `../elsewhere/.githooks`,
+	# which escapes just as surely and is just as foreign.
+	case $_hooks in
+	/*) _cand=$_hooks ;;
+	*)  _cand=${_top:-.}/$_hooks ;;
+	esac
+	# Resolve BOTH through `cd … && pwd -P`. git echoes the configured path back
+	# unresolved but resolves --show-toplevel, so a repo reached through a symlink
+	# (/var vs /private/var on macOS, a symlinked home anywhere) would otherwise
+	# look foreign to ITSELF. `pwd -P` is POSIX; `readlink -f` is not.
+	_hr=$(CDPATH= cd -- "$_cand" 2>/dev/null && pwd -P)
+	_tr=$(CDPATH= cd -- "${_top:-.}" 2>/dev/null && pwd -P)
+	if [ -z "$_tr" ] || [ -z "$_hr" ]; then
+		# Report, never guess. Saying "fine" here would be a silent pass; saying
+		# "foreign" would be a false alarm. Neither is knowable, so say that.
+		printf 'FAIL  hook provenance: cannot resolve the hooks path (%s) or the working tree (%s).\n' "${_hooks:-unset}" "${_top:-unknown}" >&2
+		printf '      Refusing rather than guessing whether the right hooks are running.\n' >&2
+		exit 1
+	fi
+	case $_hr/ in
 	"$_tr"/*) : ;;
-	*)	printf 'FAIL  hook provenance: core.hooksPath is %s, outside this working tree (%s).\n' "$_hooks" "${_tr:-unknown}" >&2
-		printf '      Every worktree is running that checkout\047s hooks, so a check added on this branch does not run here.\n' >&2
-		printf '      Fix with a RELATIVE path, which git resolves per worktree:  git config core.hooksPath .githooks\n' >&2
+	*)	printf 'FAIL  hook provenance: core.hooksPath resolves to %s, outside this working tree (%s).\n' "$_hr" "$_tr" >&2
+		printf '      Every worktree shares .git/config, so those hooks run here too — and a check\n' >&2
+		printf '      added on this branch does not run on this branch.\n' >&2
+		printf '      Fix with a path inside the tree:  git config core.hooksPath .githooks\n' >&2
 		exit 1 ;;
-	esac ;;
-*)	: ;;                     # relative — resolved per working tree, which is correct
-esac
+	esac
+fi
 
 # 1. ADR discipline — keeps docs/adr/ honest (see docs/adr/adr-lint.sh).
 if [ -f docs/adr/adr-lint.sh ]; then
