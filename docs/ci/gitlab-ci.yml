@@ -47,6 +47,15 @@ agents-lint:               # the root AGENTS.md and CLAUDE.md against their sour
   script:
     - sh docs/agents/agents-lint.sh
 
+link-lint:                 # every in-tree Markdown link and heading anchor
+  stage: check
+  image: alpine:3          # any image with POSIX sh + grep/awk/sed
+  # Concrete and ready — reads only text, needs no network (external links are
+  # out of scope by design). Keep it whatever else you drop: it is the one check
+  # here that stays useful with no Armature documents at all.
+  script:
+    - sh docs/links/link-lint.sh
+
 mr-link:                   # R1 — the MR description must link an issue
   stage: check
   image: alpine:3          # any image with POSIX sh + grep/awk/sed

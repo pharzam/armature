@@ -3,7 +3,7 @@
 # pre-commit — run the cheap quality-gate checks before a commit is recorded,
 # so a violation is caught here rather than in CI (docs/ci/) or review.
 #
-# It runs the ADR, PRD, audit-record and agent-entry linters, plus the discipline
+# It runs the ADR, PRD, audit-record, agent-entry and link linters, plus the discipline
 # self-tests, out of the box (docs-only, no toolchain needed). The
 # lint, test-level, and security steps are ‹…› placeholders you fill for your stack —
 # keep them cheap-first (unit before integration before end-to-end), so a failure
@@ -45,6 +45,13 @@ fi
 #     on every missing input, and CI carries no such guard.
 if [ -f docs/agents/agents-lint.sh ]; then
 	sh docs/agents/agents-lint.sh
+fi
+
+# 1f. Link discipline — resolves every in-tree Markdown link and heading anchor,
+#     so a renamed heading or a moved file goes red here rather than leaving a
+#     document pointing at nothing (see docs/links/link-lint.sh).
+if [ -f docs/links/link-lint.sh ]; then
+	sh docs/links/link-lint.sh
 fi
 
 # 2. Lint / format — ‹lint command, e.g. a formatter --check plus a linter›
