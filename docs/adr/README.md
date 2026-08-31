@@ -40,5 +40,6 @@ this template's shape, change the linter in the same change — the two must agr
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 | [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted |
 | [0005](0005-independent-review-may-be-an-agent.md) | Independent review may be an agent | Accepted |
+| [0006](0006-derive-expectations-from-prose.md) | Keep deriving expectations from the prose | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->

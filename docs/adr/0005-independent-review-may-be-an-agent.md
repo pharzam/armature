@@ -4,7 +4,7 @@ Date: 2026-08-31
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR-0006](0006-derive-expectations-from-prose.md)
 
 ## Context
 
