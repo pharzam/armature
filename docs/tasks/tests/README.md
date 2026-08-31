@@ -13,16 +13,25 @@ below and asserts the exit code.
 
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
-| `good` | `audit-record-lint: OK`, exit 0 | a small, valid record: 3 claims, matching arithmetic, every item covered |
+| `good` | `audit-record-lint: OK`, exit 0 | a small, valid record: 3 claims, matching arithmetic, every item covered, and two follow-ups in different lifecycle states — `T-8b4r` scheduled under **Next**, `T-4x2k` done and logged |
 | `bad-uncited-claim` | FAIL, exit 1 | a standing claim with no `file:line` (block 2 — issue #55 criterion 1) |
 | `bad-arithmetic` | FAIL, exit 1 | prose that says 3 of 3 stand over a table holding 1 Stands (block 3) |
 | `bad-dod-uncovered` | FAIL, exit 1 | a Definition of Done row whose `Covered by` cell names a document, not a test (block 7) |
-| `bad-unscheduled-followup` | FAIL, exit 1 | a follow-up named in the record with no line under **Next** (block 5) |
+| `bad-followup-nowhere` | FAIL, exit 1 | a follow-up in **no** lifecycle state: absent from `## Now`, `## Next` and `## Log` (block 5). This is the case that proves an open follow-up still needs a line somewhere. |
+| `bad-followup-in-both` | FAIL, exit 1 | a follow-up under **Next** *and* logged as done at the same time (block 5) |
+| `bad-followup-twice-in-completed` | FAIL, exit 1 | a follow-up with two `## Log` entries (block 5) |
+| `bad-followup-bare-completed` | FAIL, exit 1 | a `## Log` line that names the ID but carries no completion date and no issue link, so it does not show the work was done (block 5) |
 | `bad-undefined-abbrev` | FAIL, exit 1 | an abbreviation used in prose with no glossary row (block 6) |
 | `bad-empty-corrections` | FAIL, exit 1 | a `Corrected` verdict with an empty Corrections section (block 8) |
 | `bad-item-count` | FAIL, exit 1 | a DoD item dropped from **both** tables, so the two agree with each other and disagree with the declared count (block 7) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
+
+The four `bad-followup-*` cases together define the follow-up lifecycle that block
+5 enforces: `backlog.md` `## Now` or `## Next` while the work is open, a dated
+`## Log` entry in `completed.md` once it is done, and **exactly one** of those at a
+time. An earlier version of block 5 knew only `## Next`, so it failed the gate on
+the promotion `backlog.md:25` documents and on completion itself.
 
 `bad-dod-uncovered` is the case that matters most. It is the literal defect the
 review of [#56](https://github.com/pharzam/armature/pull/56) blocked on — a
