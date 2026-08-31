@@ -218,15 +218,39 @@ Independence has four levels. A review claims only the ones it actually had:
 
 | Level | What it means | Required for |
 | ----- | ------------- | ------------ |
-| **Context** | A fresh session that sees the issue, the acceptance criteria, the source documents and the diff — and **not** the author's reasoning or any earlier round's verdict. | Every review |
+| **Context** | A fresh session whose brief is the issue's problem statement, the acceptance criteria, the source documents and the diff — and **not** the author's reasoning or any earlier round's verdict. | Every review |
 | **Method** | A different lens and a different prompt from the round before it. | Every round after the first |
 | **Execution** | A separate run with its own record on the issue. | Every review |
-| **Model** | A different model, or a different provider. | High-risk work — a governance change, a change to the checks themselves, or anything feeding a [costly or irreversible action](#review-before-a-costly-or-irreversible-action) |
+| **Model** | A different model, or a different provider. | High-risk work — a governance change, a change to the checks themselves, or anything feeding a [costly or irreversible action](#review-before-a-costly-or-irreversible-action) — **where the adopter has a second model to reach for** |
 
 Two agents given the same prompt, the same context and the same model are not two
 reviewers. They are one reviewer run twice, and they share every blind spot. The
-levels exist so that "a fresh context reviewed it" is a checkable claim rather
-than a comfortable one.
+levels turn "a fresh context reviewed it" into a specific claim instead of a
+comfortable one.
+
+Be exact about what that buys. **No mechanism verifies any of it.** Nothing reads
+a review record, and nothing can prove a reviewer truly did not see the author's
+reasoning. What the levels buy is a claim precise enough to be *checked by a
+reader who bothers*, and precise enough to be **wrong** — which an unfalsifiable
+"it was reviewed" never was. That is a real gain and a small one, and overstating
+it here would be the same defect this section exists to catch.
+
+**The issue holds both halves, so a brief must say which half.** R7 puts the
+author's action, reasons and tradeoffs on the issue, and R12 puts the plan there;
+context independence says the reviewer must not read them. They live in the same
+thread. So the reviewer's brief **names what it may read** — the issue's problem
+statement and acceptance criteria, the source documents, and the diff at a fixed
+commit — and the author's decision comments are outside it. On a forge where one
+thread carries everything this is a discipline, not a mechanism: a reviewer can
+always scroll, and an honest record says what it was handed rather than what it
+was meant to avoid.
+
+**Where the adopter runs out of levels, the ladder stops and the record says so.**
+A one-person team with one model cannot reach model independence, and cannot put a
+second human operator on top of a tie. That is a limit of the adopter, not a
+failure of the review: claim the levels you had, name the ones you could not
+reach, and let a later reader weigh the distance. A limit recorded can be judged;
+a limit implied cannot.
 
 A [deterministic check](issue-workflow.md#r5--deterministic-over-llm-based) still
 outranks any reviewer, human or agent. Review is what is left after every claim a
@@ -249,6 +273,11 @@ the issue with:
 Escalate by the task's risk: a second reviewer at a higher independence level,
 and a human operator at the top. Two reviewers who disagree do not average their
 verdicts, and the author does not break the tie.
+
+Where an adopter has no second operator to escalate to, the disagreement is
+**recorded unresolved** and carried into the adopter's own decision process. An
+unresolved disagreement written down is a known risk; one silently broken by the
+author is a false green.
 
 ## Reviewing for semantic agreement
 

@@ -54,10 +54,15 @@ universal requirement.
 An independent review has four levels. Each level is a distance from the author,
 and a review claims only the levels it actually had:
 
-1. **Context independence** — the reviewer starts a fresh session and sees the
-   issue, the acceptance criteria, the source documents and the diff. It does
-   **not** see the author's reasoning or any earlier round's verdict. Required of
-   every review.
+1. **Context independence** — the reviewer starts a fresh session, briefed on the
+   issue's problem statement, the acceptance criteria, the source documents and
+   the diff. It is **not** briefed on the author's reasoning or any earlier
+   round's verdict. Required of every review. Note the collision this creates
+   with [R6](../issue-workflow.md#r6--agent-to-agent-communication-through-the-issue)
+   and [R7](../issue-workflow.md#r7--decision-transparency-on-every-action), which
+   put the author's reasoning on the issue: a brief therefore names the parts of
+   the issue the reviewer may read, and the author's decision comments are outside
+   it. On a single-thread forge this is a discipline, not a mechanism.
 2. **Method independence** — a different lens and a different prompt from the
    round before it. Required of every round after the first, and already the rule
    for the [decay rounds](../engineering-discipline.md#reviewing-until-findings-decay).
@@ -67,7 +72,10 @@ and a review claims only the levels it actually had:
    review.
 4. **Model independence** — a different model, or a different provider. Required
    for high-risk work: a governance change, a change to the checks themselves, or
-   anything feeding a costly or irreversible action.
+   anything feeding a costly or irreversible action — **where the adopter has a
+   second model to reach for**. An adopter with one model, or one operator, cannot
+   reach this level and is not failing the rule by saying so; it claims the levels
+   it had and names the ones it could not reach.
 
 Two further rules bound it:
 
@@ -120,6 +128,18 @@ This stays a **written rule**. No mechanism reads a review record today, and the
 [enforcement table](../issue-workflow.md#what-is-enforced-where) says so rather
 than implying a gate that does not exist. Wiring one — a check that a PR's issue
 carries a review record naming a commit and a reviewer — is left open.
+
+So be exact about what the levels buy. Nothing verifies that a reviewer truly
+lacked the author's reasoning; the record only makes the claim **specific enough
+to be checked by a reader who bothers, and specific enough to be wrong**. That is
+a real gain over an unfalsifiable "it was reviewed", and a smaller one than a
+mechanism. Claiming more here would be the defect this ADR exists to catch.
+
+The kit sets no floor an adopter cannot reach. Levels 1 to 3 need only a fresh
+session and a written record. Level 4 needs a second model, and a solo adopter
+that lacks one records the gap instead of claiming the level — as does a team with
+no second operator to break a tie, which carries the disagreement into its own
+decision process unresolved rather than letting the author settle it.
 
 Independence levels are a floor, not a ceiling, and the kit sets no numeric bar:
 it does not say how many rounds, or how many reviewers, because that number
