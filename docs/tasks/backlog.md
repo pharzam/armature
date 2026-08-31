@@ -31,6 +31,8 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
+- **T-4b7p** — Ship the root agent entry points and the derived-expectation check that keeps them honest ([#58](https://github.com/pharzam/armature/issues/58))
+
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->

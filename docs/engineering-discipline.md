@@ -410,17 +410,22 @@ on stable interfaces — no brittle selectors or timing. The full list is
 [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
-the kit ships three tests of its own conventions:
+the kit ships five tests of its own conventions:
 [`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
 [ADR](#architecture-decision-records) rules — filenames, sequential numbering,
 required sections, the index, and cross-links —
 [`prd/prd-lint.sh`](prd/prd-lint.sh) lints [`prd/`](prd/) against the
 [PRD](#product-requirements) rules — requirement IDs, a resolvable cited fact per
-requirement, MoSCoW and phase, and the traceability matrix — and
+requirement, MoSCoW and phase, and the traceability matrix —
+[`agents/agents-lint.sh`](agents/agents-lint.sh) lints the root
+[agent entry points](agents/README.md) against the documents they summarise —
+the gate steps, the rules, the word budget, and the exact Claude import —
+[`tasks/audit-record-lint.sh`](tasks/audit-record-lint.sh) lints this repository's
+own audit record against its Definition of Done, and
 [`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull request's body links
 its issue ([R1](issue-workflow.md#r1--issue-first)). They read only text, so they
 need no toolchain and can be the project's first tests, before any product code
-exists. The two that lint repo files run in the [`pre-commit`](#git-hooks) hook and
+exists. The four that lint repo files run in the [`pre-commit`](#git-hooks) hook and
 in [CI](#continuous-integration-optional); the PR-link check reads the PR body — a
 forge artifact absent at commit time — so it runs in CI only. Add a discipline test
 whenever a convention is worth enforcing automatically rather than by review; wire

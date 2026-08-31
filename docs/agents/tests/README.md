@@ -1,0 +1,116 @@
+# agents-lint self-tests
+
+These are fixtures for [`../agents-lint.sh`](../agents-lint.sh), **not** example
+entry points to fill in. Each case directory is a **miniature repository root**
+holding the seven files the linter reads:
+
+```
+AGENTS.md  CLAUDE.md  README.md
+docs/engineering-discipline.md  docs/issue-workflow.md
+docs/onboarding-for-engineers.md  docs/stub/demo-lint.sh
+```
+
+The linter is pointed at the case directory and resolves every input inside it.
+There is no shared-fixture fallback and no "check it only if the file exists"
+branch anywhere in the script, so every assertion runs identically for a fixture
+and for the real repository.
+
+The real run (`sh docs/agents/agents-lint.sh`, no argument) reads the repository
+root and never descends into this directory, so these fixtures never affect the
+kit's own green state. The
+[discipline-test runner](../../tests/run-discipline-tests.sh) drives every case
+below and asserts the exit code.
+
+**The stub sources declare three gate steps and three rules, and none of the
+kit's real names.** That is what makes the `good` case positive proof that
+nothing is hardcoded: a linter expecting eight steps and R1–R12 would fail it.
+In the stubs, R1 is the mechanized rule and R2 and R3 are written-rule-only.
+
+## The cases
+
+| Case | Expected | Exercises |
+| ---- | -------- | --------- |
+| `good` | `agents-lint: OK`, exit 0 | a valid mini-root: thirteen headings in order, one H1 and no other heading-shaped line, three numbered gate steps under `**three** ordered steps`, three rule lines with derived anchors and source titles under `**three** numbered rules`, resolving links, a sources table, and every required literal |
+| `bad-no-agents` | FAIL, exit 1 | `AGENTS.md` deleted — the deliverable-absent case, and the same failure the real tree produced before this work landed (A1) |
+| `bad-no-claude` | FAIL, exit 1 | `CLAUDE.md` deleted; the Claude entry point is a deliverable, not an option (A2) |
+| `bad-no-gate-source` | FAIL, exit 1 | `docs/engineering-discipline.md` deleted, so the gate steps cannot be derived (A3) |
+| `bad-agent-singular` | FAIL, exit 1 | a root `AGENT.md` (singular) beside the plural one — two competing sources of instruction (A4) |
+| `bad-claude-extra-line` | FAIL, exit 1 | `CLAUDE.md` carrying the import **and** a policy sentence — the duplicated-policy drift the one-line rule exists to stop (A5) |
+| `bad-claude-wrong-import` | FAIL, exit 1 | `CLAUDE.md` holding exactly one line, `@AGENT.md`: right count, right shape, wrong target (A6) |
+| `bad-over-budget` | FAIL, exit 1 | the guide padded past the pre-registered 1,500-word budget, inside an existing section and adding no heading (A7) |
+| `bad-heading-renamed` | FAIL, exit 1 | one required heading renamed, everything else intact (A8) |
+| `bad-hidden-tail` | FAIL, exit 1 | a single `# note` line inside `## Checks you can run`, followed by an invented command. Without A8's companion assertion this line would truncate the section and hide everything after it (A9) |
+| `bad-empty-section` | FAIL, exit 1 | a required heading kept with its body cut to four words (A10) |
+| `bad-gate-step-missing` | FAIL, exit 1 | the guide lists two of the source's three steps, renumbered so they look complete (A11) |
+| `bad-gate-step-bare` | FAIL, exit 1 | a gate step reduced to a bare title with no prose (A12) |
+| `bad-gate-count-word` | FAIL, exit 1 | all three steps listed, but the prose says `**two** ordered steps` — the anti-truncation anchor (A13) |
+| `bad-rule-missing` | FAIL, exit 1 | the line for R2 omitted (A14) |
+| `bad-rule-wrong-title` | FAIL, exit 1 | R2's link text reads `Gamma rule` while its anchor is still R2's. An anchor alone would let a line describe the wrong rule (A14) |
+| `bad-rule-listing-only` | FAIL, exit 1 | a rule line reduced to its number, title and link, with no summary — listing the identifier is not covering the rule (A15) |
+| `bad-rule-invented` | FAIL, exit 1 | an `R4` line whose anchor the source never defines (A16) |
+| `bad-rule-count-word` | FAIL, exit 1 | all three rules listed, but the prose says `**four** numbered rules` (A17) |
+| `bad-false-enforcement` | FAIL, exit 1 | the trailing ` (written rule)` dropped from a rule the enforcement table backs with nothing — the false enforcement claim (A18) |
+| `bad-enforcement-hedged` | FAIL, exit 1 | the same rule rewritten to "more than a written rule; the continuous integration job enforces it". It *contains* the phrase while making the false claim, which is why the marker is pinned line-final (A18) |
+| `bad-dead-link` | FAIL, exit 1 | one link repointed at a document the root does not hold — the rot a rename leaves behind (A19) |
+| `bad-source-row-blank` | FAIL, exit 1 | a sources-of-truth row naming a real document with an empty `Authoritative for` cell (A20) |
+| `bad-source-row-unresolved` | FAIL, exit 1 | a sources-of-truth row whose first column is a bare path — not a Markdown link, so A19 never harvests it — that resolves to nothing (A20) |
+| `bad-unnamed-check` | FAIL, exit 1 | a second shipped `*-lint.sh` in the tree that `## Checks you can run` does not name (A21) |
+| `bad-invented-command` | FAIL, exit 1 | a plausible product command in **inline backticks**, in a section that is not the checks section (A22) |
+| `bad-missing-literal` | FAIL, exit 1 | `git diff --check` removed from the checks section (A23) |
+| `bad-readme-no-pointer` | FAIL, exit 1 | the mini-root `README.md` keeps its `## Start here` prose but drops the link to `AGENTS.md` (A24) |
+
+Each `bad-*` case is otherwise valid, so it fails for its own single reason.
+
+`bad-rule-invented` is the one case that prints **two** lines, both `A16`: the
+invented anchor and the invented rule number are the two halves of the same
+equality, and each names what it found. Every other case prints exactly one.
+
+## The `EXPECT` convention
+
+Each `bad-*` directory carries an `EXPECT` file holding only its assertion id. It
+is not one of the seven files the linter reads, so it changes no assertion. It
+exists because the harness compares **only exit codes** — a bad case that started
+failing for a different reason would still look green. Check the reasons with:
+
+```
+for d in docs/agents/tests/bad-*/; do
+	id=$(cat "$d/EXPECT")
+	sh docs/agents/agents-lint.sh "$d" 2>&1 | grep -q "FAIL  $id:" || echo "MISMATCH $d"
+done
+```
+
+**Say plainly: this loop is not itself a gate.** It is run and its output recorded
+when the suite changes. Backlog tasks `T-9c5t` ("assert why a linter failed rather
+than only that it did") and `T-8b4r` ("make the harness prove each mutant
+applied") own that residual.
+
+## Two rules when you add or edit a fixture
+
+1. **Keep each stub short.** The [audit-record linter](../../tasks/audit-record-lint.sh)
+   resolves a citation by bare filename against any tree path ending in it, so a
+   long fixture file can silently satisfy a citation meant for the real document.
+   Measured limits: `README.md` under 32 lines, `engineering-discipline.md` under
+   7, `issue-workflow.md` under 22. `onboarding-for-engineers.md` is never cited.
+   The stub linter is named `demo-lint.sh`, a basename no record cites.
+2. **Name no real ADR.** [`adr-lint.sh`](../../adr/adr-lint.sh) greps every
+   Markdown file under `docs/` for an ADR filename stem or an `ADR-NNNN` token to
+   decide whether a record is cross-linked. A fixture that named one could
+   satisfy a genuine orphan's inbound link by accident.
+
+## What these fixtures do NOT exercise
+
+A fixture cannot reach everything, and a suite that implies otherwise is worse
+than one that says so:
+
+- **A25 cannot be fixtured at all.** It reads the running script's own header, and
+  a fixture case cannot vary the running script.
+- **A21's empty-set floor is unreachable in the real tree**, because
+  `agents-lint.sh` is itself one of the files the glob finds.
+- **A19's root-escape guard and its "no links at all" floor**, A22's "no commands
+  at all" floor, and the "section is empty" branches of A23 and A24 have no case
+  of their own.
+- **Three of A24's four inbound-pointer triples**, and the individual pairs of
+  A23's literal table. One fixture proves the **mechanism**; the pairs and triples
+  are data, exactly as the thirteen required headings are.
+
+Run one case: `sh docs/agents/agents-lint.sh docs/agents/tests/good`
