@@ -11,6 +11,14 @@ only case here that exits 0.
 - An external link, which is out of scope: [example](https://example.com/nothing).
 - A placeholder target, skipped by design: [`‹adopter doc›`](‹adopter doc›.md).
 - A template placeholder shape, also skipped: [ADR-NNNN](NNNN-short-title.md).
+- A reference-style link: [by reference][the-ref].
+- A nested, badge-shaped link: [![the target](target.md)](target.md).
+- A CommonMark angle destination: [angled](<target.md>).
+- A raw HTML anchor: <a href="target.md">html link</a>.
+- A link-shaped EXAMPLE in a code span, which is not navigation and is not
+  resolved: `[not a link](does-not-exist.md)`.
+
+[the-ref]: target.md
 
 ## A note in this file
 

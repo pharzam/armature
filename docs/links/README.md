@@ -5,7 +5,7 @@ The check that keeps the documents' own navigation honest.
 | File | What it is |
 | ---- | ---------- |
 | [`link-lint.sh`](link-lint.sh) | Resolves every in-tree Markdown link and heading anchor. Runs in the [`pre-commit` hook](../../.githooks/pre-commit) and in [CI](../ci/). |
-| [`tests/`](tests/) | Its fixtures — one `good` case and a `bad-*` case per assertion. Run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
+| [`tests/`](tests/) | Its fixtures — one `good` case and a `bad-*` case per assertion, plus one per false-green hole a review found. Run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
 | [`tests/expect-check.sh`](tests/expect-check.sh) | Asserts each `bad-*` case fails for **its own** assertion, not merely that it fails. |
 
 ## Why it exists
@@ -35,6 +35,7 @@ since the file was written.
 | `L3` | Every same-file `#fragment` names a heading in the linking file. |
 | `L4` | No link target escapes the repository root. |
 | `L5` | Coverage floor — a run that resolved **zero** links fails. |
+| `L6` | Every reference use `[text][label]` has a matching `[label]: target` definition. |
 
 ## What it proves, and what it does not
 
@@ -53,8 +54,8 @@ not this script.
   `NNNN-…` form. Flagging one would push an author to "fix" a template by
   inventing a filename, which is the placeholder-integrity failure
   [`AGENTS.md`](../../AGENTS.md) warns about.
-- **Fenced code blocks and HTML comments**, whose links are examples, not
-  navigation.
+- **Fenced code blocks, HTML comments, and inline code spans**, whose links are
+  examples, not navigation. A link-shaped example in backticks is not resolved.
 - **Fixture case directories** — any path with a `good*` or `bad-*` component.
   Their links are deliberately broken: `docs/agents/tests/bad-dead-link/` exists
   to make `agents-lint` reject a dead link, and linting it would report that
@@ -63,10 +64,40 @@ not this script.
   skipped — they are prose a reader follows, and that is exactly where the one
   real defect was found.
 
-One more, recorded rather than hidden: the slug function is copied from
-`agents-lint.sh`'s A19 so the two can never disagree. It drops underscores, which
-GitHub keeps in an anchor. Harmless while no heading in the tree uses one, and a
-defect the day one does.
+## The forms it reads
+
+A checker blind to a link form is worse than no checker, because the reader
+trusts it. Four forms are read:
+
+| Form | Example |
+|------|---------|
+| Inline | `[x](target.md)` |
+| **Nested** | `[![alt](inner.png)](outer.md)` — both destinations |
+| Reference | `[x][label]` with `[label]: target.md` |
+| Raw HTML | `<a href="target.md">` |
+
+Nested links are found by scanning for **each `](` opener** rather than matching a
+whole `[…](…)`: a whole-link match consumes the inner link and advances past the
+outer destination, which is a silent false green on the badge idiom.
+
+A CommonMark angle destination `[x](<a path.md>)` is a real link and is resolved.
+An adopter marker only *opens* with `<`, as in `<id>.md`; they are told apart on
+the closing `>`, so a real link is never skipped as a placeholder.
+
+## Three limits, recorded rather than hidden
+
+1. **The slug function is copied from `agents-lint.sh`'s A19** so the two can never
+   disagree. It drops underscores, which GitHub keeps in an anchor. Harmless while
+   no heading in the tree uses one, and a defect the day one does.
+2. **Duplicate headings are not disambiguated.** GitHub appends `-1` to the second
+   occurrence's slug; `anchors_of()` does not, so a legitimate `#foo-1` link would
+   be wrongly rejected. No duplicate heading exists in the tree today. This is a
+   false *red* — it fails loudly rather than passing silently, which is the right
+   direction for a bug to point.
+3. **A case-mismatched target passes on a case-insensitive filesystem.** `[ -e ]`
+   on macOS accepts `Target.md` for `target.md`, where Linux CI rejects it, so the
+   local hook is more lenient than the authority. CI is the authority precisely
+   for this class of difference.
 
 ## The `EXPECT` convention
 
@@ -84,12 +115,15 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
-| `good` | `link-lint: OK`, exit 0 | every rule in its passing form — a file link, a fragment, a same-file fragment, a directory, the double-hyphen slug, an external link, and both placeholder shapes |
+| `good` | `link-lint: OK`, exit 0 | every rule and every form in its passing shape — inline, nested, reference, HTML, angle destination, a fragment, a same-file fragment, a directory, the double-hyphen slug, an external link, both placeholder shapes, and a link-shaped example in a code span |
 | `bad-dead-path` | FAIL `L1`, exit 1 | a link to a file that does not exist |
 | `bad-dead-fragment` | FAIL `L2`, exit 1 | a real file, an anchor it does not have |
 | `bad-same-file-fragment` | FAIL `L3`, exit 1 | a bare `#anchor` this file does not have |
 | `bad-escapes-root` | FAIL `L4`, exit 1 | a target that climbs out of the tree |
 | `bad-no-links` | FAIL `L5`, exit 1 | a file with nothing left to resolve — the fail-open |
+| `bad-reference-target` | FAIL `L1`, exit 1 | a broken destination reached only through a `[label]:` definition |
+| `bad-nested-link` | FAIL `L1`, exit 1 | a badge-shaped link whose **outer** target is broken and inner one is not |
+| `bad-undefined-label` | FAIL `L6`, exit 1 | a reference label nothing defines |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 

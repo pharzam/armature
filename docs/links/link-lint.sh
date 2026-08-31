@@ -23,6 +23,15 @@
 #   L5  coverage floor — a run that resolved ZERO links fails, so a glob that
 #       matches nothing cannot report OK. (The same fail-open the discipline-test
 #       runner's own floor exists to catch.)
+#   L6  every reference-style use `[text][label]` has a matching `[label]: target`
+#       definition in the same file. Without one the forge renders the brackets as
+#       literal text, so the link is not broken — it is not a link at all.
+#
+# Four link forms are read, because a checker blind to a form is worse than no
+# checker: the reader trusts it. Inline `[x](t)`, NESTED `[![alt](i.png)](t)` —
+# found by scanning for each `](` opener rather than matching a whole link —
+# reference definitions `[label]: t`, and raw HTML `href="t"`. Inline code spans
+# are stripped first, so a link-shaped EXAMPLE in backticks is not resolved.
 #
 # WHAT IT SKIPS, BY DESIGN
 #   - External links (http, https, mailto). Resolving them needs the network,
@@ -76,6 +85,10 @@ err() { printf 'FAIL  %s: %s\n' "$1" "$2" >&2; fail=1; }
 is_placeholder() {
 	case $1 in
 	*'‹'*|*'›'*) return 0 ;;
+	# A CommonMark angle destination wraps the WHOLE target — `<a path.md>` — and is
+	# a real link. An adopter marker only OPENS with `<`, as in `<id>.md`. Telling
+	# them apart on the closing `>` is what stops a real link being skipped silently.
+	'<'*'>')     return 1 ;;
 	'<'*)        return 0 ;;
 	NNNN-*)      return 0 ;;
 	'...')       return 0 ;;
@@ -114,7 +127,9 @@ lint_file() {
 	_rel=${_f#"$root"/}
 	_dir=$(dirname "$_f")
 
-	# extract: LINE<TAB>TARGET, skipping fenced blocks and HTML comments
+	# extract: LINE<TAB>KIND<TAB>VALUE, skipping fences, HTML comments and code spans.
+	# KIND is LINK (a destination to resolve), DEF (a reference definition's target,
+	# also resolved) or USE (a reference label, checked against the definitions).
 	_links=$(awk '
 		function isfence(s) { return (s ~ /^[ ]{0,3}(```|~~~)/) }
 		isfence($0) { fence = !fence; next }
@@ -123,25 +138,83 @@ lint_file() {
 		incomment { if ($0 ~ /-->/) incomment = 0; next }
 		{
 			line = $0
-			while (match(line, /\[[^]]*\]\([^)]*\)/)) {
-				m = substr(line, RSTART, RLENGTH)
-				sub(/^\[[^]]*\]\(/, "", m)
-				sub(/\)$/, "", m)
-				sub(/[ \t].*$/, "", m)
-				if (m != "") printf "%d\t%s\n", FNR, m
-				line = substr(line, RSTART + RLENGTH)
+			# an inline code span holds an EXAMPLE, not navigation
+			gsub(/`[^`]*`/, "", line)
+
+			# a reference definition:  [label]: target
+			if (match(line, /^[ ]{0,3}\[[^]]+\][ \t]*:[ \t]*[^ \t]+/)) {
+				lbl = line; sub(/^[ ]{0,3}\[/, "", lbl); sub(/\].*$/, "", lbl)
+				tgt = line; sub(/^[ ]{0,3}\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
+				sub(/[ \t].*$/, "", tgt)
+				printf "%d\tDEF\t%s\t%s\n", FNR, tolower(lbl), tgt
+				next
+			}
+
+			# every "](" opens a destination. Scanning for the OPENER rather than
+			# matching a whole link is what makes a nested link work: in
+			# [![alt](img.png)](target.md) the inner and the outer are both found.
+			rest = line
+			while ((p = index(rest, "](")) > 0) {
+				rest = substr(rest, p + 2)
+				e = index(rest, ")")
+				if (e == 0) break
+				t = substr(rest, 1, e - 1)
+				sub(/[ \t].*$/, "", t)
+				if (t != "") printf "%d\tLINK\t%s\n", FNR, t
+				rest = substr(rest, e + 1)
+			}
+
+			# raw HTML anchors
+			r2 = line
+			while (match(r2, /href="[^"]*"/)) {
+				h = substr(r2, RSTART + 6, RLENGTH - 7)
+				if (h != "") printf "%d\tLINK\t%s\n", FNR, h
+				r2 = substr(r2, RSTART + RLENGTH)
+			}
+
+			# reference USES:  [text][label]
+			r3 = line
+			while (match(r3, /\[[^]]*\]\[[^]]*\]/)) {
+				u = substr(r3, RSTART, RLENGTH)
+				sub(/^\[[^]]*\]\[/, "", u)
+				sub(/\]$/, "", u)
+				if (u != "") printf "%d\tUSE\t%s\n", FNR, tolower(u)
+				r3 = substr(r3, RSTART + RLENGTH)
 			}
 		}
 	' "$_f")
 
 	[ -n "$_links" ] || return 0
 
+	# pass 1 — the reference labels this file defines, so a USE can be checked
+	_defs=$(printf '%s\n' "$_links" | awk -F'\t' '$2 == "DEF" { print $3 }')
+
 	_oldIFS=$IFS
 	IFS=$nl
 	for _entry in $_links; do
 		IFS=$_oldIFS
 		_lineno=${_entry%%	*}
-		_target=${_entry#*	}
+		_rest=${_entry#*	}
+		_kind=${_rest%%	*}
+		_target=${_rest#*	}
+
+		# L6 — a reference USE whose label nothing defines is not a link at all
+		if [ "$_kind" = USE ]; then
+			case $nl$_defs$nl in
+			*"$nl$_target$nl"*) : ;;
+			*) err L6 "$_rel:$_lineno uses reference label [$_target], but this file defines no [$_target]: target" ;;
+			esac
+			IFS=$nl
+			continue
+		fi
+
+		# a DEF carries label<TAB>target; the target is what resolves
+		[ "$_kind" = DEF ] && _target=${_target#*	}
+
+		# a CommonMark angle destination — strip the wrapper, keep the path
+		case $_target in
+		'<'*'>') _target=${_target#<}; _target=${_target%>} ;;
+		esac
 
 		case $_target in
 		http://*|https://*|mailto:*) IFS=$nl; continue ;;
