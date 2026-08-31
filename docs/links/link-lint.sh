@@ -147,7 +147,9 @@ lint_file() {
 				tgt = line; sub(/^[ ]{0,3}\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
 				sub(/[ \t].*$/, "", tgt)
 				printf "%d\tDEF\t%s\t%s\n", FNR, tolower(lbl), tgt
-				next
+				# do NOT stop here: a definition line can carry a trailing link,
+				# and returning early would drop every link after it on the line.
+				line = substr(line, RSTART + RLENGTH)
 			}
 
 			# every "](" opens a destination. Scanning for the OPENER rather than
@@ -172,13 +174,18 @@ lint_file() {
 				r2 = substr(r2, RSTART + RLENGTH)
 			}
 
-			# reference USES:  [text][label]
+			# reference USES:  [text][label] and the COLLAPSED form [text][],
+			# whose label is its own text. Reading the label from the second
+			# bracket alone makes the collapsed form invisible -- an empty label
+			# that silently drops out -- which is a false green on exactly what
+			# L6 exists to catch.
 			r3 = line
 			while (match(r3, /\[[^]]*\]\[[^]]*\]/)) {
 				u = substr(r3, RSTART, RLENGTH)
-				sub(/^\[[^]]*\]\[/, "", u)
-				sub(/\]$/, "", u)
-				if (u != "") printf "%d\tUSE\t%s\n", FNR, tolower(u)
+				txt = u; sub(/^\[/, "", txt); sub(/\]\[[^]]*\]$/, "", txt)
+				lbl = u; sub(/^\[[^]]*\]\[/, "", lbl); sub(/\]$/, "", lbl)
+				if (lbl == "") lbl = txt
+				if (lbl != "") printf "%d\tUSE\t%s\n", FNR, tolower(lbl)
 				r3 = substr(r3, RSTART + RLENGTH)
 			}
 		}

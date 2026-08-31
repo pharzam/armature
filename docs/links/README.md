@@ -73,7 +73,7 @@ trusts it. Four forms are read:
 |------|---------|
 | Inline | `[x](target.md)` |
 | **Nested** | `[![alt](inner.png)](outer.md)` — both destinations |
-| Reference | `[x][label]` with `[label]: target.md` |
+| Reference | `[x][label]`, and the **collapsed** `[x][]` whose label is its own text |
 | Raw HTML | `<a href="target.md">` |
 
 Nested links are found by scanning for **each `](` opener** rather than matching a
@@ -84,7 +84,7 @@ A CommonMark angle destination `[x](<a path.md>)` is a real link and is resolved
 An adopter marker only *opens* with `<`, as in `<id>.md`; they are told apart on
 the closing `>`, so a real link is never skipped as a placeholder.
 
-## Three limits, recorded rather than hidden
+## Four limits, recorded rather than hidden
 
 1. **The slug function is copied from `agents-lint.sh`'s A19** so the two can never
    disagree. It drops underscores, which GitHub keeps in an anchor. Harmless while
@@ -98,6 +98,12 @@ the closing `>`, so a real link is never skipped as a placeholder.
    on macOS accepts `Target.md` for `target.md`, where Linux CI rejects it, so the
    local hook is more lenient than the authority. CI is the authority precisely
    for this class of difference.
+4. **A line beginning `[word]: text` is read as a reference definition**, and its
+   first word is resolved as a target. So a description-list line such as
+   `[TODO]: revisit this later` reports a broken link to `revisit`. That is what
+   CommonMark does with the same line, so the linter is not wrong — but it is
+   surprising, and the direction is safe: it fails loudly rather than passing
+   silently.
 
 ## The `EXPECT` convention
 
@@ -124,6 +130,8 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | `bad-reference-target` | FAIL `L1`, exit 1 | a broken destination reached only through a `[label]:` definition |
 | `bad-nested-link` | FAIL `L1`, exit 1 | a badge-shaped link whose **outer** target is broken and inner one is not |
 | `bad-undefined-label` | FAIL `L6`, exit 1 | a reference label nothing defines |
+| `bad-collapsed-reference` | FAIL `L6`, exit 1 | the collapsed `[x][]` form, whose empty second bracket makes a naive reader drop it |
+| `bad-definition-trailing-link` | FAIL `L1`, exit 1 | a broken link *after* a reference definition on the same line |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 

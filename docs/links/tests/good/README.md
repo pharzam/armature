@@ -12,6 +12,7 @@ only case here that exits 0.
 - A placeholder target, skipped by design: [`‹adopter doc›`](‹adopter doc›.md).
 - A template placeholder shape, also skipped: [ADR-NNNN](NNNN-short-title.md).
 - A reference-style link: [by reference][the-ref].
+- A collapsed reference, whose label is its own text: [the-ref][].
 - A nested, badge-shaped link: [![the target](target.md)](target.md).
 - A CommonMark angle destination: [angled](<target.md>).
 - A raw HTML anchor: <a href="target.md">html link</a>.
