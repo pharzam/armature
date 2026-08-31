@@ -9,7 +9,7 @@ them honest. The decision behind them is
 | [`AGENTS.md`](../../AGENTS.md) | The vendor-neutral agent guide, loaded at the repository root. A short, accurate index and summary of the rules an operator must know before changing this repository. |
 | [`CLAUDE.md`](../../CLAUDE.md) | The Claude Code compatibility entry point. Exactly one line, `@AGENTS.md`, so the same guide loads with no second copy that can drift. |
 | [`agents-lint.sh`](agents-lint.sh) | The deterministic check over both files. Runs in the [`pre-commit` hook](../../.githooks/pre-commit) and in [CI](../ci/). |
-| [`tests/`](tests/) | Its fixtures — one `good` case and one `bad-*` case per assertion, run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). |
+| [`tests/`](tests/) | Its fixtures — one `good` case and a `bad-*` case for every assertion that can be given one (A25 cannot; several assertions have more than one). Run by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh); [`tests/README.md`](tests/README.md) lists the cases and the gaps. |
 
 ## In plain terms
 
@@ -46,9 +46,13 @@ document's [enforcement table](../issue-workflow.md#what-is-enforced-where), and
 the shipped-check set out of the file tree.
 
 So the check cannot become a second source of truth. A renamed rule, a new R13, a
-deleted gate step or a newly shipped linter turns the gate **red** — rather than
-leaving `AGENTS.md` and the check agreeing with each other and disagreeing with
-the kit. The spelled counts (`**eight** ordered steps`, `**twelve** numbered
+deleted gate step, or a newly shipped linter at `docs/<dir>/<name>-lint.sh` turns
+the gate **red** — rather than leaving `AGENTS.md` and the check agreeing with
+each other and disagreeing with the kit.
+
+That glob is **one level deep**, which is a real limit: a check placed at
+`docs/<dir>/<sub>/<name>-lint.sh`, or named in some other shape, is not seen and
+so is not required to appear in the guide. The spelled counts (`**eight** ordered steps`, `**twelve** numbered
 rules`) are the anti-truncation anchors: without them, deleting a step from the
 source *and* from the summary in one change would leave the two agreeing.
 

@@ -77,7 +77,8 @@ file.
 ## Checks you can run
 
 These read only text, so they need no toolchain. Install the hooks once per clone
-with `git config core.hooksPath .githooks`, and they run before every commit.
+with `git config core.hooksPath .githooks`; the first five then run before every
+commit, and in CI. The last one you run yourself.
 
 ```
 sh docs/adr/adr-lint.sh

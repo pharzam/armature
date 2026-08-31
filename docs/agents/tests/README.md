@@ -28,6 +28,13 @@ In the stubs, R1 is the mechanized rule and R2 and R3 are written-rule-only, and
 R3's title is deliberately long — long enough that a rule line could otherwise
 pass the prose floor on its mandated title alone.
 
+The `good` case also carries a **fenced code block whose first line is a `#`
+comment**, inside its `README.md`'s `## Start here`. That is not decoration: the
+section-scoping primitive once ended a section at any `#`-initial line, so an
+ordinary adopter README with a fenced quickstart was truncated and A24 reported
+a link absent that sat four lines below. The `good` case is where that stays
+fixed.
+
 ## The cases
 
 | Case | Expected | Exercises |
@@ -49,7 +56,7 @@ pass the prose floor on its mandated title alone.
 | `bad-gate-count-word` | FAIL, exit 1 | all three steps listed, but the prose says `**two** ordered steps` — the anti-truncation anchor (A13) |
 | `bad-rule-missing` | FAIL, exit 1 | the line for R2 omitted (A14) |
 | `bad-rule-wrong-title` | FAIL, exit 1 | R2's link text reads `Gamma rule…` while its anchor is still R2's. An anchor alone would let a line describe the wrong rule (A14) |
-| `bad-rule-anchor-suffix` | FAIL, exit 1 | a rule anchor with extra characters after the derived one. They sit **outside** `[-a-z0-9]` on purpose, so A16's harvest stops at the valid prefix and finds it known — only A14's exact-ending test can catch this (A14) |
+| `bad-rule-anchor-suffix` | FAIL, exit 1 | a rule anchor with extra characters after the derived one. They sit **outside** the anchor character class on purpose, so A16's harvest stops at the valid prefix and finds it known — only A14, which compares the resolved target for equality, catches this (A14) |
 | `bad-rule-listing-only` | FAIL, exit 1 | a rule line reduced to its number, title and link, with no summary — listing the identifier is not covering the rule (A15) |
 | `bad-rule-title-as-prose` | FAIL, exit 1 | R3 carrying its deliberately long source title and a link, and nothing else. A14 already mandates that title, so counting it as prose would let the line say nothing at all (A15) |
 | `bad-rule-invented` | FAIL, exit 1 | an `R4` line whose anchor the source never defines (A16) |
@@ -70,6 +77,8 @@ pass the prose floor on its mandated title alone.
 | `bad-enforcement-cell-unrecognised` | FAIL, exit 1 | a mechanism cell reading `none`. Honest English, but neither a named mechanism nor a recognised empty cell — so the check reports it instead of guessing which it means (A18) |
 | `bad-invented-command-root` | FAIL, exit 1 | an invented `sh setup.sh` — a repository-root script with no directory part. The first narrowing of the harvest required a slash, so this slipped through (A22) |
 | `bad-link-escapes-root` | FAIL, exit 1 | a link whose target is exactly `..`. The escape guard required a slash after the dots, so this fell through to an existence test that always succeeds (A19) |
+| `bad-dead-fragment` | FAIL, exit 1 | a link whose path resolves but whose `#fragment` names no heading in it — the reader lands at the top of the document instead of the rule (A19) |
+| `bad-rule-invented-elsewhere` | FAIL, exit 1 | an invented rule anchor **outside** the rules section. A16 was scoped to that section, so an invented rule was invented only where it was looked for (A16) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 
@@ -78,6 +87,8 @@ assertion. `bad-rule-invented` prints two `A16` lines — the invented anchor an
 the invented rule number are the two halves of one equality, and each names what
 it found. `bad-enforcement-table-contradiction` prints three `A18` lines — the
 self-contradicting row, plus the two rule lines whose marking it falsifies.
+Every other case prints exactly one line; the `EXPECT` loop below is what keeps
+that true.
 
 ## The `EXPECT` convention
 

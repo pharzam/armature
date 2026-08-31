@@ -25,7 +25,11 @@ in [`../tasks/T-3v9q.md`](../tasks/T-3v9q.md) — verdict *Stands* — says "the
 own pattern is to ship tool-specific files inert under `docs/templates/` … so that
 is where one belongs." [R10](../issue-workflow.md#r10--sync-with-governance) says
 a conflict between governance documents stops work until a decision note or an ADR
-resolves it. **This record is that resolution.** The pattern does not transfer:
+resolves it. **This record is that resolution.** The K6 row itself is left
+unedited — it is dated evidence of what the tree held when it was audited, and
+the audit record's own linter reads the verdict counts out of its prose — so this
+record, not an edit to that row, is where its conclusion is superseded. The
+pattern does not transfer:
 an inert copy is never loaded at agent startup, and startup discoverability is the
 entire gap. `docs/templates/` exists for files that change a forge's live
 behaviour the moment they land; a root instruction file changes nothing but what a
@@ -82,8 +86,11 @@ written into `engineering-discipline.md` first, and only then summarised.
 `issue-workflow.md`, the mechanized-rule set out of that document's
 [enforcement table](../issue-workflow.md#what-is-enforced-where), and the
 shipped-check set out of the file tree. So a renamed rule, a new rule, a deleted
-gate step or a newly shipped linter turns the gate **red**, rather than leaving
-the summary and the check agreeing with each other and disagreeing with the kit.
+gate step, or a newly shipped linter at `docs/<dir>/<name>-lint.sh` turns the
+gate **red**, rather than leaving the summary and the check agreeing with each
+other and disagreeing with the kit. (The shipped-check glob is one level deep by
+design; a check placed deeper is not seen, which
+[`../agents/README.md`](../agents/README.md) records as a limit.)
 
 ## Consequences
 

@@ -12,10 +12,11 @@
 # anchors and titles out of docs/issue-workflow.md, the mechanized-rule set out
 # of that document's "What is enforced where" table, and the shipped-check set
 # out of the file tree. So this script can never become a second source of truth:
-# a renamed rule, a new R13, a deleted gate step or a newly shipped linter turns
-# the gate RED, instead of leaving AGENTS.md and this script agreeing with each
+# a renamed rule, a new R13, a deleted gate step, or a newly shipped linter at
+# `docs/<dir>/<name>-lint.sh` turns the gate RED, instead of leaving AGENTS.md
+# and this script agreeing with each
 # other and disagreeing with the kit. Every expectation that is NOT derived — the
-# thirteen headings, the required literals, the inbound-pointer table — is held
+# required headings, the required literals, the inbound-pointer table — is held
 # here in one place and named in the header, the way adr-lint.sh holds the three
 # Nygard sections. If you change AGENTS.md's shape, change this list in the SAME
 # change; the two must always agree, and that is the whole point of the file.
@@ -78,7 +79,9 @@
 #       enforcement table gives it no mechanism in any of its three mechanism
 #       columns, and never contains that phrase when it does. A mechanism cell
 #       this check cannot read is reported, never guessed either way.
-#   A19 every relative link target resolves under ROOT.
+#   A19 every relative link target resolves under ROOT, and every `#fragment`
+#       names a real heading in the Markdown file it points at (except the
+#       rule anchors, which A14 and A16 check harder).
 #   A20 the sources-of-truth table names real documents, assigns each a
 #       substantive authority, and names the two documents this check derives
 #       from in rows of their own.
@@ -106,8 +109,9 @@
 # each constrains how the file may be written:
 #   - Gate step 0 (an issue is open, with a reviewed ordered plan) is written as
 #     PROSE or a `- ` bullet, NEVER as `0. **Title**`. The source states it in
-#     prose, so A11 derives eight steps; a ninth numbered line would go red.
-#   - The file carries exactly one `#`-initial title line and the thirteen `## `
+#     prose, so A11 derives the count the source declares; an extra numbered
+#     line would go red.
+#   - The file carries exactly one `#`-initial title line and the required `## `
 #     headings, and NOTHING else beginning with `#` — a shell comment inside a
 #     fenced block included. A heading-shaped line ends the section above it, so
 #     content after it would never be checked (A9).
@@ -200,8 +204,16 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 sect() {
 	awk -v h="$2" '
 		function lvl(s,   n) { n = 0; while (substr(s, n + 1, 1) == "#") n++; return n }
-		$0 == h { s = 1; hl = lvl($0); next }
-		s && substr($0, 1, 1) == "#" && lvl($0) <= hl { s = 0 }
+		# Fence-aware: a `#` line inside a fenced code block is a shell comment,
+		# not a heading, and must not end the section above it. A9 bans such a
+		# line from AGENTS.md, but this primitive also reads README.md and
+		# docs/onboarding-for-engineers.md, whose shape the kit does not own —
+		# and a fenced quickstart whose first line is a comment is the most
+		# ordinary README edit there is. Without this, a section was truncated
+		# and A24 reported a link absent that sat four lines below.
+		/^```/ || /^~~~/ { fence = !fence }
+		$0 == h && !fence { s = 1; hl = lvl($0); next }
+		s && !fence && substr($0, 1, 1) == "#" && lvl($0) <= hl { s = 0 }
 		s
 	' "$1"
 }
@@ -602,8 +614,11 @@ else
 fi
 
 # --- A16. no invented or stale rule ----------------------------------------
+# Scanned over the WHOLE FILE, not just the rules section. The header states
+# this as a property of AGENTS.md, and an invented rule is no less invented for
+# being named in another section — which a section-scoped scan would have missed.
 if [ -n "$RSEC" ]; then
-	out=$(printf '%s\n' "$RSEC" | KNOWN="$RULES" awk '
+	out=$(KNOWN="$RULES" awk '
 		BEGIN {
 			n = split(ENVIRON["KNOWN"], k, "\n")
 			for (i = 1; i <= n; i++) {
@@ -630,7 +645,7 @@ if [ -n "$RSEC" ]; then
 			sub(/^- \*\*/, "", id)
 			sub(/\*\*.*$/, "", id)
 			if (!(id in okid)) print "AGENTS.md names rule " id ", which docs/issue-workflow.md does not define"
-		}' | sort -u)
+		}' "$agents" | sort -u)
 	emit A16 "$out"
 fi
 
@@ -657,25 +672,66 @@ LINKS=$(awk '
 		while (match(line, /\]\([^)]*\)/)) {
 			t = substr(line, RSTART + 2, RLENGTH - 3)
 			line = substr(line, RSTART + RLENGTH)
-			sub(/#.*$/, "", t)
-			if (t != "" && t !~ /^https?:/ && t !~ /^mailto:/) print t
+			frag = ""
+			if (match(t, /#.*$/)) { frag = substr(t, RSTART + 1); t = substr(t, 1, RSTART - 1) }
+			if (t != "" && t !~ /^https?:/ && t !~ /^mailto:/) printf "%s|%s\n", t, frag
 		}
 	}' "$agents")
 n_links=0
 oldIFS=$IFS; IFS=$nl
-for t in $LINKS; do
+for entry in $LINKS; do
+	t=${entry%%"|"*}
+	frag=${entry#*"|"}
 	n_links=$((n_links + 1))
 	IFS=$oldIFS
 	# The wrapping is what makes a bare `..` a component rather than a prefix:
 	# `*../*` alone requires a slash AFTER the dots, so a target of exactly ".."
 	# fell through and `[ -e "$root/.." ]` is always true.
+	bad=0
 	case $t in
-	/*) err A19 "AGENTS.md links $t, which is an absolute path, not a path in this repository" ;;
+	/*) err A19 "AGENTS.md links $t, which is an absolute path, not a path in this repository"; bad=1 ;;
 	esac
 	case "/$t/" in
-	*/../*) err A19 "AGENTS.md links $t, which leaves the repository root" ;;
-	*)      [ -e "$root/$t" ] || err A19 "AGENTS.md links $t, which is not a path in this repository" ;;
+	*/../*) err A19 "AGENTS.md links $t, which leaves the repository root"; bad=1 ;;
+	*)      [ -e "$root/$t" ] || { err A19 "AGENTS.md links $t, which is not a path in this repository"; bad=1; } ;;
 	esac
+	# The FRAGMENT too, where the target is a Markdown file in the tree. Without
+	# this, a link to a section that was renamed — including the two sections
+	# this very change added — rots silently: the path still resolves, and the
+	# reader lands at the top of the document instead of the rule.
+	# A14 and A16 own the rule anchors, and check them harder — against the set
+	# derived from the source, not merely against the headings that exist. Left
+	# in, this block would diagnose the same defect a second time and stop each
+	# rule fixture from failing for one reason.
+	skip_frag=0
+	case $t in
+	*issue-workflow.md)
+		case $frag in
+		[Rr][0-9]*) skip_frag=1 ;;
+		esac
+		;;
+	esac
+	if [ "$bad" -eq 0 ] && [ "$skip_frag" -eq 0 ] && [ -n "$frag" ]; then
+		case $t in
+		*.md)
+			anchors=$(awk '
+				function slug(s,   x) {
+					x = tolower(s)
+					sub(/^#+[ \t]*/, "", x)
+					gsub(/[^a-z0-9 -]/, "", x)
+					gsub(/ /, "-", x)
+					return x
+				}
+				/^```/ || /^~~~/ { fence = !fence }
+				!fence && /^#+ / { print slug($0) }
+			' "$root/$t")
+			case $nl$anchors$nl in
+			*"$nl$frag$nl"*) : ;;
+			*) err A19 "AGENTS.md links $t#$frag, but $t has no heading with that anchor" ;;
+			esac
+			;;
+		esac
+	fi
 	IFS=$nl
 done
 IFS=$oldIFS
