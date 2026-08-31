@@ -106,6 +106,27 @@ case_run "$base/wt/.githooks"   pass   absolute-inside-this-worktree
 case_run '../foreign'           refuse relative-escaping-worktree
 case_run '.githooks/../.githooks' pass relative-with-dotdot-staying-inside
 
+# Block 0 must survive being run where git can tell it nothing. This runs the whole
+# hook outside any repository: `git rev-parse` fails, so `_hooks` is empty and block
+# 0 skips, and the linters below it are skipped by their own `if [ -f ]` guards.
+#
+# Say plainly what this does NOT cover: the `cd`-failure path, where a path exists
+# for git but cannot be entered. Under `set -e` an assignment inherits its command
+# substitution's status, so a failing `cd` killed the hook with a bare exit before
+# reaching the branch written to explain that very case. That is fixed with `|| :`
+# inside each substitution and verified by a direct shell test, NOT by a case here --
+# contorting git into producing an unresolvable toplevel is not worth the fixture.
+outside=$(mktemp -d)
+cp .githooks/pre-commit "$outside/blk0"
+if ( cd "$outside" && GIT_CEILING_DIRECTORIES="$outside" sh ./blk0 >/dev/null 2>&1 ); then
+	printf 'ok    outside-a-repository (clean exit)\n'
+else
+	printf 'FAIL  outside-a-repository: block 0 exited non-zero where git can tell it nothing\n' >&2
+	bad=1
+fi
+seen=$((seen + 1))
+rm -rf "$outside"
+
 if [ "$seen" -eq 0 ]; then
 	printf 'FAIL  no case ran -- this proved nothing\n' >&2
 	exit 1

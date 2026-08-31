@@ -53,8 +53,12 @@ if [ -n "$_hooks" ]; then
 	# unresolved but resolves --show-toplevel, so a repo reached through a symlink
 	# (/var vs /private/var on macOS, a symlinked home anywhere) would otherwise
 	# look foreign to ITSELF. `pwd -P` is POSIX; `readlink -f` is not.
-	_hr=$(CDPATH= cd -- "$_cand" 2>/dev/null && pwd -P)
-	_tr=$(CDPATH= cd -- "${_top:-.}" 2>/dev/null && pwd -P)
+	# The `|| :` inside each substitution is load-bearing under `set -e`: an
+	# assignment takes the substitution's exit status, so a failing `cd` would kill
+	# the hook HERE -- with a bare, unexplained non-zero exit -- before reaching the
+	# "cannot resolve" branch below that exists to explain exactly that case.
+	_hr=$(CDPATH= cd -- "$_cand" 2>/dev/null && pwd -P || :)
+	_tr=$(CDPATH= cd -- "${_top:-.}" 2>/dev/null && pwd -P || :)
 	if [ -z "$_tr" ] || [ -z "$_hr" ]; then
 		# Report, never guess. Saying "fine" here would be a silent pass; saying
 		# "foreign" would be a false alarm. Neither is knowable, so say that.
