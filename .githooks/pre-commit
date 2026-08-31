@@ -16,6 +16,66 @@
 
 set -e
 
+# 0. Hook provenance — is THIS worktree's hook the one running?
+#
+#    core.hooksPath is stored in .git/config, which every worktree SHARES. Set to
+#    an ABSOLUTE path it binds every worktree to one checkout's hooks, so a check
+#    added on a branch does not run on that branch's own commits — the gate reports
+#    success having run something other than what the branch says it runs. Set to a
+#    RELATIVE path, git resolves it per working tree, which is what the install
+#    instruction has always said.
+#
+#    `git rev-parse --git-path hooks` is used rather than $0 on purpose: under a
+#    correct install $0 is RELATIVE, so comparing it would need `readlink -f`,
+#    which is not POSIX and differs between BSD and GNU. Git resolves this itself.
+#
+#    This FAILS rather than warns. Every other step here fails; a warning in hook
+#    output nobody reads is the same silent pass this check exists to end. CI runs
+#    each script directly and never through core.hooksPath, so a stop here costs a
+#    round trip, not a landed bug.
+#
+#    Known false positive, and why it is accepted: a hooks directory deliberately
+#    shared across genuinely separate repositories looks identical to the fault.
+#    That is why the message says what to do instead of only refusing.
+_hooks=$(git rev-parse --git-path hooks 2>/dev/null || echo)
+_top=$(git rev-parse --show-toplevel 2>/dev/null || echo)
+if [ -n "$_hooks" ]; then
+	# git returns the value as configured: absolute as given, relative as given.
+	# A RELATIVE value is resolved against the working tree — which is what makes
+	# the relative install correct per worktree — so resolve it the same way here.
+	# Branching on absolute-vs-relative instead would miss `../elsewhere/.githooks`,
+	# which escapes just as surely and is just as foreign.
+	case $_hooks in
+	/*) _cand=$_hooks ;;
+	*)  _cand=${_top:-.}/$_hooks ;;
+	esac
+	# Resolve BOTH through `cd … && pwd -P`. git echoes the configured path back
+	# unresolved but resolves --show-toplevel, so a repo reached through a symlink
+	# (/var vs /private/var on macOS, a symlinked home anywhere) would otherwise
+	# look foreign to ITSELF. `pwd -P` is POSIX; `readlink -f` is not.
+	# The `|| :` inside each substitution is load-bearing under `set -e`: an
+	# assignment takes the substitution's exit status, so a failing `cd` would kill
+	# the hook HERE -- with a bare, unexplained non-zero exit -- before reaching the
+	# "cannot resolve" branch below that exists to explain exactly that case.
+	_hr=$(CDPATH= cd -- "$_cand" 2>/dev/null && pwd -P || :)
+	_tr=$(CDPATH= cd -- "${_top:-.}" 2>/dev/null && pwd -P || :)
+	if [ -z "$_tr" ] || [ -z "$_hr" ]; then
+		# Report, never guess. Saying "fine" here would be a silent pass; saying
+		# "foreign" would be a false alarm. Neither is knowable, so say that.
+		printf 'FAIL  hook provenance: cannot resolve the hooks path (%s) or the working tree (%s).\n' "${_hooks:-unset}" "${_top:-unknown}" >&2
+		printf '      Refusing rather than guessing whether the right hooks are running.\n' >&2
+		exit 1
+	fi
+	case $_hr/ in
+	"$_tr"/*) : ;;
+	*)	printf 'FAIL  hook provenance: core.hooksPath resolves to %s, outside this working tree (%s).\n' "$_hr" "$_tr" >&2
+		printf '      Every worktree shares .git/config, so those hooks run here too — and a check\n' >&2
+		printf '      added on this branch does not run on this branch.\n' >&2
+		printf '      Fix with a path inside the tree:  git config core.hooksPath .githooks\n' >&2
+		exit 1 ;;
+	esac
+fi
+
 # 1. ADR discipline — keeps docs/adr/ honest (see docs/adr/adr-lint.sh).
 if [ -f docs/adr/adr-lint.sh ]; then
 	sh docs/adr/adr-lint.sh
