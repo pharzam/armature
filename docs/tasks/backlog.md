@@ -42,5 +42,6 @@ same summary, dated — rather than deleting it or checking it off.
 - **T-9c5t** — Make a skipped suite fail the gate, and assert why a linter failed rather than only that it did ([#37](https://github.com/pharzam/armature/issues/37); [detail](T-3v9q.md))
 - **T-4x2k** — The self-violation sweep: the hook count, the broken link, the enforcement table, the overlong `completed.md` entries ([#40](https://github.com/pharzam/armature/issues/40); [detail](T-3v9q.md))
 - **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23); [detail](T-3v9q.md))
+- **T-2j7f** — Ship a cross-file link and anchor linter: no committed check resolves a document's in-tree links or heading anchors ([#64](https://github.com/pharzam/armature/issues/64))
 - **T-8k5d** — Evaluate machine-readable metadata for the linted documents, to cut the shell parsers' size without spending the zero-toolchain POSIX `sh` property ([#63](https://github.com/pharzam/armature/issues/63); [ADR-0005](../adr/0005-independent-review-may-be-an-agent.md))
 - **T-3d9v** — Define "fresh context" and "substantive task", and decide the scope of the abbreviation rule ([#21](https://github.com/pharzam/armature/issues/21); [detail](T-3v9q.md))
