@@ -20,7 +20,12 @@ for d in "$script_dir"/bad-*/; do
 	[ -d "$d" ] || continue
 	name=$(basename "$d")
 	[ -f "$d/EXPECT" ] || { printf 'FAIL  %s has no EXPECT file\n' "$name" >&2; bad=1; continue; }
-	id=$(cat "$d/EXPECT")
+	# `tr -d '\r'` because this check reads a FILE of the tree, and on a Windows
+	# checkout that file arrives with a carriage return. The id then became
+	# `L7<CR>`, which matches no output line, so every case failed here while
+	# the linter beside it was reporting `FAIL  L7:` perfectly correctly -- a
+	# check failing because the thing it checks is right.
+	id=$(tr -d '\r' < "$d/EXPECT")
 	seen=$((seen + 1))
 	out=$(sh "$linter" "$d" 2>&1)
 	if printf '%s\n' "$out" | grep -q "FAIL  $id:"; then

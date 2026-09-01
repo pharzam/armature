@@ -27,22 +27,16 @@
 # to execute. It is NOT the repository-wide `* text=auto eol=lf` rejected below:
 # it decides nothing about an adopter's own files.
 #
-# WHAT THIS DOES NOT FIX, said plainly so the rule is not read as more than it is.
-# The kit now RUNS on such a checkout; the gate does not yet PASS on one. Every
-# ordinary Markdown file still arrives with carriage returns, and three checks
-# still read them as content. Measured on a clone at this commit -- 4 of 7 green,
-# where it was 0 of 7:
+# WHAT THIS RULE DOES, AND WHAT THE LINTERS DO. This rule only makes the scripts
+# RUNNABLE. Every ordinary Markdown file in the tree still arrives with carriage
+# returns, and reading those correctly is each linter's own job -- done on this
+# branch for all six, plus expect-check.sh. Measured on a clone: 7 of 7 green,
+# where before this branch it was 0 of 7 (nothing ran) and after the eol rule
+# alone it was 4 of 7.
 #
-#   adr-lint, prd-lint, link-lint     pass  (fixed on this branch)
-#   agents-lint                       fails -- A6 and A8 compare whole strings, so
-#                                     the report reads `got "X", want "X"`
-#   audit-record-lint                 fails -- 37 lines, same class
-#   expect-check.sh                   fails -- it reads its own EXPECT file, so the
-#                                     id becomes `L7<CR>` and matches no output
-#
-# All three are the same defect as the two fixed here, in scripts #76 does not
-# name. Out of scope by decision on that issue, and recorded here rather than
-# left for the next person to rediscover.
+# So the two halves are separable and both are needed. Delete this rule and
+# nothing runs; keep it but revert the linters and four checks fail on a tree
+# they should accept.
 #
 #
 # 2. TWO FIXTURES MUST KEEP THEIR CARRIAGE RETURNS

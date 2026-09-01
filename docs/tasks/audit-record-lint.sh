@@ -105,6 +105,21 @@ repo_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 fail=0
 err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 
+# text FILE — the file's lines with any trailing carriage return removed.
+#
+# Every file this script reads goes through here, with ONE stated exception
+# below. Nothing here treats a carriage return as content, and the blocks
+# compare whole strings -- an ID, a verdict word, a task line -- so on a Windows
+# checkout (core.autocrlf=true, git's default there) every one of them compared
+# against a character that does not print: 37 FAIL lines on a record that
+# violates nothing.
+#
+# THE EXCEPTION is block 1-4, which reads the record TWICE in one awk run
+# (`FNR == NR`) to validate a table against rows declared later in the file. A
+# pipe can only be read once, so that block keeps its two file arguments and
+# strips the return inside awk instead. It is marked where it happens.
+text() { awk '{ sub(/\r$/, ""); print }' "$1"; }
+
 [ -f "$record" ]   || { printf 'FAIL  audit record not found: %s\n' "$record" >&2; exit 1; }
 [ -f "$backlog" ]  || { printf 'FAIL  backlog not found: %s (DoD 5 cannot resolve)\n' "$backlog" >&2; exit 1; }
 [ -f "$glossary" ] || { printf 'FAIL  glossary not found: %s (DoD 6 cannot resolve)\n' "$glossary" >&2; exit 1; }
@@ -166,6 +181,13 @@ function resolve(id2) {
 	}
 }
 BEGIN { ndash = "\342\200\223"; mdash = "\342\200\224" }
+
+# THE ONE EXCEPTION to reading through text(): this block reads the record
+# TWICE, and a pipe can only be read once. So the file argument stays, and the
+# carriage return comes off here instead -- FIRST, before any rule below sees
+# the line. The rest of this script pipes through text(); see the note beside
+# it. Both passes are covered, because this rule has no pattern.
+{ sub(/\r$/, "") }
 
 # ---- pass one: the claim rows, the X-numbers, the two prose blocks --------
 FNR == NR {
@@ -301,7 +323,7 @@ printf '%s\n' "$out" | awk '/^COUNTS /{next} NF' >&2
 counts=$(printf '%s\n' "$out" | sed -n 's/^COUNTS //p')
 
 # --- 5. each follow-up is exactly one line under **Next** ------------------
-followups=$(awk '
+followups=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Out of scope/) ? 1 : 0; next }
 	sec {
 		line = $0
@@ -310,7 +332,7 @@ followups=$(awk '
 			line = substr(line, RSTART + RLENGTH)
 		}
 	}
-' "$record" | sort -u)
+' | sort -u)
 
 # A follow-up has a lifecycle, and the check has to know all of it. backlog.md
 # documents three states: `## Next` (deferred), `## Now` (being worked, and
@@ -321,9 +343,9 @@ followups=$(awk '
 #
 # The rule: exactly one line names the ID, across the three sections. Not two
 # (in Next and also logged as done), and not none (dropped without a trace).
-now_block=$(awk '/^## / { sec = ($0 ~ /^## Now/) ? 1 : 0; next } sec' "$backlog")
-next_block=$(awk '/^## / { sec = ($0 ~ /^## Next/) ? 1 : 0; next } sec' "$backlog")
-log_block=$(awk '/^## / { sec = ($0 ~ /^## Log/) ? 1 : 0; next } sec' "$completed")
+now_block=$(text "$backlog" | awk '/^## / { sec = ($0 ~ /^## Now/) ? 1 : 0; next } sec')
+next_block=$(text "$backlog" | awk '/^## / { sec = ($0 ~ /^## Next/) ? 1 : 0; next } sec')
+log_block=$(text "$completed" | awk '/^## / { sec = ($0 ~ /^## Log/) ? 1 : 0; next } sec')
 
 [ -n "$followups" ] || err "Out of scope (follow-ups): the section names no task ID (DoD 5)"
 for t in $followups; do
@@ -354,7 +376,7 @@ if [ -n "$repo_root" ]; then
 	# The three patterns below must stay in step with has_citation() above. A form
 	# that block 2 ACCEPTS but this block cannot EXTRACT is a hole: the citation
 	# passes the shape test and is never resolved, so `LICENSE:99999` survives.
-	cites=$(awk '
+	cites=$(text "$record" | awk '
 		function harvest(re,   line) {
 			line = $0
 			while (match(line, re)) {
@@ -370,7 +392,7 @@ if [ -n "$repo_root" ]; then
 			harvest("\\.git(hooks|hub)/[A-Za-z0-9_./-]+:[0-9]+")
 			harvest("(LICENSE|\\.gitignore|\\.gitattributes):[0-9]+")
 		}
-	' "$record" | sort -u)
+	' | sort -u)
 	# Enumerate the tree once, then match each cited path as a suffix on a path
 	# component boundary. Guessing a directory order instead would resolve
 	# `README.md:54` to whichever README the guess happened to reach first.
@@ -418,7 +440,7 @@ if [ -n "$repo_root" ]; then
 			best=0
 			while IFS= read -r f; do
 				[ -n "$f" ] || continue
-				total_lines=$(awk 'END { print NR }' "$repo_root/$f")
+				total_lines=$(text "$repo_root/$f" | awk 'END { print NR }')
 				[ "$total_lines" -gt "$best" ] && best=$total_lines
 				[ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ] && ok=1
 			done
@@ -436,10 +458,10 @@ fi
 # --- 6. every abbreviation used in prose has a glossary row ----------------
 # A stray code fence would silently blind the scan below, because it toggles on
 # ```. An odd fence count is itself a defect, so fail on it rather than scan.
-fences=$(awk '/^```/ { k++ } END { print k + 0 }' "$record")
+fences=$(text "$record" | awk '/^```/ { k++ } END { print k + 0 }')
 [ $((fences % 2)) -eq 0 ] \
 	|| err "the record holds $fences code fences, an odd number -- an unclosed fence hides the rest of the file from block 6 (DoD 6)"
-gloss_abbr=$(awk '
+gloss_abbr=$(text "$glossary" | awk '
 	/^[ \t]*\|/ {
 		m = split($0, p, "|")
 		if (m < 4) next
@@ -455,9 +477,9 @@ gloss_abbr=$(awk '
 			if (t != "") print t
 		}
 	}
-' "$glossary" | sort -u)
+' | sort -u)
 
-rec_abbr=$(awk '
+rec_abbr=$(text "$record" | awk '
 	/^```/ { f = !f; next }
 	f { next }
 	# A table separator carries no words. Every other table row is prose and is
@@ -483,11 +505,11 @@ rec_abbr=$(awk '
 			line = substr(line, RSTART + RLENGTH)
 		}
 	}
-' "$record" | sort -u)
+' | sort -u)
 
 for a in $rec_abbr; do
 	case " $EXEMPT " in *" $a "*) continue ;; esac
-	grep -Eq "$a\.(md|sh|ya?ml|json|toml|txt)" "$record" && continue
+	text "$record" | grep -Eq "$a\.(md|sh|ya?ml|json|toml|txt)" && continue
 	printf '%s\n' "$gloss_abbr" | grep -qx "$a" \
 		|| err "abbreviation \"$a\" is used in the prose of $(basename "$record") and has no row in $(basename "$glossary") (DoD 6)"
 done
@@ -498,14 +520,14 @@ done
 # the exact defect the review blocked on, left this linter green. This block
 # closes that hole. docs/tests/dod-checklist.md:22-25 is the rule: a Definition of
 # Done item maps to a traceability row whose status is `green` or `frozen`.
-dod_rows=$(awk '
+dod_rows=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Definition of Done/) ? 1 : 0; next }
 	sec && /^[ \t]*\|/ { print }
-' "$record")
-trace_rows=$(awk '
+')
+trace_rows=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Test traceability/) ? 1 : 0; next }
 	sec && /^[ \t]*\|/ { print }
-' "$record")
+')
 
 [ -n "$dod_rows" ]   || err "no '## Definition of Done' table found -- block 7 checked nothing (DoD 2)"
 [ -n "$trace_rows" ] || err "no '## Test traceability' table found; docs/tests/dod-checklist.md requires one row per DoD item (DoD 2)"
@@ -576,14 +598,14 @@ gap=$(printf '%s\n' "$expected_items" | awk 'BEGIN { want = 1 } { if ($1 != want
 # from both tables leaves a set that is still internally consistent and still
 # wrong. So the count is anchored in prose, the way block 3 anchors the claim
 # arithmetic, and read from a sentence the tables do not control.
-declared_items=$(awk '
+declared_items=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Definition of Done/) ? 1 : 0; next }
 	sec && match($0, /\*\*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\*\* Definition of Done items/) {
 		s = substr($0, RSTART + 2, RLENGTH - 2)
 		sub(/\*\*.*/, "", s)
 		print s; exit
 	}
-' "$record")
+')
 n_items=$(printf '%s\n' "$expected_items" | awk 'NF' | wc -l | tr -d ' ')
 if [ -z "$declared_items" ]; then
 	err "the Definition of Done section does not state how many items it has; block 7 needs that anchor to catch a table truncated at the top (docs/tests/dod-checklist.md:22-25)"
@@ -648,7 +670,7 @@ fi
 # holding the corrections has not been emptied. Nothing here is tuned to the text
 # it checks: a pattern chosen to fit the 17 rows that exist would be a decision
 # rule picked after seeing the result.
-uncited_corr=$(awk -F'|' '
+uncited_corr=$(text "$record" | awk -F'|' '
 	/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
 	sec && /^[ \t]*\|/ {
 		id = $2; gsub(/^[ \t]+|[ \t]+$/, "", id)
@@ -669,11 +691,11 @@ for id in $uncited_corr; do
 		err "Findings row $id is Corrected but cites no file and line; a correction with no evidence is an assertion (DoD 8)"
 	fi
 done
-corr_bullets=$(awk '
+corr_bullets=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Corrections to the reports/) ? 1 : 0; next }
 	sec && /^- / { k++ }
 	END { print k + 0 }
-' "$record")
+')
 [ "${corr_bullets:-0}" -gt 0 ] \
 	|| err "the '## Corrections to the reports' section holds no bullets; a Corrected verdict with nothing recorded against it is not a correction (DoD 8)"
 
