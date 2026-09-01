@@ -31,6 +31,30 @@ runs anywhere, and it is wired into the
 [CI](../engineering-discipline.md#continuous-integration-optional). If you change
 this template's shape, change the linter in the same change — the two must agree.
 
+### What counts as an inbound cross-link
+
+A **link**, from a Markdown file outside this directory, whose destination names
+the record's file — inline `[text](…/0001-….md)`, a reference definition
+`[label]: …/0001-….md`, or a raw `href`. A document that only **names** a record
+is discussing it, not linking it: the `ADR-NNNN` shorthand in a sentence, the
+filename in a citation or a code span, a link-shaped example inside a fence.
+None of those satisfies the check.
+
+That distinction was learned the hard way. The check used to match the shorthand
+or the stem as a plain string anywhere under `docs/`, so
+[0007](0007-link-coverage-belongs-to-link-lint.md) read as cross-linked on the day
+it was written — by an audit record that used `ADR-0007` as a hypothetical
+counter-example when no such record existed
+([#73](https://github.com/pharzam/armature/issues/73)). A warning that cannot
+fire for a record everyone is talking about is worst where it is needed most.
+
+The check matches link syntax; it does not **resolve** it. Whether a link lands on
+a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job
+([0007](0007-link-coverage-belongs-to-link-lint.md)), and the two compose: this
+one proves a link to the record exists, that one proves it points at something.
+Neither, on its own, proves the link is the *right* one — that stays a review
+responsibility.
+
 ## Index
 
 | ADR                                             | Title                         | Status   |

@@ -190,20 +190,30 @@ Verdicts are after an adversarial second pass. `Stands` means the substance held
 under attack. `Corrected` means it held but a detail was wrong. `Refuted` means it
 did not hold.
 
+A `file:line` citation is a **pointer into the tree as it stands**, not a
+transcript, so it moves when the code it names moves. `T-8q3f` refreshed every
+`adr-lint.sh:NN` below when it rewrote the cross-link check
+([#73](https://github.com/pharzam/armature/issues/73)); the findings themselves are
+untouched. Block 2b proves only that the cited line **exists**, so it would stay
+green while pointing at the wrong code — keeping these true is a review duty, and
+the same duty falls on the next change to a linter this record cites. A number
+stated as a measurement at a named commit, rather than as a pointer, is left where
+it is; it is true of that commit.
+
 ### The linters — the kit's only executable surface
 
 | ID | Finding | Verdict | Severity |
 | -- | ------- | ------- | -------- |
-| M1 | The duplicate-ADR-number check is `adr-lint.sh:75`. No case under `docs/adr/tests/` holds two records with the same number — every case directory has one file per number. Gut line 75 and the suite still passed at `b684a96`, where it printed `34 passed, 0 failed`. | Stands | medium |
-| M2 | The ADR title-line check is `adr-lint.sh:93-95`, not one line. It has no fixture: every record under `docs/adr/tests/` starts with a correct `# NNNN. <title>` line. | Corrected | low |
-| M3 | The `Date:` line check has no fixture. Its two `err` sites are `adr-lint.sh:101` (the line is missing) and `:109` (the format is wrong). All eight records under `docs/adr/tests/` carry the placeholder `Date: YYYY-MM-DD`, so neither site can fire. | Stands | low |
-| M4 | The missing `## Status` check is `adr-lint.sh:114-115`. It has no fixture: every record under `docs/adr/tests/` has the section. `bad-status` tests the status value at `adr-lint.sh:121`, not the missing section. | Stands | medium |
+| M1 | The duplicate-ADR-number check is `adr-lint.sh:165`. No case under `docs/adr/tests/` holds two records with the same number — every case directory has one file per number. Gut that check and the suite still passed at `b684a96`, where it printed `34 passed, 0 failed`. | Stands | medium |
+| M2 | The ADR title-line check is `adr-lint.sh:183-185`, not one line. It has no fixture: every record under `docs/adr/tests/` starts with a correct `# NNNN. <title>` line. | Corrected | low |
+| M3 | The `Date:` line check has no fixture. Its two `err` sites are `adr-lint.sh:191` (the line is missing) and `:199` (the format is wrong). All eight records under `docs/adr/tests/` carry the placeholder `Date: YYYY-MM-DD`, so neither site can fire. | Stands | low |
+| M4 | The missing `## Status` check is `adr-lint.sh:204-205`. It has no fixture: every record under `docs/adr/tests/` has the section. `bad-status` tests the status value at `adr-lint.sh:211`, not the missing section. | Stands | medium |
 | M5 | The `requirement missing from the matrix` check is `prd-lint.sh:124`. It has no fixture: `docs/prd/tests/bad-matrix-mismatch/` fails on the opposite arm at `prd-lint.sh:125`. Neutralise line 124 and the suite still passed at `b684a96`, where it printed `34 passed, 0 failed`. | Stands | medium |
 | M6 | No fixture pipes a body into `pr-link-lint.sh:43`. The runner always passes a file: `run-discipline-tests.sh:123`, wired at `:130`. The one live run pipes: `.github/workflows/pr-link.yml:26`. The shipped CI templates pipe too. | Stands | medium |
 | M7 | Deleting a fixture root makes the runner exit 0. `run-discipline-tests.sh:106` turns an absent root into `return 0`, so the coverage floor at `:113` never runs. It prints `skip` at `:100`, so it is not silent, but the gate accepts it. | Corrected | low |
-| A1 | A trailing slash on the `adr-lint.sh` directory argument silences the cross-link check. `adr-lint.sh:44` filters on `^$adr_dir/`, which becomes a double slash and matches no path, so the ADR's own index README counts as an inbound link. The failure is a false negative: in any run that passes the index check at `:131`, the warning cannot fire. `sh docs/adr/adr-lint.sh docs/adr/tests/good/` prints no `WARN`; the same run without the slash prints two. | Stands | low |
+| A1 | A trailing slash on the `adr-lint.sh` directory argument silences the cross-link check. `adr-lint.sh:134` filters on `^$adr_dir/`, which becomes a double slash and matches no path, so the ADR's own index README counts as an inbound link. The failure is a false negative: in any run that passes the index check at `:221`, the warning cannot fire. `sh docs/adr/adr-lint.sh docs/adr/tests/good/` prints no `WARN`; the same run without the slash prints two. | Stands | low |
 | A2 | `run-discipline-tests.sh:108` globs `"$2"/*/` and `:111` passes each `$case_dir` to the linter, so the harness always supplies that slash. | Corrected | low |
-| A3 | The README row status is never compared to the record. `adr-lint.sh:131` is a bare filename match and `$readme` is read nowhere else, so the `Status` cells at `docs/adr/README.md:36-40` can say anything. `adr-lint.sh:120` also accepts `Superseded by ADR-0007` when ADR-0007 does not exist. | Stands | low |
+| A3 | The README row status is never compared to the record. `adr-lint.sh:221` is a bare filename match and `$readme` is read nowhere else, so the `Status` cells at `docs/adr/README.md:36-40` can say anything. `adr-lint.sh:210` also accepts `Superseded by ADR-0007` when ADR-0007 does not exist. | Stands | low |
 | A4 | `docs/facts/` has filename, header, status and index conventions — `docs/facts/README.md:53`, `:55` and `:65`, and `docs/facts/template.md:10` — and no linter checks any of them. `prd-lint.sh:55-56` reads the directory only to collect `F-NNNN` stems, and `run-discipline-tests.sh:128-131` wires four suites with none for facts. | Stands | low |
 | F1 | `prd-lint.sh:80` accepts the `#n` anchor, then `prd-lint.sh:81` truncates the citation with `substr(...,1,6)`. A copy of `docs/prd/tests/good/PRD-0001-sample.md` that cites `F-0001#99` gives `prd-lint: OK`, exit 0. | Stands | low |
 | F2 | The kit does promise the anchor resolves to a numbered fact. `docs/facts/README.md:39` defines `F-0007#3` as the third numbered fact in that document. So the gap is against a stated promise. | Corrected | low |
@@ -345,9 +355,9 @@ method does not produce the number. The five B missed:
 
 | Survivor | What stops being checked |
 | -------- | ------------------------ |
-| `adr-lint.sh:34` | the ADR index README need not exist |
-| `adr-lint.sh:109` | the `Date:` **format** — separate from `:101`, which B counts as one check with it |
-| `adr-lint.sh:126` | the `## Context` and `## Consequences` arms of the required-section loop; only `## Decision` has a fixture |
+| `adr-lint.sh:39` | the ADR index README need not exist |
+| `adr-lint.sh:199` | the `Date:` **format** — separate from `:191`, which B counts as one check with it |
+| `adr-lint.sh:216` | the `## Context` and `## Consequences` arms of the required-section loop; only `## Decision` has a fixture |
 | `prd-lint.sh:105` | a requirement with no phase value |
 | `prd-lint.sh:110` | a requirement-like row with the wrong number of cells |
 
