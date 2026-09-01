@@ -46,6 +46,13 @@ and **link it nowhere**:
 [ADR-0001](0001-mentioned-only.md)
 ```
 
+This case exists because the shape it holds is not hypothetical. ADR-0007 read as
+cross-linked on the day it was written, before anything linked it: `T-3v9q.md`
+had used `ADR-0007` as a hypothetical counter-example back when no such record
+existed, and the token match counted that sentence as an inbound link
+([#73](https://github.com/pharzam/armature/issues/73)). An audit record about this
+linter's loose matching was the thing that defeated this linter's loose matching.
+
 None of the three is a link, so the `WARN` fires — with or without a trailing
 slash on the argument, since the case directory is excluded by its `good-*` name
 rather than by the `^$adr_dir/` filter that finding A1 defeats. Before

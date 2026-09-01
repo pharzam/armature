@@ -102,7 +102,7 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Five limits, recorded rather than hidden
+## Six limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
@@ -132,6 +132,15 @@ change excluded the repository root from the walk.
    CommonMark does with the same line, so the linter is not wrong — but it is
    surprising, and the direction is safe: it fails loudly rather than passing
    silently.
+6. **The link extractor now exists in two places and nothing keeps them in step.**
+   `adr-lint.sh`'s `links_to_record()` reads the same three destination forms this
+   file does, the same way, to decide whether a record has an inbound link
+   ([#73](https://github.com/pharzam/armature/issues/73)). It resolves nothing —
+   that stays this linter's job — but the two must agree about what a link *is*.
+   They already disagreed once: this one strips a CommonMark angle destination and
+   that one did not, so `[a](<x.md>)` resolved here and read as no link there.
+   Fixed on sight, **by hand, with no mechanism** — the same shape as limit 1, and
+   the reason ADR-0007 recorded that one rather than leaving it to be found.
 
 ## The `EXPECT` convention
 

@@ -86,6 +86,10 @@ links_to_record() {
 		# shell string, so one would end the quote, and a matching second one
 		# would reopen it and leave the file still parsing as valid sh.
 		function names(t,   b) {
+			# a CommonMark angle destination wraps the whole target --
+			# link-lint.sh strips the wrapper, so this has to as well or the
+			# two disagree about the same link.
+			if (t ~ /^</ && t ~ />$/) t = substr(t, 2, length(t) - 2)
 			sub(/#.*$/, "", t)
 			b = t
 			sub(/^.*\//, "", b)
@@ -153,17 +157,24 @@ is_cross_linked() {
 
 	_oldIFS=$IFS
 	IFS=$nl
-	# Fixture CASE directories are skipped, on the naming
-	# docs/tests/run-discipline-tests.sh dispatches on and by the rule
-	# link-lint.sh states for the same files: their links are test DATA, not
+	# Fixture CASES are skipped, on the good*/bad-* naming
+	# docs/tests/run-discipline-tests.sh dispatches on, and for the reason
+	# link-lint.sh gives for the same files: their links are test DATA, not
 	# navigation a reader follows, and some are deliberately broken. A link
 	# planted in one would satisfy this check for a real record -- the same
-	# defect class as the mention it stopped accepting. Fixture SUITE READMEs are
-	# NOT skipped: they are prose, and one of them is this check's own fixture.
+	# defect class as the mention it stopped accepting. Both fixture shapes the
+	# runner drives are covered: a case DIRECTORY, and a case FILE under a
+	# tests/ directory. Fixture SUITE READMEs are NOT skipped: they are prose,
+	# and one of them is this check's own fixture.
+	#
+	# The limit is the convention itself. Fixture data that follows neither
+	# naming -- docs/prd/tests/facts/ in this tree -- is still read, and a link
+	# to a record from there would count. Name a fixture good* or bad-*.
 	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
 	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null \
 		| grep -v "^$adr_dir/" \
-		| grep -Ev '/(good|good-[^/]*|bad-[^/]*)/')
+		| grep -Ev '/(good|good-[^/]*|bad-[^/]*)/' \
+		| grep -Ev '/tests/(.*/)?(good|bad)[^/]*\.md$')
 	IFS=$_oldIFS
 	[ -f "$_root/README.md" ] && set -- "$@" "$_root/README.md"
 

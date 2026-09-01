@@ -1,8 +1,8 @@
 # Architecture Decision Records
 
 This directory holds the project's Architecture Decision Records (ADRs), in the
-lightweight format described by Michael Nygard — see
-[0001](0001-record-architecture-decisions.md) for the full rationale.
+lightweight format described by Michael Nygard — see ADR-0001 in the index below
+for the full rationale.
 
 ## Adding a new ADR
 
@@ -40,24 +40,25 @@ A **link** whose destination ends in the record's filename — inline
 [`README.md`](../../README.md); a file elsewhere in the tree, the root
 `AGENTS.md` included, is outside its reach.
 
-Two kinds of file inside that reach still do not count. **Fixture case
-directories** (`good*`, `bad-*`) hold test data rather than navigation, and some
-of their links are deliberately broken — the rule
-[`link-lint.sh`](../links/link-lint.sh) already states for the same files; a link
-planted in one would otherwise satisfy this check for a real record. Their suite
-READMEs are prose a reader follows, and do count.
+Two kinds of file inside that reach still do not count. **Fixture cases** hold
+test data rather than navigation, and some of their links are deliberately broken,
+so a link planted in one would otherwise satisfy this check for a real record.
+Both shapes the [test runner](../tests/run-discipline-tests.sh) drives are
+skipped, on the same `good*` / `bad-*` naming it dispatches on: a case
+**directory**, and a case **file** under a `tests/` directory. Their suite READMEs
+are prose a reader follows, and do count — the naming is the whole mechanism, so
+fixture data called something else is read like any other document.
 
 And a document that only **names** a record is discussing it, not linking it: the
 `ADR-NNNN` shorthand in a sentence, the filename in a citation or a code span, a
 link-shaped example inside a fence, a link inside an HTML comment. None of those
 satisfies the check.
 
-That distinction was learned the hard way. The check used to match the shorthand
-or the stem as a plain string anywhere under `docs/`, so ADR-0007 — indexed below
-— read as cross-linked on the day it was written, by an audit record that used
-`ADR-0007` as a hypothetical counter-example when no such record existed
-([#73](https://github.com/pharzam/armature/issues/73)). A warning that cannot
-fire for a record everyone is talking about is worst where it is needed most.
+The distinction is the whole check. A token match — the shorthand, or the
+filename, anywhere in a file — reads a document that *discusses* a record as one
+that links it, and prose about records is exactly where that token turns up. The
+warning then goes quietest for a newly written record, which is the one most
+likely to be discussed before anyone links it.
 
 The check matches link syntax; it does not **resolve** it. Whether a link lands
 on a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job (ADR-0007),
@@ -75,13 +76,11 @@ cost the offline property every check here depends on — so a record whose only
 inbound link is an absolute forge URL reads as cross-linked and is resolved by
 nothing. That URL can name a file that does not exist and both checks stay green.
 
-A note on why this section names ADR-0007 rather than linking it: the index-row
-check (`3e`) is a bare filename match against this file, so any sentence here that
-carries a record's **filename** makes that check unfalsifiable — the row could be
-deleted and the linter would still find the name. Prose in this file refers to a
-record by number; the index table below is what links it. The one exception is the
-sentence at the top of this file, older than this rule, which leaves `0001`'s row
-in that position; `T-6f3w`, which owns `3e`, carries the fix.
+One rule for writing in **this** file, which follows from a different check. The
+index-row check is a bare filename match against this README, so any sentence here
+that carries a record's **filename** makes that check unfalsifiable — the row could
+be deleted and the linter would still find the name in the prose. So refer to a
+record by number here, and let the index table below do the linking.
 
 ## Index
 
