@@ -1,4 +1,34 @@
-# Line endings are CONTENT in two places in this tree, not formatting.
+# Line endings are CONTENT in this tree, not formatting. Two rules, opposite
+# directions, and each one is the fix for a measured defect.
+#
+#
+# 1. EXECUTABLE TEXT MUST BE LINE FEEDS, OR THE KIT DOES NOT RUN AT ALL
+#
+# `core.autocrlf=true` is git's DEFAULT ON WINDOWS, and it converts every text
+# file on checkout -- including the shell scripts. A .sh file with carriage
+# returns is not a shell script any more; the interpreter reads the return as
+# part of the last word on the line:
+#
+#     $ sh docs/adr/adr-lint.sh
+#     docs/adr/adr-lint.sh: line 27: : command not found
+#     docs/adr/adr-lint.sh: line 28: set: -: invalid option
+#
+# Measured on a real clone: ELEVEN of eleven executables the kit ships would not
+# run -- all six linters, the discipline-test runner, the PR link check, the
+# EXPECT check, and all three git hooks, including the pre-commit hook that is
+# supposed to enforce the gate. The whole quality gate, silent, on the platform
+# where the kit is most likely to be adopted cold.
+#
+# This is why the CRLF fixtures below could not have been exercised by the
+# adopter they were written for: that adopter never reached the linter.
+#
+# `text eol=lf` normalises the blob to line feeds AND forces line feeds in the
+# working tree, whatever core.autocrlf says. Scoped to what must be line feeds
+# to execute. It is NOT the repository-wide `* text=auto eol=lf` rejected below:
+# it decides nothing about an adopter's own files.
+#
+#
+# 2. TWO FIXTURES MUST KEEP THEIR CARRIAGE RETURNS
 #
 # docs/adr/tests/good-crlf/ and docs/links/tests/good-crlf/ are fixtures whose
 # files carry Windows line endings. They are tests only while they keep them.
@@ -19,5 +49,10 @@
 # `* text=auto eol=lf` would HIDE the defect rather than fix it (a workaround
 # under R4), and would impose a line-ending policy on every adopter's checkout,
 # which is not this kit's business.
+# 1 — executable text. Line feeds, everywhere, or it will not run.
+*.sh                          text eol=lf
+.githooks/*                   text eol=lf
+
+# 2 — the two fixtures whose carriage returns ARE the test.
 docs/adr/tests/good-crlf/**   eol=crlf
 docs/links/tests/good-crlf/** eol=crlf
