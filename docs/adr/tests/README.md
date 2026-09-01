@@ -61,7 +61,11 @@ silenced it: the check matched the record's stem or its `ADR-NNNN` shorthand as 
 plain string anywhere in a file, so the fenced example counted as much as the
 sentence, and a document that merely discusses a record was read as one that
 links it. **Do not link that record from this file** — a link here ends
-the case's whole purpose, and nothing mechanical would tell you.
+the case's whole purpose, and nothing mechanical would tell you. One other file
+can end it the same way: the check also reads the index README one level up from
+the case directory, which for these fixtures is the real
+[`../README.md`](../README.md). Neither should ever link a fixture record, and
+neither is stopped from doing so.
 
 ## What this suite does not prove
 

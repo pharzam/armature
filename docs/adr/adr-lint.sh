@@ -157,19 +157,24 @@ is_cross_linked() {
 
 	_oldIFS=$IFS
 	IFS=$nl
-	# Fixture CASES are skipped, on the good*/bad-* naming
-	# docs/tests/run-discipline-tests.sh dispatches on, and for the reason
-	# link-lint.sh gives for the same files: their links are test DATA, not
-	# navigation a reader follows, and some are deliberately broken. A link
-	# planted in one would satisfy this check for a real record -- the same
-	# defect class as the mention it stopped accepting. Both fixture shapes the
-	# runner drives are covered: a case DIRECTORY, and a case FILE under a
-	# tests/ directory. Fixture SUITE READMEs are NOT skipped: they are prose,
-	# and one of them is this check's own fixture.
+	# Fixture CASES are skipped: their links are test DATA, not navigation a
+	# reader follows, and some are deliberately broken, so a link planted in one
+	# would satisfy this check for a real record -- the same defect class as the
+	# mention it stopped accepting. That reason is link-lint.sh's, for the same
+	# files; the NAMING is the test runner's, which is the authority on what a
+	# fixture is called: docs/tests/run-discipline-tests.sh dispatches on the
+	# prefix globs good* and bad*, so the patterns below match those and not the
+	# narrower good, good-*, bad-* that link-lint happens to use. A directory
+	# called goodX is a fixture to the runner, and has to be one here too.
+	# Both shapes the runner drives are covered: a case DIRECTORY, and a case
+	# FILE under a tests/ directory. Fixture SUITE READMEs are NOT skipped: they
+	# are prose, and one of them is this check's own fixture.
 	#
-	# The limit is the convention itself. Fixture data that follows neither
-	# naming -- docs/prd/tests/facts/ in this tree -- is still read, and a link
-	# to a record from there would count. Name a fixture good* or bad-*.
+	# Two limits. The convention is the whole mechanism, so fixture data named
+	# neither good* nor bad* -- docs/prd/tests/facts/ in this tree -- is still
+	# read, and a link to a record from there would count. And a REAL directory
+	# whose name starts with good or bad is skipped with the fixtures; nothing
+	# in this tree does, and the cost of the reverse error is higher.
 	# The fixture patterns are measured on the path RELATIVE to the documents
 	# root, as link-lint.sh measures its own. Matching the absolute path would
 	# read the OPERATOR directory names: a checkout in a directory called
@@ -182,7 +187,7 @@ is_cross_linked() {
 			{
 				rel = $0
 				if (index(rel, docs) == 1) rel = substr(rel, length(docs) + 1)
-				if (rel ~ /(^|\/)(good|good-[^\/]*|bad-[^\/]*)\//) next
+				if (rel ~ /(^|\/)(good|bad)[^\/]*\//) next
 				if (rel ~ /(^|\/)tests\/(.*\/)?(good|bad)[^\/]*\.md$/) next
 				print
 			}')

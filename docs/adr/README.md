@@ -33,7 +33,8 @@ this template's shape, change the linter in the same change — the two must agr
 
 ### What counts as an inbound cross-link
 
-A **link** whose destination ends in the record's filename — inline
+A **link** whose destination's final path component **is** the record's
+filename — inline
 `[text](…/0001-….md)`, a reference definition `[label]: …/0001-….md`, or a raw
 `href` — carried by a Markdown file the check reads. It reads every `.md` under
 [`docs/`](..) except this directory, plus the repository-root
@@ -44,8 +45,8 @@ Two kinds of file inside that reach still do not count. **Fixture cases** hold
 test data rather than navigation, and some of their links are deliberately broken,
 so a link planted in one would otherwise satisfy this check for a real record.
 Both shapes the [test runner](../tests/run-discipline-tests.sh) drives are
-skipped, on the same `good*` / `bad-*` naming it dispatches on: a case
-**directory**, and a case **file** under a `tests/` directory. Their suite READMEs
+skipped, on the `good*` / `bad*` globs it dispatches on: a case **directory**, and
+a case **file** under a `tests/` directory. Their suite READMEs
 are prose a reader follows, and do count — the naming is the whole mechanism, so
 fixture data called something else is read like any other document.
 
