@@ -15,6 +15,11 @@
 # Exit status: 0 = clean, 1 = one or more violations. A missing inbound
 # cross-link is a non-fatal WARNing (a brand-new ADR may not be linked yet).
 #
+# An inbound cross-link is a LINK whose destination names the record's file, from
+# a Markdown file outside this directory. A document that only NAMES a record —
+# the `ADR-NNNN` shorthand, or its filename in a citation or an example — is
+# discussing it, not linking it, and does not satisfy the check (#73).
+#
 # How to adapt: the checks below mirror docs/adr/template.md and README.md. If
 # you change the template — add a required section, change the Status vocabulary
 # — change the matching check here in the SAME change. The linter and the
@@ -33,19 +38,104 @@ note() { printf 'WARN  %s\n' "$*" >&2; }
 [ -d "$adr_dir" ] || { printf 'FAIL  ADR directory not found: %s\n' "$adr_dir" >&2; exit 1; }
 [ -f "$readme" ]  || err "missing $readme (the ADR index)"
 
-# Is $1 (stem) or $2 (ADR-NNNN shorthand) referenced from a Markdown file
-# outside the ADR directory, or the repo-root README? Non-ADR inbound links are
-# what keep the "what" and the "why" connected.
+nl='
+'
+
+# links_to_record NEEDLE FILE... — does any FILE carry a Markdown link whose
+# DESTINATION names NEEDLE (a record's filename)? The three destination forms are
+# link-lint.sh's, read the same way: inline `](dest)`, a reference definition
+# `[label]: dest`, and a raw `href="dest"`. Fenced blocks, HTML comments and
+# inline code spans are stripped first, so a link-SHAPED example is not a link.
+#
+# It matches link syntax; it does not RESOLVE it. Whether the destination lands
+# on a real file is link-lint's single job (ADR-0007), and the two compose: this
+# proves a link to the record exists, that one proves it points at something.
+#
+# The fence and indent tests are spelled out rather than written `{0,3}`, for the
+# awks with no interval expressions — the same reason anchors_of() in
+# link-lint.sh unrolls its own. A fence test that silently never matched would
+# read a fenced example as a link, which is the defect this function exists to
+# remove.
+links_to_record() {
+	_needle=$1
+	shift
+	[ "$#" -gt 0 ] || return 1
+	awk -v needle="$_needle" '
+		function isfence(s) {
+			return (s ~ /^```/    || s ~ /^~~~/ ||
+			        s ~ /^ ```/   || s ~ /^ ~~~/ ||
+			        s ~ /^  ```/  || s ~ /^  ~~~/ ||
+			        s ~ /^   ```/ || s ~ /^   ~~~/)
+		}
+		function names(t) { return index(t, needle) > 0 }
+		FNR == 1 { fence = 0; incomment = 0 }
+		isfence($0) { fence = !fence; next }
+		fence { next }
+		/<!--/ { incomment = 1 }
+		incomment { if ($0 ~ /-->/) incomment = 0; next }
+		{
+			line = $0
+			# an inline code span holds a citation, not navigation
+			gsub(/`[^`]*`/, "", line)
+
+			# a reference definition:  [label]: destination
+			if (match(line, /^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*[^ \t]+/)) {
+				tgt = line
+				sub(/^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
+				sub(/[ \t].*$/, "", tgt)
+				if (names(tgt)) { found = 1; exit }
+				# a definition line can carry a trailing link; keep reading it
+				line = substr(line, RSTART + RLENGTH)
+			}
+
+			# every "](" opens a destination. Scanning for the OPENER rather than
+			# matching a whole link is what finds both halves of a nested link.
+			rest = line
+			while ((p = index(rest, "](")) > 0) {
+				rest = substr(rest, p + 2)
+				e = index(rest, ")")
+				if (e == 0) break
+				t = substr(rest, 1, e - 1)
+				sub(/[ \t].*$/, "", t)
+				if (names(t)) { found = 1; exit }
+				rest = substr(rest, e + 1)
+			}
+
+			# raw HTML anchors
+			r2 = line
+			while (match(r2, /href="[^"]*"/)) {
+				h = substr(r2, RSTART + 6, RLENGTH - 7)
+				if (names(h)) { found = 1; exit }
+				r2 = substr(r2, RSTART + RLENGTH)
+			}
+		}
+		END { exit(found ? 0 : 1) }
+	' "$@"
+}
+
+# Is the record whose filename is $1 LINKED from a Markdown file outside the ADR
+# directory, or from the repo-root README? Non-ADR inbound links are what keep the
+# "what" and the "why" connected.
+#
+# A link, not a mention. A document that merely NAMES a record — by its
+# `ADR-NNNN` shorthand, or by its bare filename in a citation — is talking about
+# it: a task record, a review note, an audit finding. Reading one of those as an
+# inbound link reported "cross-linked" for a record nothing linked, and the
+# shorthand is short and generic enough to appear in any prose about ADRs, so the
+# check was quietest exactly where it was needed (#73).
 is_cross_linked() {
-	_stem=$1; _short=$2
+	_name=$1
 	_docs=$(dirname "$adr_dir")
 	_root=$(dirname "$_docs")
-	if grep -R -Fl -e "$_stem" -e "$_short" --include='*.md' "$_docs" 2>/dev/null \
-		| grep -qv "^$adr_dir/"; then
-		return 0
-	fi
-	[ -f "$_root/README.md" ] && grep -Fq -e "$_stem" -e "$_short" "$_root/README.md" && return 0
-	return 1
+
+	_oldIFS=$IFS
+	IFS=$nl
+	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
+	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null | grep -v "^$adr_dir/")
+	IFS=$_oldIFS
+	[ -f "$_root/README.md" ] && set -- "$@" "$_root/README.md"
+
+	links_to_record "$_name" "$@"
 }
 
 # --- 1. filenames; collect the valid ADR files -----------------------------
@@ -130,10 +220,11 @@ for path in $adr_files; do
 	# 3e. index row in README.
 	grep -Fq "$name" "$readme" || err "$name: no row for it in $(basename "$readme")'s index table"
 
-	# 3f. no-orphan cross-link (non-fatal warning).
-	stem=$(printf '%s' "$name" | sed 's/\.md$//')
-	is_cross_linked "$stem" "ADR-$num" \
-		|| note "$name: no inbound link ($stem or ADR-$num) from a doc outside $(basename "$adr_dir")/ — cross-link it from the plan/spec it supports"
+	# 3f. no-orphan cross-link (non-fatal warning). A LINK to the record, not a
+	#     mention of it: see is_cross_linked() above for why the difference is the
+	#     whole check.
+	is_cross_linked "$name" \
+		|| note "$name: nothing outside $(basename "$adr_dir")/ LINKS it — a mention of $name or ADR-$num is not one; cross-link it from the plan/spec it supports"
 done
 
 [ "$fail" -eq 0 ] && { printf 'adr-lint: OK\n'; exit 0; } || exit 1
