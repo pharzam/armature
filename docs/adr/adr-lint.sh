@@ -18,7 +18,7 @@
 # An inbound cross-link is a LINK whose destination names the record's file, from
 # a Markdown file outside this directory. A document that only NAMES a record —
 # the `ADR-NNNN` shorthand, or its filename in a citation or an example — is
-# discussing it, not linking it, and does not satisfy the check (#73).
+# discussing it, not linking it, and does not satisfy the check.
 #
 # How to adapt: the checks below mirror docs/adr/template.md and README.md. If
 # you change the template — add a required section, change the Status vocabulary
@@ -36,6 +36,17 @@ err()  { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 note() { printf 'WARN  %s\n' "$*" >&2; }
 
 [ -d "$adr_dir" ] || { printf 'FAIL  ADR directory not found: %s\n' "$adr_dir" >&2; exit 1; }
+
+# Canonicalise the directory argument before anything reads it. It is used BOTH
+# as a path -- handed to find and dirname -- and as a string PREFIX compared
+# against what find prints, and those two only agree if it is spelled one way.
+# Four spellings of the same directory broke that comparison, and each one made
+# the ADR directory fail to exclude ITSELF, so its own index README entered the
+# search space and linked every record: a trailing slash made the prefix end in
+# //, a bare relative name left find printing a ./ the prefix did not carry, "."
+# made it prefix everything, and a symlink named a path find never prints. All
+# four are silent -- the check reports OK on a tree full of orphans.
+adr_dir=$(CDPATH= cd -- "$adr_dir" && pwd)
 [ -f "$readme" ]  || err "missing $readme (the ADR index)"
 
 nl='
@@ -49,7 +60,7 @@ nl='
 # link-SHAPED example is not a link.
 #
 # It matches link syntax; it does not RESOLVE it. Whether the destination lands
-# on a real file is link-lint's single job (ADR-0007), and the two compose: this
+# on a real file is link-lint's single job, and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
 # NINE LIMITS, stated rather than left to be found. This is the full list; the
@@ -211,7 +222,7 @@ links_to_record() {
 # it: a task record, a review note, an audit finding. Reading one of those as an
 # inbound link reported "cross-linked" for a record nothing linked, and the
 # shorthand is short and generic enough to appear in any prose about ADRs, so the
-# check was quietest exactly where it was needed (#73).
+# check was quietest exactly where it was needed.
 collect_search_space() {
 	_docs=$(dirname "$adr_dir")
 	_root=$(dirname "$_docs")
@@ -239,9 +250,9 @@ collect_search_space() {
 	# 4. The ADR directory is excluded by a LITERAL prefix comparison, because a
 	#    directory argument is an operator path and can hold a regex
 	#    metacharacter: a checkout under x[y once excluded nothing. The
-	#    comparison is deliberately prefix-exact, so a trailing slash on the
-	#    argument still excludes nothing -- finding A1 of T-3v9q, open as T-6f3w,
-	#    which owns it and has its own tests. Do not fix that here.
+	#    comparison is safe only because the argument is canonicalised at the
+	#    head of this script; without that, four spellings of the same directory
+	#    each made it exclude nothing, silently.
 	_files=$(find "$_docs" -type f -name '*.md' 2>/dev/null \
 		| ADR_LINT_DOCS="$_docs/" ADR_LINT_SELF="$adr_dir/" awk '
 			BEGIN { docs = ENVIRON["ADR_LINT_DOCS"]; self = ENVIRON["ADR_LINT_SELF"] }
@@ -291,6 +302,13 @@ is_cross_linked() {
 }
 
 # --- 1. filenames; collect the valid ADR files -----------------------------
+# KNOWN DEFECT, older than the cross-link work and not fixed here: this list is
+# a SPACE-JOINED string that is then looped over unquoted, so a checkout at a
+# path containing a space breaks the run -- `FAIL duplicate ADR number: sp`, on
+# a repository that violates nothing. prd-lint.sh carries the identical
+# construct. It fails loud rather than silent, and no fixture can reach it: the
+# discipline runner hands the linters relative paths, which never carry the
+# spaced prefix. Recorded in the tree because the issue that found it is closed.
 adr_files=""
 for path in "$adr_dir"/*.md; do
 	[ -e "$path" ] || continue

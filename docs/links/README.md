@@ -149,6 +149,10 @@ change excluded the repository root from the walk.
    so the two disagree about a CRLF file, and this one is the side that is wrong.
    No such file is in the tree, and the failure is loud rather than silent, which
    is why it is recorded here rather than fixed in a change about something else.
+   **Prior art:** [#39](https://github.com/pharzam/armature/issues/39) recorded
+   this class for `backlog-lint` and `adr-lint` before this linter existed. It is
+   closed `NOT_PLANNED` and its items 2 and 3 are still live, so it is prior art
+   rather than an owner; `T-5h8n` holds the triage of every issue closed that way.
 
 ## The `EXPECT` convention
 
