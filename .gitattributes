@@ -37,13 +37,15 @@
 # WHAT THIS RULE DOES, AND WHAT THE LINTERS DO. This rule only makes the scripts
 # RUNNABLE. Every ordinary Markdown file in the tree still arrives with carriage
 # returns, and reading those correctly is each linter's own job -- done on this
-# branch for all six, plus expect-check.sh. Measured on a clone: 7 of 7 green,
-# where before this branch it was 0 of 7 (nothing ran) and after the eol rule
-# alone it was 4 of 7.
+# branch for all six, plus expect-check.sh. Measured on a clone, counting the
+# seven commands AGENTS.md lists under "Checks you can run": 7 of 7 green, where
+# before this branch it was 0 of 7 (nothing ran at all) and after the eol rule
+# alone it was 3 of 7.
 #
 # So the two halves are separable and both are needed. Delete this rule and
-# nothing runs; keep it but revert the linters and four checks fail on a tree
-# they should accept.
+# nothing runs; keep it but revert the linters and four of the seven fail on a
+# tree they should accept -- agents-lint, audit-record-lint, the discipline
+# runner and expect-check.
 #
 #
 # 2. TWO FIXTURES MUST KEEP THEIR CARRIAGE RETURNS

@@ -108,7 +108,12 @@ err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 # text FILE — the file's lines with any trailing carriage return removed.
 #
 # Every awk that reads a file goes through here, with ONE stated exception
-# below. Block 9's two `grep -q` calls read a file directly and are left alone:
+# below. A draft claimed that while block 8 still carried a file operand beside
+# its pipe -- and awk given an operand ignores standard input, so the pipe was
+# dead and the file was read raw. The claim was false and the reader silently
+# was not running; both are fixed.
+#
+# Block 9's two `grep -q` calls read a file directly and are left alone:
 # neither pattern anchors at end-of-line, so a trailing carriage return cannot
 # affect the match. That is a reason, not an oversight — but it does mean "every
 # read" would be the wrong word, so it is not used.
@@ -438,8 +443,17 @@ if [ -n "$repo_root" ]; then
 		#
 		# The counters are printed out of the subshell rather than assigned
 		# across it: a pipeline body runs in its own shell, so $ok and $best set
-		# inside it would be discarded. That also costs the early `break`, which
-		# was a saving on a list that holds one or two entries.
+		# inside it would be discarded.
+		#
+		# The early `break` is KEPT. A draft of this loop dropped it, on the
+		# stated ground that the list "holds one or two entries". It does not: a
+		# citation by bare filename matches every file of that name in the tree,
+		# and `README.md:N` matches 78 of them. Measured across the record's 82
+		# citations, dropping the break opened 1166 candidate files instead of
+		# stopping at the first that answered, and each open now costs two
+		# processes rather than one -- 1236 ms to 4956 ms on the same tree, for
+		# byte-identical output. `$best` is unaffected: it is only ever reported
+		# when $ok is 0, and on that path the loop never breaks anyway.
 		_res=$(printf '%s\n' "$cands" | (
 			ok=0
 			best=0
@@ -448,6 +462,7 @@ if [ -n "$repo_root" ]; then
 				total_lines=$(text "$repo_root/$f" | awk 'END { print NR }')
 				[ "$total_lines" -gt "$best" ] && best=$total_lines
 				[ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ] && ok=1
+				[ "$ok" -eq 1 ] && break
 			done
 			printf '%s %s' "$ok" "$best"
 		))
@@ -688,7 +703,7 @@ uncited_corr=$(text "$record" | awk -F'|' '
 		    body !~ /(LICENSE|\.gitignore|\.gitattributes):[0-9]+/) print id
 	}
 	END { if (n == 0) print "NONE" }
-' "$record") || err "block 8: awk failed to read the record (DoD 8)"
+') || err "block 8: awk failed to read the record (DoD 8)"
 for id in $uncited_corr; do
 	if [ "$id" = "NONE" ]; then
 		err "no claim row carries the verdict Corrected -- block 8 checked nothing (DoD 8)"

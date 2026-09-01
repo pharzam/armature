@@ -232,8 +232,8 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 # Two strings a reader cannot tell apart, and an operator with no way to see why.
 # A6 failed the same way on CLAUDE.md's single import line.
 #
-# One reader rather than a strip at each site, because the sites are fifteen and
-# the next one added would be the sixteenth. If a check ever does need the raw
+# One reader rather than a strip at each site, because the sites are sixteen and
+# the next one added would be the seventeenth. If a check ever does need the raw
 # bytes, it must say so where it reads them, and say why.
 text() { awk '{ sub(/\r$/, ""); print }' "$1"; }
 
