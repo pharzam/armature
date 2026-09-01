@@ -86,8 +86,15 @@
 # works: `good-path?with?space/**`. Neither spaced fixture needs pinning today
 # -- their endings are not the assertion -- so nothing here does this; it is
 # written down because the obvious attempt fails quietly.
-docs/adr/tests/good-crlf/**   eol=crlf
-docs/links/tests/good-crlf/** eol=crlf
+docs/adr/tests/good-crlf/**    eol=crlf
+docs/links/tests/good-crlf/**  eol=crlf
+docs/agents/tests/good-crlf/** eol=crlf
+docs/tasks/tests/good-crlf/**  eol=crlf
+# One EXPECT file, so expect-check.sh's own carriage-return strip has a case.
+# It reads this file and compares the id against linter output; without the
+# strip the id is `L1<CR>`, which matches nothing, and every case fails while
+# the linter beside it is right.
+docs/links/tests/bad-dead-path/EXPECT eol=crlf
 
 # 2 — executable text. Line feeds, or it will not run.
 #

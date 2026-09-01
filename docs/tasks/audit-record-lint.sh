@@ -436,10 +436,19 @@ if [ -n "$repo_root" ]; then
 		# empty, which then made both numeric tests error out. It was also
 		# glob-expanded, since IFS does not disable pathname expansion.
 		#
-		# The fixture that found it is docs/adr/tests/good-path with space/,
+		# The fixture that exposed it is docs/adr/tests/good-path with space/,
 		# added for adr-lint. Its README.md is a candidate for any `README.md:N`
-		# citation, so the defect surfaced the moment the fixture landed. Same
-		# class as the one that fixture exists to catch, in a third script.
+		# citation, so the split began the moment the fixture landed. Same class
+		# as the one that fixture exists to catch, in a third script.
+		#
+		# "Exposed", NOT "caught", and the difference is the point. Revert this
+		# loop to `for f in $cands` today and the run still EXITS 0 -- it prints
+		# `awk: can't open file …/good-path` and a numeric-test error to
+		# standard error, a later valid candidate sets ok=1, and every check
+		# stays green. Measured: 24 stderr lines, exit 0, suite 103 passed 0
+		# failed. It was found by a person reading stderr, not by an assertion,
+		# and no arrangement of fixtures changes that while the harness compares
+		# exit codes only. `T-9c5t` is the task that would close it.
 		#
 		# The counters are printed out of the subshell rather than assigned
 		# across it: a pipeline body runs in its own shell, so $ok and $best set

@@ -223,9 +223,16 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 #
 # EVERY file this script reads goes through here — A2's word count included, which
 # an earlier draft left reading the file directly. Not one of the checks below
-# treats a carriage return as content, and most of them compare a WHOLE STRING,
-# so on a Windows checkout -- core.autocrlf=true, git's default there -- they
-# compared against a character that does not print. A8 said it best:
+# treats a carriage return as content.
+#
+# Most of them COMPARE a whole string, so on a Windows checkout --
+# core.autocrlf=true, git's default there -- they compared against a character
+# that does not print. A5 and A7 do something else: they COUNT. A carriage
+# return is not a field separator, so every blank line scored as one word, and
+# A7's budget read 1428 against the 1395 it reads on a line-feed tree. That one
+# was under the 1500 ceiling either way, so it changed no verdict -- but it is
+# the case where the strip does more than fix a comparison, and a tighter budget
+# would have made it a false failure. A8 said the comparison half best:
 #
 #   heading 1: got "## What this repository is", want "## What this repository is"
 #
