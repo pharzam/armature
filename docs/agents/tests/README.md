@@ -128,10 +128,12 @@ applied") own that residual.
    Measured limits: `README.md` under 32 lines, `engineering-discipline.md` under
    7, `issue-workflow.md` under 22. `onboarding-for-engineers.md` is never cited.
    The stub linter is named `demo-lint.sh`, a basename no record cites.
-2. **Name no real ADR.** [`adr-lint.sh`](../../adr/adr-lint.sh) greps every
-   Markdown file under `docs/` for an ADR filename stem or an `ADR-NNNN` token to
-   decide whether a record is cross-linked. A fixture that named one could
-   satisfy a genuine orphan's inbound link by accident.
+2. **Link no real ADR from this README.** Naming one is safe; linking one
+   satisfies that record's inbound cross-link and silences a genuine orphan
+   warning. The rule and its one exception are stated once, in
+   [What counts as an inbound cross-link](../../adr/README.md#what-counts-as-an-inbound-cross-link);
+   this note is here because these fixtures are the ones that have historically
+   named real records.
 
 ## What these fixtures do NOT exercise
 

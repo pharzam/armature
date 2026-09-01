@@ -57,7 +57,7 @@ not this script.
   [`AGENTS.md`](../../AGENTS.md) warns about.
 - **Fenced code blocks, HTML comments, and inline code spans**, whose links are
   examples, not navigation. A link-shaped example in backticks is not resolved.
-- **Fixture case directories** — any path with a `good*` or `bad-*` component.
+- **Fixture case directories** — any path with a `good`, `good-*` or `bad-*` component.
   Their links are deliberately broken: `docs/agents/tests/bad-dead-link/` exists
   to make `agents-lint` reject a dead link, and linting it would report that
   suite's success as failure. **The limit is real and named: a genuinely broken
@@ -102,7 +102,7 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Five limits, recorded rather than hidden
+## Seven limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
@@ -132,6 +132,27 @@ change excluded the repository root from the walk.
    CommonMark does with the same line, so the linter is not wrong — but it is
    surprising, and the direction is safe: it fails loudly rather than passing
    silently.
+6. **The link extractor now exists in two places and nothing keeps them in step.**
+   `adr-lint.sh`'s `links_to_record()` reads the same three destination forms this
+   file does, the same way, to decide whether a record has an inbound link
+   ([#73](https://github.com/pharzam/armature/issues/73)). It resolves nothing —
+   that stays this linter's job — but the two must agree about what a link *is*.
+   They already disagreed once: this one strips a CommonMark angle destination and
+   that one did not, so `[a](<x.md>)` resolved here and read as no link there.
+   Fixed on sight, **by hand, with no mechanism** — the same shape as limit 1, and
+   the reason ADR-0007 recorded that one rather than leaving it to be found.
+7. **A trailing carriage return is not stripped, so every link in a CRLF file
+   reports as broken.** `[r]: target.md` in a file with Windows line endings
+   resolves as `target.md\r`, which no path matches, and `L1` fails on a link that
+   is perfectly good. Found while checking this extractor against `adr-lint`'s,
+   which does strip it ([#73](https://github.com/pharzam/armature/issues/73)) —
+   so the two disagree about a CRLF file, and this one is the side that is wrong.
+   No such file is in the tree, and the failure is loud rather than silent, which
+   is why it is recorded here rather than fixed in a change about something else.
+   **Prior art:** [#39](https://github.com/pharzam/armature/issues/39) recorded
+   this class for `backlog-lint` and `adr-lint` before this linter existed. It is
+   closed `NOT_PLANNED` and its items 2 and 3 are still live, so it is prior art
+   rather than an owner; `T-5h8n` holds the triage of every issue closed that way.
 
 ## The `EXPECT` convention
 
