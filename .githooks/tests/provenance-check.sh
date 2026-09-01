@@ -82,11 +82,15 @@ case_run() {
 	_f="probe-$3.txt"
 	echo probe > "$_f"
 	git add -A
-	_out=$(git commit -q -m "$3" 2>&1 || :)
+	# Capture the STATUS as well as the output. Classifying on text alone lets a
+	# hook that prints a refusal and then exits 0 read as "refused" while the commit
+	# actually succeeded -- the case would report ok having proved nothing. The
+	# status and the wording must agree, or the verdict is `contradictory`.
+	_out=$(git commit -q -m "$3" 2>&1) && _st=0 || _st=$?
 	if printf '%s\n' "$_out" | grep -q 'hook provenance'; then
-		_got=refuse
+		if [ "$_st" -ne 0 ]; then _got=refuse; else _got=contradictory-printed-refusal-but-committed; fi
 	elif printf '%s\n' "$_out" | grep -q 'PROVENANCE-RAN'; then
-		_got=pass
+		if [ "$_st" -eq 0 ]; then _got=pass; else _got=contradictory-ran-but-commit-failed; fi
 	else
 		_got=no-hook-ran
 	fi
@@ -122,9 +126,12 @@ cp "$base/main/.githooks/pre-commit" "$base/main/.git/hooks/pre-commit"
 chmod +x "$base/main/.git/hooks/pre-commit"
 echo probe > probe-hookspath-unset.txt
 git add -A
-_out=$(git commit -q -m hookspath-unset 2>&1 || :)
+_out=$(git commit -q -m hookspath-unset 2>&1) && _st=0 || _st=$?
 seen=$((seen + 1))
-if printf '%s\n' "$_out" | grep -q 'core.hooksPath is unset'; then
+if [ "$_st" -eq 0 ]; then
+	printf 'FAIL  hookspath-unset-in-worktree: the commit SUCCEEDED; whatever the hook printed, it did not refuse\n' >&2
+	bad=1
+elif printf '%s\n' "$_out" | grep -q 'core.hooksPath is unset'; then
 	printf 'ok    hookspath-unset-in-worktree (refuse, and names the real source)\n'
 elif printf '%s\n' "$_out" | grep -q 'hook provenance'; then
 	printf 'FAIL  hookspath-unset-in-worktree: refused, but blamed core.hooksPath, which is unset\n' >&2

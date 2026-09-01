@@ -571,9 +571,11 @@ Two hooks ship with the kit:
 
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
-- **`pre-commit`** — first refuses to run at all if `core.hooksPath` resolves
-  outside the working tree being committed to (see
-  [`guardrails.md`](guardrails.md)), then runs the five repo-file
+- **`pre-commit`** — first refuses to run at all if the **resolved hooks
+  directory** lies outside the working tree being committed to, whatever set it:
+  `core.hooksPath` if it is set, and the shared common git directory if it is not,
+  which a linked worktree reaches the same way (see
+  [`guardrails.md`](guardrails.md)). Then it runs the five repo-file
   [discipline linters](#testing) — ADR, PRD, audit-record, agent-entry and link —
   and their fixture self-tests,
   then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
