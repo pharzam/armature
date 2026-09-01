@@ -79,6 +79,22 @@ nl='
 # same reading of the same forms. If one is fixed, fix both (links/README.md
 # limit 6).
 #
+# Two more come from the SHAPE of the tree rather than from the matching, and
+# both predate the link-matching rewrite:
+#
+#   6. A SECOND COPY of the ADR directory anywhere under the documents root --
+#      a worktree, a vendored submodule, a build cache -- is not excluded: the
+#      exclusion is one literal path prefix. Its index README then links every
+#      record, and every record reads as cross-linked. This one is SILENT, which
+#      makes it the worst of the seven. An adopter who puts the per-task
+#      worktree directory under docs/ walks straight into it.
+#   7. The ADR directory is assumed to sit DIRECTLY under the documents root:
+#      the search space is its parent, and the extra file read is that parent
+#      directory of THAT. Move it to docs/architecture/adr/ and the space
+#      narrows to docs/architecture/, so every record warns. That failure is
+#      loud rather than silent, and no adopter has to keep the layout -- but
+#      nothing tells them, so it is written here.
+#
 # The fence and indent tests are spelled out rather than written `{0,3}`, for the
 # awks with no interval expressions — the same reason anchors_of() in
 # link-lint.sh unrolls its own. A fence test that silently never matched would
@@ -86,8 +102,6 @@ nl='
 # remove.
 links_to_record() {
 	_needle=$1
-	shift
-	[ "$#" -gt 0 ] || return 1
 	# The needle is safe on -v: it is a record FILENAME, already forced to
 	# NNNN-kebab-case.md by the filename check, so it holds no backslash.
 	awk -v needle="$_needle" '
@@ -113,54 +127,65 @@ links_to_record() {
 			sub(/^.*\//, "", b)
 			return (b == needle)
 		}
-		FNR == 1 { fence = 0; incomment = 0 }
-		isfence($0) { fence = !fence; next }
-		fence { next }
-		/<!--/ { incomment = 1 }
-		incomment { if ($0 ~ /-->/) incomment = 0; next }
+		# Each input LINE is a path to read, not content: the file list arrives
+		# on standard input rather than as arguments, so a tree large enough to
+		# overflow ARG_MAX cannot turn this check into a wall of false orphans.
 		{
-			line = $0
-			# a CRLF file ends every line with a carriage return, which would
-			# otherwise ride along on a reference definition target and stop it
-			# naming the record. An inline destination is unaffected -- the
-			# closing paren separates it -- so only this form ever saw it.
-			sub(/\r$/, "", line)
-			# an inline code span holds a citation, not navigation
-			gsub(/`[^`]*`/, "", line)
+			f = $0
+			fence = 0
+			incomment = 0
+			while ((getline line < f) > 0) {
+				# a CRLF file ends every line with a carriage return, which
+				# would otherwise ride along on a reference definition target
+				# and stop it naming the record. An inline destination is
+				# unaffected -- the closing paren separates it.
+				sub(/\r$/, "", line)
+				if (isfence(line)) { fence = !fence; continue }
+				if (fence) continue
+				if (line ~ /<!--/) incomment = 1
+				if (incomment) {
+					if (line ~ /-->/) incomment = 0
+					continue
+				}
+				# an inline code span holds a citation, not navigation
+				gsub(/`[^`]*`/, "", line)
 
-			# a reference definition:  [label]: destination
-			if (match(line, /^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*[^ \t]+/)) {
-				tgt = line
-				sub(/^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
-				sub(/[ \t].*$/, "", tgt)
-				if (names(tgt)) { found = 1; exit }
-				# a definition line can carry a trailing link; keep reading it
-				line = substr(line, RSTART + RLENGTH)
-			}
+				# a reference definition:  [label]: destination
+				if (match(line, /^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*[^ \t]+/)) {
+					tgt = line
+					sub(/^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
+					sub(/[ \t].*$/, "", tgt)
+					if (names(tgt)) { found = 1; close(f); exit }
+					# a definition line can carry a trailing link
+					line = substr(line, RSTART + RLENGTH)
+				}
 
-			# every "](" opens a destination. Scanning for the OPENER rather than
-			# matching a whole link is what finds both halves of a nested link.
-			rest = line
-			while ((p = index(rest, "](")) > 0) {
-				rest = substr(rest, p + 2)
-				e = index(rest, ")")
-				if (e == 0) break
-				t = substr(rest, 1, e - 1)
-				sub(/[ \t].*$/, "", t)
-				if (names(t)) { found = 1; exit }
-				rest = substr(rest, e + 1)
-			}
+				# every "](" opens a destination. Scanning for the OPENER
+				# rather than matching a whole link is what finds both halves
+				# of a nested link.
+				rest = line
+				while ((p = index(rest, "](")) > 0) {
+					rest = substr(rest, p + 2)
+					e = index(rest, ")")
+					if (e == 0) break
+					t = substr(rest, 1, e - 1)
+					sub(/[ \t].*$/, "", t)
+					if (names(t)) { found = 1; close(f); exit }
+					rest = substr(rest, e + 1)
+				}
 
-			# raw HTML anchors
-			r2 = line
-			while (match(r2, /href="[^"]*"/)) {
-				h = substr(r2, RSTART + 6, RLENGTH - 7)
-				if (names(h)) { found = 1; exit }
-				r2 = substr(r2, RSTART + RLENGTH)
+				# raw HTML anchors
+				r2 = line
+				while (match(r2, /href="[^"]*"/)) {
+					h = substr(r2, RSTART + 6, RLENGTH - 7)
+					if (names(h)) { found = 1; close(f); exit }
+					r2 = substr(r2, RSTART + RLENGTH)
+				}
 			}
+			close(f)
 		}
 		END { exit(found ? 0 : 1) }
-	' "$@"
+	'
 }
 
 # Is the record whose filename is $1 LINKED from a Markdown file outside the ADR
@@ -178,46 +203,15 @@ is_cross_linked() {
 	_docs=$(dirname "$adr_dir")
 	_root=$(dirname "$_docs")
 
-	_oldIFS=$IFS
-	IFS=$nl
-	# Fixture CASES are skipped: their links are test DATA, not navigation a
-	# reader follows, and some are deliberately broken, so a link planted in one
-	# would satisfy this check for a real record -- the same defect class as the
-	# mention it stopped accepting. That reason is link-lint.sh's, for the same
-	# files; the NAMING is the test runner's, which is the authority on what a
-	# fixture is called: docs/tests/run-discipline-tests.sh dispatches on the
-	# prefix globs good* and bad*, so the patterns below match those and not the
-	# narrower good, good-*, bad-* that link-lint happens to use. A directory
-	# called goodX is a fixture to the runner, and has to be one here too.
-	# Both shapes the runner drives are covered: a case DIRECTORY, and a case
-	# FILE under a tests/ directory. Fixture SUITE READMEs are NOT skipped: they
-	# are prose, and one of them is this check's own fixture.
-	#
-	# Two limits. The convention is the whole mechanism, so fixture data named
-	# neither good* nor bad* -- docs/prd/tests/facts/ in this tree -- is still
-	# read, and a link to a record from there would count. And a REAL directory
-	# whose name starts with good or bad is skipped with the fixtures; nothing
-	# in this tree does, and the cost of the reverse error is higher.
-	# The fixture patterns are measured on the path RELATIVE to the documents
-	# root, as link-lint.sh measures its own. Matching the absolute path would
-	# read the OPERATOR directory names: a checkout in a directory called
-	# bad-anything or good would delete the whole tree from the search space and
-	# report every record as an orphan.
-	# The ADR directory is excluded by a LITERAL prefix, not a pattern. A
-	# directory argument is an operator path and can hold a regex metacharacter:
-	# a checkout under x[y made the old `grep -v "^$adr_dir/"` fail to exclude
-	# anything, and every record was reported as an orphan. Same class as the
-	# relative-path rule below, and the same cure -- an operator path is data.
-	# The comparison is deliberately prefix-exact, so a trailing slash on the
-	# argument still excludes nothing, which is finding A1 of T-3v9q, open as
-	# T-6f3w. Do not fix that here; it is a different task with its own tests.
-	# Both operator paths reach awk through the ENVIRONMENT, not through -v.
-	# `awk -v x=VALUE` runs ESCAPE PROCESSING on the value, so a checkout under
-	# a directory holding a backslash arrives mangled: the prefixes then match
-	# nothing, and the check either silences a genuine orphan or reports every
-	# record as one. ENVIRON is read verbatim.
-	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
-	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null \
+	# The file list is held as TEXT and piped, never expanded by the shell.
+	# `set -- $(find ...)` would word-split it -- and, because IFS does not
+	# disable pathname expansion and this script does not `set -f`, would also
+	# GLOB it: a linking file named [a-z].md vanished, and a sibling directory
+	# named ad[r] could expand back into the very ADR directory excluded below.
+	# Passing it as arguments also broke on a large tree, which is a regression
+	# against the grep -R this replaced: awk got ARG_MAX bytes of paths and
+	# reported every record as an orphan.
+	_files=$(find "$_docs" -type f -name '*.md' 2>/dev/null \
 		| ADR_LINT_DOCS="$_docs/" ADR_LINT_SELF="$adr_dir/" awk '
 			BEGIN { docs = ENVIRON["ADR_LINT_DOCS"]; self = ENVIRON["ADR_LINT_SELF"] }
 			{
@@ -228,10 +222,13 @@ is_cross_linked() {
 				if (rel ~ /(^|\/)tests\/(.*\/)?(good|bad)[^\/]*\.md$/) next
 				print
 			}')
-	IFS=$_oldIFS
-	[ -f "$_root/README.md" ] && set -- "$@" "$_root/README.md"
 
-	links_to_record "$_name" "$@"
+	if [ -f "$_root/README.md" ]; then
+		_files=$_files$nl$_root/README.md
+	fi
+	[ -n "$_files" ] || return 1
+
+	printf '%s\n' "$_files" | links_to_record "$_name"
 }
 
 # --- 1. filenames; collect the valid ADR files -----------------------------
