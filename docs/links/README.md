@@ -36,6 +36,7 @@ since the file was written.
 | `L4` | No link target escapes the repository root. |
 | `L5` | Coverage floor — a run that resolved **zero** links fails. |
 | `L6` | Every reference use `[text][label]` has a matching `[label]: target` definition. |
+| `L7` | No in-tree target is an absolute path. |
 
 ## What it proves, and what it does not
 
@@ -84,11 +85,33 @@ A CommonMark angle destination `[x](<a path.md>)` is a real link and is resolved
 An adopter marker only *opens* with `<`, as in `<id>.md`; they are told apart on
 the closing `>`, so a real link is never skipped as a placeholder.
 
-## Four limits, recorded rather than hidden
+## Why A19 was removed, and what replaced it
 
-1. **The slug function is copied from `agents-lint.sh`'s A19** so the two can never
-   disagree. It drops underscores, which GitHub keeps in an anchor. Harmless while
-   no heading in the tree uses one, and a defect the day one does.
+`agents-lint` once carried its own assertion **A19**, resolving the root
+`AGENTS.md`'s links. It was removed ([#67](https://github.com/pharzam/armature/issues/67))
+because this check walks every Markdown file in the tree and `AGENTS.md` is one of
+them ([ADR-0007](../adr/0007-link-coverage-belongs-to-link-lint.md)) — the same work, done once instead of twice, across four link forms instead
+of one.
+
+One branch of A19 was **not** redundant: it rejected an **absolute** target, and
+this check accepted one. That gap is now `L7`, and closing it here covers every
+file in the tree rather than the single file A19 watched.
+
+`bad-entry-point-dead-link` is the fixture that keeps the replacement honest. Note
+what it does *not* prove: this check is **filename-agnostic**, so it does not know
+`AGENTS.md` is special. The case locks the intent, and would go red if a future
+change excluded the repository root from the walk.
+
+## Five limits, recorded rather than hidden
+
+1. **The slug rule exists in two places and nothing keeps them in step.** It began
+   as a copy of `agents-lint.sh`'s A19; that assertion was removed
+   ([#67](https://github.com/pharzam/armature/issues/67)) and the named function went
+   with it. What survives there is the same rule written inline in the rule-anchor
+   derivation (`agents-lint.sh:498`). If one changes and the other does not, one
+   check resolves anchors the other rejects — **by hand, with no mechanism**. It also
+   drops underscores, which GitHub keeps in an anchor: harmless while no heading in
+   the tree uses one, and a defect the day one does.
 2. **Duplicate headings are not disambiguated.** GitHub appends `-1` to the second
    occurrence's slug; `anchors_of()` does not, so a legitimate `#foo-1` link would
    be wrongly rejected. No duplicate heading exists in the tree today. This is a
@@ -98,7 +121,12 @@ the closing `>`, so a real link is never skipped as a placeholder.
    on macOS accepts `Target.md` for `target.md`, where Linux CI rejects it, so the
    local hook is more lenient than the authority. CI is the authority precisely
    for this class of difference.
-4. **A line beginning `[word]: text` is read as a reference definition**, and its
+4. **A protocol-relative target `//host/path` is reported as an absolute path.**
+   It is really an external link, and `L7`'s message misnames it. Inherited
+   unchanged from `agents-lint`'s A19, which matched `/*` the same way, so this is
+   a limit carried over rather than introduced — recorded here because it was
+   never written down there.
+5. **A line beginning `[word]: text` is read as a reference definition**, and its
    first word is resolved as a target. So a description-list line such as
    `[TODO]: revisit this later` reports a broken link to `revisit`. That is what
    CommonMark does with the same line, so the linter is not wrong — but it is
@@ -130,6 +158,8 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | `bad-reference-target` | FAIL `L1`, exit 1 | a broken destination reached only through a `[label]:` definition |
 | `bad-nested-link` | FAIL `L1`, exit 1 | a badge-shaped link whose **outer** target is broken and inner one is not |
 | `bad-undefined-label` | FAIL `L6`, exit 1 | a reference label nothing defines |
+| `bad-absolute-target` | FAIL `L7`, exit 1 | an absolute target, which resolves for any file at the repository root and so passes silently |
+| `bad-entry-point-dead-link` | FAIL `L1`, exit 1 | the **redundancy test** — a dead link in a root `AGENTS.md`, locking the coverage that `agents-lint`'s A19 used to provide |
 | `bad-collapsed-reference` | FAIL `L6`, exit 1 | the collapsed `[x][]` form, whose empty second bracket makes a naive reader drop it |
 | `bad-definition-trailing-link` | FAIL `L1`, exit 1 | a broken link *after* a reference definition on the same line |
 

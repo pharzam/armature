@@ -35,6 +35,19 @@ ordinary adopter README with a fenced quickstart was truncated and A24 reported
 a link absent that sat four lines below. The `good` case is where that stays
 fixed.
 
+## Three cases were removed, deliberately
+
+`bad-dead-link`, `bad-dead-fragment` and `bad-link-escapes-root` are gone. They
+covered assertion **A19**, which resolved this file's own links until
+[#67](https://github.com/pharzam/armature/issues/67) removed it: `link-lint` walks
+every Markdown file in the tree, so the work was being done twice. Their content is
+covered by that suite's `bad-dead-path`, `bad-dead-fragment` and `bad-escapes-root`
+cases, and A19's one non-redundant branch — rejecting an **absolute** target — is
+now `L7` there, covering every file rather than this one.
+
+**A19's number is not reused.** The sequence runs A1–A18, A20–A26, and the gap is
+the record that something was removed rather than renumbered.
+
 ## The cases
 
 | Case | Expected | Exercises |
@@ -64,9 +77,8 @@ fixed.
 | `bad-false-enforcement` | FAIL, exit 1 | the trailing ` (written rule)` dropped from a rule the enforcement table backs with nothing — the false enforcement claim (A18) |
 | `bad-enforcement-hedged` | FAIL, exit 1 | the same rule rewritten to "more than a written rule; the continuous integration job enforces it". It *contains* the phrase while making the false claim, which is why the marker is pinned line-final (A18) |
 | `bad-enforcement-table-contradiction` | FAIL, exit 1 | an enforcement-table row naming a hook **and** a CI job while its Status still reads `Written rule until wired`. Deriving from the Status prose would skip the row and silently accept a now-false marking (A18) |
-| `bad-dead-link` | FAIL, exit 1 | one link repointed at a document the root does not hold — the rot a rename leaves behind (A19) |
 | `bad-source-row-blank` | FAIL, exit 1 | a sources-of-truth row naming a real document with an empty `Authoritative for` cell (A20) |
-| `bad-source-row-unresolved` | FAIL, exit 1 | a sources-of-truth row whose first column is a bare path — not a Markdown link, so A19 never harvests it — that resolves to nothing (A20) |
+| `bad-source-row-unresolved` | FAIL, exit 1 | a sources-of-truth row whose first column is a bare path — not a Markdown link, so it is never harvested as one — that resolves to nothing (A20) |
 | `bad-source-row-empty-target` | FAIL, exit 1 | a sources-of-truth row whose link target is empty, so the existence test would become `[ -e "$root/" ]` and always pass (A20) |
 | `bad-source-row-marker` | FAIL, exit 1 | a row whose `Authoritative for` cell is still the shipped `‹…›` placeholder. It must be named as an unreplaced marker rather than merely as a thin cell — the row failed either way, but the message named the symptom instead of the cause (A20) |
 | `bad-unnamed-check` | FAIL, exit 1 | a second shipped `*-lint.sh` in the tree that `## Checks you can run` does not name (A21) |
@@ -77,8 +89,6 @@ fixed.
 | `bad-rule-decoy-link` | FAIL, exit 1 | a rule line linking `sub/docs/issue-workflow.md#r1--alpha-rule` — a real document, with the right anchor, that is not the one the expectations derive from. The same decoy shape as above, in the rules section (A14) |
 | `bad-enforcement-cell-unrecognised` | FAIL, exit 1 | a mechanism cell reading `none`. Honest English, but neither a named mechanism nor a recognised empty cell — so the check reports it instead of guessing which it means (A18) |
 | `bad-invented-command-root` | FAIL, exit 1 | an invented `sh setup.sh` — a repository-root script with no directory part. The first narrowing of the harvest required a slash, so this slipped through (A22) |
-| `bad-link-escapes-root` | FAIL, exit 1 | a link whose target is exactly `..`. The escape guard required a slash after the dots, so this fell through to an existence test that always succeeds (A19) |
-| `bad-dead-fragment` | FAIL, exit 1 | a link whose path resolves but whose `#fragment` names no heading in it — the reader lands at the top of the document instead of the rule (A19) |
 | `bad-rule-invented-elsewhere` | FAIL, exit 1 | an invented rule anchor **outside** the rules section. A16 was scoped to that section, so an invented rule was invented only where it was looked for (A16) |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
@@ -135,7 +145,7 @@ every line of the script:
   nothing recurring proves that.
 - **A21's empty-set floor is unreachable in the real tree**, because
   `agents-lint.sh` is itself one of the files the glob finds.
-- **The "checked nothing" floors** have no cases: A19's "no links at all", A22's
+- **The "checked nothing" floors** have no cases: A22's
   "no commands at all", A20's "no data rows", A14's "no rule derived", A11's "no
   gate step derived", A18's "empty mechanized set" and its "table holds no rows",
   and the malformed-row branches of A18 and A20.
@@ -143,7 +153,7 @@ every line of the script:
   confirmation and each red for its own assertion: the empty-but-present file
   branches of A1 and A2 (a fixture deletes the file instead), the "no spelled
   count at all" branches of A13 and A17 (the fixtures write a *wrong* count),
-  A19's absolute-path branch, and A20's "names no row for a document this check
+  and A20's "names no row for a document this check
   derives from" branch.
 - **A21's harvest is glob-shaped, not "every check in the tree"**: it reads
   `docs/*/*-lint.sh` and `docs/*/run-*-tests.sh`, one directory deep, minus

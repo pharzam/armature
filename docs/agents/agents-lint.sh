@@ -79,9 +79,6 @@
 #       enforcement table gives it no mechanism in any of its three mechanism
 #       columns, and never contains that phrase when it does. A mechanism cell
 #       this check cannot read is reported, never guessed either way.
-#   A19 every relative link target resolves under ROOT, and every `#fragment`
-#       names a real heading in the Markdown file it points at (except the
-#       rule anchors, which A14 and A16 check harder).
 #   A20 the sources-of-truth table names real documents, assigns each a
 #       substantive authority, and names the two documents this check derives
 #       from in rows of their own.
@@ -702,84 +699,6 @@ else
 	[ "$got_n" -eq "$n_rules" ] || err A17 "the rules section says \"**$spelled** numbered rules\" ($got_n); docs/issue-workflow.md defines $n_rules"
 fi
 
-# --- A19. every relative link resolves -------------------------------------
-LINKS=$(awk '
-	{
-		line = $0
-		while (match(line, /\]\([^)]*\)/)) {
-			t = substr(line, RSTART + 2, RLENGTH - 3)
-			line = substr(line, RSTART + RLENGTH)
-			frag = ""
-			if (match(t, /#.*$/)) { frag = substr(t, RSTART + 1); t = substr(t, 1, RSTART - 1) }
-			if (t != "" && t !~ /^https?:/ && t !~ /^mailto:/) printf "%s|%s\n", t, frag
-		}
-	}' "$agents")
-n_links=0
-oldIFS=$IFS; IFS=$nl
-for entry in $LINKS; do
-	t=${entry%%"|"*}
-	frag=${entry#*"|"}
-	n_links=$((n_links + 1))
-	IFS=$oldIFS
-	# The wrapping is what makes a bare `..` a component rather than a prefix:
-	# `*../*` alone requires a slash AFTER the dots, so a target of exactly ".."
-	# fell through and `[ -e "$root/.." ]` is always true.
-	bad=0
-	case $t in
-	/*) err A19 "AGENTS.md links $t, which is an absolute path, not a path in this repository"; bad=1 ;;
-	esac
-	case "/$t/" in
-	*/../*) err A19 "AGENTS.md links $t, which leaves the repository root"; bad=1 ;;
-	*)      [ -e "$root/$t" ] || { err A19 "AGENTS.md links $t, which is not a path in this repository"; bad=1; } ;;
-	esac
-	# The FRAGMENT too, where the target is a Markdown file in the tree. Without
-	# this, a link to a section that was renamed — including the two sections
-	# this very change added — rots silently: the path still resolves, and the
-	# reader lands at the top of the document instead of the rule.
-	# A14 and A16 own the rule anchors, and check them harder — against the set
-	# derived from the source, not merely against the headings that exist. Left
-	# in, this block would diagnose the same defect a second time and stop each
-	# rule fixture from failing for one reason.
-	skip_frag=0
-	case $t in
-	*issue-workflow.md)
-		case $frag in
-		[Rr][0-9]*) skip_frag=1 ;;
-		esac
-		;;
-	esac
-	if [ "$bad" -eq 0 ] && [ "$skip_frag" -eq 0 ] && [ -n "$frag" ]; then
-		case $t in
-		*.md)
-			anchors=$(awk '
-				function slug(s,   x) {
-					x = tolower(s)
-					sub(/^#+[ \t]*/, "", x)
-					gsub(/[^a-z0-9 -]/, "", x)
-					gsub(/ /, "-", x)
-					return x
-				}
-				function isfence(s) {
-					return (s ~ /^```/    || s ~ /^~~~/ ||
-					        s ~ /^ ```/   || s ~ /^ ~~~/ ||
-					        s ~ /^  ```/  || s ~ /^  ~~~/ ||
-					        s ~ /^   ```/ || s ~ /^   ~~~/)
-				}
-				isfence($0) { fence = !fence }
-				!fence && /^#+ / { print slug($0) }
-			' "$root/$t")
-			case $nl$anchors$nl in
-			*"$nl$frag$nl"*) : ;;
-			*) err A19 "AGENTS.md links $t#$frag, but $t has no heading with that anchor" ;;
-			esac
-			;;
-		esac
-	fi
-	IFS=$nl
-done
-IFS=$oldIFS
-[ "$n_links" -gt 0 ] || err A19 'AGENTS.md holds no relative link — this assertion checked nothing'
-
 # --- A20. the sources-of-truth table ---------------------------------------
 SSEC=$(sect "$agents" '## Sources of truth')
 S_OUT=$(printf '%s\n' "$SSEC" | awk -F'|' '
@@ -1044,8 +963,8 @@ if [ "$fail" -eq 0 ]; then
 		esac
 	done
 	IFS=$oldIFS
-	printf 'agents-lint: OK  %d words; %d gate steps; %d rules (%d written-rule-only); %d checks named; %d links resolved\n' \
-		"$agents_words" "$n_steps" "$n_rules" "$n_written" "$n_shipped" "$n_links"
+	printf 'agents-lint: OK  %d words; %d gate steps; %d rules (%d written-rule-only); %d checks named\n' \
+		"$agents_words" "$n_steps" "$n_rules" "$n_written" "$n_shipped"
 	exit 0
 fi
 exit 1
