@@ -196,11 +196,19 @@ is_cross_linked() {
 	# read the OPERATOR directory names: a checkout in a directory called
 	# bad-anything or good would delete the whole tree from the search space and
 	# report every record as an orphan.
+	# The ADR directory is excluded by a LITERAL prefix, not a pattern. A
+	# directory argument is an operator path and can hold a regex metacharacter:
+	# a checkout under x[y made the old `grep -v "^$adr_dir/"` fail to exclude
+	# anything, and every record was reported as an orphan. Same class as the
+	# relative-path rule below, and the same cure -- an operator path is data.
+	# The comparison is deliberately prefix-exact, so a trailing slash on the
+	# argument still excludes nothing, which is finding A1 of T-3v9q, open as
+	# T-6f3w. Do not fix that here; it is a different task with its own tests.
 	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
 	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null \
-		| grep -v "^$adr_dir/" \
-		| awk -v docs="$_docs/" '
+		| awk -v docs="$_docs/" -v self="$adr_dir/" '
 			{
+				if (index($0, self) == 1) next
 				rel = $0
 				if (index(rel, docs) == 1) rel = substr(rel, length(docs) + 1)
 				if (rel ~ /(^|\/)(good|bad)[^\/]*\//) next
