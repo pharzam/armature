@@ -134,7 +134,21 @@ anchors_of() {
 # Collect the Markdown files to lint: everything under ROOT except .git and
 # fixture case directories. The skip is measured on the path RELATIVE to ROOT, so
 # pointing the linter AT a fixture case (as the test runner does) still lints it.
-files=$(find "$root" -name .git -prune -o -type f -name '*.md' -print | sort)
+# The list is RELATIVE to ROOT, and that is what keeps the operator's own
+# directory names out of it. This list is newline-joined and split with IFS
+# below, so any newline INSIDE an entry splits it -- and $root is absolute by
+# construction (the default is this script's own ../..), so with absolute
+# entries a checkout under a directory whose name contains a newline fed that
+# name through the split and killed the run: `awk: can't open file …`, exit 1,
+# plus the L5 floor firing because nothing resolved. A dead gate, on a
+# repository that violates nothing.
+#
+# Making the entries relative is the same shape that already keeps
+# audit-record-lint.sh safe, where the file list is relative to the repository
+# root for exactly this reason. It does not make a newline in an IN-TREE
+# filename safe -- nothing here does, and no such file exists -- but the
+# operator's path is not the kit's business to survive by luck.
+files=$(cd "$root" && find . -name .git -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
 
 lint_file() {
 	_f=$1
@@ -284,8 +298,16 @@ lint_file() {
 
 		n_links=$((n_links + 1))
 		_abs=$(cd "$_dir" 2>/dev/null && printf '%s' "$PWD/$_path")
+		# RS is set to a byte no path can hold, so the WHOLE path is one record
+		# however many newlines it contains. With the default RS, a checkout
+		# under a directory whose name holds a newline arrived here as two
+		# records, was normalised twice, and came back as two lines -- so the L4
+		# root-prefix test below compared against something that was never a
+		# path, and every link in the tree reported as escaping the root. FS
+		# still splits on "/", so a newline inside a segment simply rides along
+		# inside that segment, which is what it is.
 		_norm=$(printf '%s' "$_abs" | awk '
-			BEGIN { FS = "/" }
+			BEGIN { RS = "\001"; FS = "/" }
 			{
 				n = 0
 				for (i = 1; i <= NF; i++) {
@@ -333,14 +355,16 @@ oldIFS=$IFS
 IFS=$nl
 for f in $files; do
 	IFS=$oldIFS
-	rel=${f#"$root"/}
+	# $f is already relative to ROOT; the absolute form is built where it is
+	# needed, so the operator's directory names never enter the split above.
+	rel=$f
 	skip=0
 	# skip fixture CASE directories, by path component, relative to ROOT
 	case /$rel in
 	*/good/*|*/good-*/*|*/bad-*/*) skip=1 ;;
 	esac
 	[ "$skip" -eq 1 ] && { IFS=$nl; continue; }
-	lint_file "$f"
+	lint_file "$root/$f"
 	IFS=$nl
 done
 IFS=$oldIFS

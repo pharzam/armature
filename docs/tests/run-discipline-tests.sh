@@ -127,11 +127,29 @@ check_crlf_fixture() {
 	*crlf*) : ;;
 	*) return ;;
 	esac
-	_cr=$(find "$3" -type f -exec cat {} + 2>/dev/null | tr -dc '\r' | wc -c | tr -d ' 	')
-	if [ "${_cr:-0}" -eq 0 ]; then
-		fail=$((fail + 1))
-		printf 'FAIL  %s: the case name says crlf and it holds no carriage return — its line endings ARE the assertion; check .gitattributes still pins it with eol=crlf\n' "$2"
-	fi
+	# PER FILE, not per case. Summing carriage returns across the whole
+	# directory passed as long as ONE file kept them, so a case could lose the
+	# endings on every file but the first and stay green -- and in
+	# adr-lint/good-crlf the second record is the one that reaches the date
+	# check's other branch, so half that assertion would go silent. A shell
+	# script inside such a case is skipped: .gitattributes pins those to line
+	# feeds on purpose, because a .sh with carriage returns will not run.
+	_root=$3
+	_bare=$(find "$_root" -type f | while IFS= read -r _f; do
+		# The pattern is written `(*.sh)`, with the opening parenthesis, because
+		# this case sits inside a `$( )`: without it the pattern's closing
+		# parenthesis is read as the end of the command substitution, and the
+		# script does not parse.
+		case $_f in
+		(*.sh) continue ;;
+		esac
+		tr -dc '\r' < "$_f" | grep -q '.' || printf '%s\n' "$_f"
+	done)
+	[ -n "$_bare" ] || return
+	printf '%s\n' "$_bare" | while IFS= read -r _b; do
+		printf 'FAIL  %s: %s holds no carriage return, and this case name says crlf — its line endings ARE the assertion; check .gitattributes still pins it with eol=crlf\n' "$2" "$_b"
+	done
+	fail=$((fail + $(printf '%s\n' "$_bare" | awk 'END { print NR }')))
 }
 
 # run_dir_suite LINTER FIXTURE_ROOT LABEL — each case is a directory under the root.
