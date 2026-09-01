@@ -22,6 +22,13 @@ the one reason it exists to catch.
 
 ## Consequences
 
-The exit code alone proves the fix. A split list cannot reach the per-record
-checks, so it reports a duplicate number, an unreadable file and five missing
-sections — all at once, and none of them true.
+The exit code alone proves the fix. A split list never reaches this file: the
+one path becomes the three words `good-path`, `with` and the filename, so the
+numbering test errors with `[: good: integer expression expected`, awk cannot
+open `…/good-path`, and five sections are reported missing from a fragment that
+is not a file — none of it true of the record you are reading.
+
+It does **not** report a duplicate ADR number, although an early draft of this
+note said so. That symptom needs several records whose first four characters
+agree, which a spaced *checkout prefix* produces — every record then begins with
+the same fragment — and a spaced case directory does not.

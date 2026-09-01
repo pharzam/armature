@@ -1,9 +1,11 @@
 # link-lint CRLF fixture
 
 Every line in this file ends with a carriage return, the way a file written on
-Windows does. It is pinned that way by the repository `.gitattributes`; without
-the pin a checkout under `core.autocrlf=input` rewrites it to plain line feeds and
-this case passes while testing nothing.
+Windows does. It is pinned that way by the repository `.gitattributes`. Without
+the pin, anyone whose git is set to `core.autocrlf=input` or `true` strips the
+returns the next time they commit this file — that conversion runs on the way
+*into* the blob, not on checkout — and this case then passes while testing
+nothing.
 
 The reference definitions below are the form that broke. The extractor cuts a
 destination at the first space or tab, and a carriage return is neither, so

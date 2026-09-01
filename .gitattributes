@@ -39,8 +39,10 @@
 # returns, and reading those correctly is each linter's own job -- done on this
 # branch for all six, plus expect-check.sh. Measured on a clone, counting the
 # seven commands AGENTS.md lists under "Checks you can run": 7 of 7 green, where
-# before this branch it was 0 of 7 (nothing ran at all) and after the eol rule
-# alone it was 3 of 7.
+# before this branch it was 0 of 7 (nothing ran at all) and at 7f92eeb, the
+# commit that added this rule, it was 3 of 7. Naming the commit rather than
+# saying "after the eol rule alone" because 7f92eeb already carried two of the
+# six linter fixes; with all six reverted and only this rule kept, it is 2 of 7.
 #
 # So the two halves are separable and both are needed. Delete this rule and
 # nothing runs; keep it but revert the linters and four of the seven fail on a
@@ -53,13 +55,16 @@
 # docs/adr/tests/good-crlf/ and docs/links/tests/good-crlf/ are fixtures whose
 # files carry Windows line endings. They are tests only while they keep them.
 #
-# Git normalises a text file to line feeds in the blob and converts on checkout,
-# so under `core.autocrlf=input` -- a common setting, and the default on no
-# platform, which is what makes it easy to miss -- a clone rewrites these files
-# to plain line feeds. Both cases then pass while testing nothing: a green with
-# no assertion behind it, which is the class of defect the fixtures exist to
-# close. Measured on three throwaway repositories; `eol=crlf` is the only one of
-# the three arrangements that survives.
+# The risk is a COMMIT, not a checkout, and an earlier draft here had that
+# backwards. `core.autocrlf=input` converts CRLF to LF when a file is STAGED and
+# does nothing on checkout; `true` converts in both directions. So the way these
+# fixtures lose their carriage returns is someone whose git is set to `input` or
+# `true` re-committing them -- the returns are stripped on the way into the blob
+# and never come back. Measured: with a CRLF blob, a clone under `input` still
+# delivers CRLF, and it is the committer's setting that decides.
+#
+# Both cases would then pass while testing nothing: a green with no assertion
+# behind it, which is the class of defect the fixtures exist to close.
 #
 # `eol=crlf` keeps the blob as line feeds -- so the diff stays readable and the
 # files stay mergeable -- and forces carriage returns in the WORKING TREE on
@@ -69,17 +74,7 @@
 # `* text=auto eol=lf` would HIDE the defect rather than fix it (a workaround
 # under R4), and would impose a line-ending policy on every adopter's checkout,
 # which is not this kit's business.
-# 1 — executable text. Line feeds, or it will not run.
-#
-# ANCHORED to the two directories the kit owns. A bare `*.sh` carries no slash,
-# so git matches it against the BASENAME AT EVERY DEPTH: it governed every .sh
-# file in an adopter's repository, vendored trees included, and on contact it
-# marked their CRLF-committed scripts modified. Every executable this kit ships
-# is under docs/ or .githooks/, so nothing is lost by saying so.
-docs/**/*.sh                  text eol=lf
-.githooks/**                  text eol=lf
-
-# 2 — the two fixtures whose carriage returns ARE the test.
+# 1 — the two fixtures whose carriage returns ARE the test.
 #
 # If you ever need to pin a path holding a SPACE -- this tree ships two, under
 # docs/adr/tests/ and docs/prd/tests/ -- note that gitattributes cannot express
@@ -93,3 +88,35 @@ docs/**/*.sh                  text eol=lf
 # written down because the obvious attempt fails quietly.
 docs/adr/tests/good-crlf/**   eol=crlf
 docs/links/tests/good-crlf/** eol=crlf
+
+# 2 — executable text. Line feeds, or it will not run.
+#
+# THIS BLOCK COMES SECOND ON PURPOSE. Git resolves each attribute by LAST MATCH,
+# per attribute. With the executable rules first, a helper script added inside
+# either crlf fixture above took `text` from here and `eol=crlf` from there, and
+# would have been unrunnable on EVERY platform rather than only on Windows. No
+# such file exists; the ordering means one never can.
+#
+# ANCHORED to the two directories the kit owns. A bare `*.sh` carries no slash,
+# so git matches it against the BASENAME AT EVERY DEPTH: it governed every .sh
+# file in an adopter's repository, vendored trees included, and on contact it
+# marked their CRLF-committed scripts modified.
+#
+# `.githooks/*` and `.githooks/**/*.sh` rather than `.githooks/**`: the wide form
+# set an explicit `text` on everything under that directory, which switches OFF
+# git's binary auto-detection there, so a binary helper dropped into
+# .githooks/tests/ later would be converted rather than skipped. These two forms
+# reach every executable the kit ships — the three hooks, and provenance-check.sh
+# one level down — without claiming anything about a file that is not one.
+#
+# THE LIMIT THIS LEAVES, since anchoring buys adopter safety with reach: an
+# executable added or moved OUTSIDE docs/ and .githooks/ loses the pin silently.
+# `install.sh`, `bin/armature` and `scripts/bootstrap.sh` all resolve
+# `unspecified` today. Unlike the crlf fixtures above — guarded by
+# run-discipline-tests.sh, which can key on a fixture's own name inside the kit's
+# own tree — no mechanism here is adopter-safe: any check that enumerated every
+# .sh in the repository would fire on an adopter's own scripts, which is the
+# problem this anchoring exists to solve. Recorded rather than half-mechanised.
+docs/**/*.sh                  text eol=lf
+.githooks/*                   text eol=lf
+.githooks/**/*.sh             text eol=lf
