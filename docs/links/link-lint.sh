@@ -58,8 +58,12 @@
 # The slug rule is the trap. GitHub lowercases, drops punctuation, and replaces
 # EACH space with a hyphen — it does not collapse runs. So `## R5 — Deterministic
 # over LLM-based` becomes `r5--deterministic-over-llm-based`, with TWO hyphens,
-# because stripping the em-dash leaves two spaces. The slug() below is copied from
-# agents-lint.sh's A19 so the two can never disagree; it also drops underscores,
+# because stripping the em-dash leaves two spaces. The slug() below began as a copy
+# of agents-lint.sh's A19. That assertion was removed (#67), and the named function
+# went with it -- what survives there is the same rule written inline in the
+# rule-anchor derivation (`RULES=$(awk …`, agents-lint.sh:498). The two must be
+# kept in step by hand: if one changes, the other resolves anchors the other
+# rejects. Nothing enforces that today. It also drops underscores,
 # which GitHub keeps — harmless while no heading in the tree uses one, and stated
 # here rather than left as a surprise.
 #

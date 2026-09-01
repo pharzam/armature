@@ -90,7 +90,7 @@ the closing `>`, so a real link is never skipped as a placeholder.
 `agents-lint` once carried its own assertion **A19**, resolving the root
 `AGENTS.md`'s links. It was removed ([#67](https://github.com/pharzam/armature/issues/67))
 because this check walks every Markdown file in the tree and `AGENTS.md` is one of
-them — the same work, done once instead of twice, across four link forms instead
+them ([ADR-0007](../adr/0007-link-coverage-belongs-to-link-lint.md)) — the same work, done once instead of twice, across four link forms instead
 of one.
 
 One branch of A19 was **not** redundant: it rejected an **absolute** target, and
@@ -104,9 +104,14 @@ change excluded the repository root from the walk.
 
 ## Four limits, recorded rather than hidden
 
-1. **The slug function is copied from `agents-lint.sh`'s A19** so the two can never
-   disagree. It drops underscores, which GitHub keeps in an anchor. Harmless while
-   no heading in the tree uses one, and a defect the day one does.
+1. **The slug rule exists in two places and nothing keeps them in step.** It began
+   as a copy of `agents-lint.sh`'s A19; that assertion was removed
+   ([#67](https://github.com/pharzam/armature/issues/67)) and the named function went
+   with it. What survives there is the same rule written inline in the rule-anchor
+   derivation (`agents-lint.sh:498`). If one changes and the other does not, one
+   check resolves anchors the other rejects — **by hand, with no mechanism**. It also
+   drops underscores, which GitHub keeps in an anchor: harmless while no heading in
+   the tree uses one, and a defect the day one does.
 2. **Duplicate headings are not disambiguated.** GitHub appends `-1` to the second
    occurrence's slug; `anchors_of()` does not, so a legitimate `#foo-1` link would
    be wrongly rejected. No duplicate heading exists in the tree today. This is a

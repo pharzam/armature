@@ -52,12 +52,17 @@ each other and disagreeing with the kit.
 
 Deriving was weighed against having the documents **declare** their structure as
 machine-readable metadata, and kept — [ADR-0006](../adr/0006-derive-expectations-from-prose.md)
-records the measurement. Reading a source document is **49 of this script's 617
-code lines, 7.9%**; the file is long because it explains itself and reports
-honestly, not because parsing is hard. The larger saving available is not a format
-change but a duplication: `A19` and
-[`link-lint`](../links/link-lint.sh) now both resolve this file's links
-([#67](https://github.com/pharzam/armature/issues/67)).
+records the measurement. Reading a source document was **49 of this script's code
+lines, 7.9%**; the file is long because it explains itself and reports honestly,
+not because parsing is hard.
+
+That measurement also found the larger saving, which was not a format change but a
+duplication: `A19` resolved this file's links while
+[`link-lint`](../links/link-lint.sh) resolved every file's. **A19 has since been
+removed** ([ADR-0007](../adr/0007-link-coverage-belongs-to-link-lint.md),
+[#67](https://github.com/pharzam/armature/issues/67)), taking about 78 lines with it. Its one non-redundant branch — rejecting an **absolute** target —
+moved to `link-lint` as `L7`, where it now covers the whole tree instead of this
+one file. Its number is not reused: the sequence runs A1–A18, A20–A26.
 
 That glob is **one level deep**, which is a real limit: a check placed at
 `docs/<dir>/<sub>/<name>-lint.sh`, or named in some other shape, is not seen and
