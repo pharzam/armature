@@ -51,6 +51,12 @@ nl='
 # on a real file is link-lint's single job (ADR-0007), and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
+# Two limits follow from matching rather than resolving, and are stated rather
+# than left to be found: a link to a DIFFERENT file that happens to share the
+# record's filename counts, and a reference DEFINITION with no use anywhere
+# counts although it renders as nothing (link-lint's L6 catches only the
+# reverse). Both need a file deliberately shaped to defeat the check.
+#
 # The fence and indent tests are spelled out rather than written `{0,3}`, for the
 # awks with no interval expressions — the same reason anchors_of() in
 # link-lint.sh unrolls its own. A fence test that silently never matched would
@@ -67,7 +73,18 @@ links_to_record() {
 			        s ~ /^  ```/  || s ~ /^  ~~~/ ||
 			        s ~ /^   ```/ || s ~ /^   ~~~/)
 		}
-		function names(t) { return index(t, needle) > 0 }
+		# The FILENAME at the end of a destination has to BE the record, not
+		# merely hold it: a link to 0001-foo-0002-bar.md -- a legal ADR
+		# filename -- would otherwise satisfy the check for 0002-bar.md.
+		# NO APOSTROPHE may appear in this awk program: it is a single-quoted
+		# shell string, so one would end the quote, and a matching second one
+		# would reopen it and leave the file still parsing as valid sh.
+		function names(t,   b) {
+			sub(/#.*$/, "", t)
+			b = t
+			sub(/^.*\//, "", b)
+			return (b == needle)
+		}
 		FNR == 1 { fence = 0; incomment = 0 }
 		isfence($0) { fence = !fence; next }
 		fence { next }
@@ -130,8 +147,17 @@ is_cross_linked() {
 
 	_oldIFS=$IFS
 	IFS=$nl
+	# Fixture CASE directories are skipped, on the naming
+	# docs/tests/run-discipline-tests.sh dispatches on and by the rule
+	# link-lint.sh states for the same files: their links are test DATA, not
+	# navigation a reader follows, and some are deliberately broken. A link
+	# planted in one would satisfy this check for a real record -- the same
+	# defect class as the mention it stopped accepting. Fixture SUITE READMEs are
+	# NOT skipped: they are prose, and one of them is this check's own fixture.
 	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
-	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null | grep -v "^$adr_dir/")
+	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null \
+		| grep -v "^$adr_dir/" \
+		| grep -Ev '/(good|good-[^/]*|bad-[^/]*)/')
 	IFS=$_oldIFS
 	[ -f "$_root/README.md" ] && set -- "$@" "$_root/README.md"
 

@@ -128,10 +128,15 @@ applied") own that residual.
    Measured limits: `README.md` under 32 lines, `engineering-discipline.md` under
    7, `issue-workflow.md` under 22. `onboarding-for-engineers.md` is never cited.
    The stub linter is named `demo-lint.sh`, a basename no record cites.
-2. **Name no real ADR.** [`adr-lint.sh`](../../adr/adr-lint.sh) greps every
-   Markdown file under `docs/` for an ADR filename stem or an `ADR-NNNN` token to
-   decide whether a record is cross-linked. A fixture that named one could
-   satisfy a genuine orphan's inbound link by accident.
+2. **Link no real ADR from this README.** [`adr-lint.sh`](../../adr/adr-lint.sh)
+   decides whether a record is cross-linked by looking for a **link** to it from a
+   Markdown file under `docs/`. It skips fixture CASE directories, so a link
+   inside `good-*/` or `bad-*/` is inert — but this suite README is prose, not a
+   case, and a link from it would satisfy a genuine orphan's inbound link by
+   accident. Naming a record is safe; linking one is not. (Before
+   [#73](https://github.com/pharzam/armature/issues/73) the rule was the stricter
+   "name no real ADR": the check then matched a bare `ADR-NNNN` token or a
+   filename anywhere, so a mention was enough.)
 
 ## What these fixtures do NOT exercise
 

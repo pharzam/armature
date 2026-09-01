@@ -33,12 +33,24 @@ this template's shape, change the linter in the same change — the two must agr
 
 ### What counts as an inbound cross-link
 
-A **link**, from a Markdown file outside this directory, whose destination names
-the record's file — inline `[text](…/0001-….md)`, a reference definition
-`[label]: …/0001-….md`, or a raw `href`. A document that only **names** a record
-is discussing it, not linking it: the `ADR-NNNN` shorthand in a sentence, the
-filename in a citation or a code span, a link-shaped example inside a fence.
-None of those satisfies the check.
+A **link** whose destination ends in the record's filename — inline
+`[text](…/0001-….md)`, a reference definition `[label]: …/0001-….md`, or a raw
+`href` — carried by a Markdown file the check reads. It reads every `.md` under
+[`docs/`](..) except this directory, plus the repository-root
+[`README.md`](../../README.md); a file elsewhere in the tree, the root
+`AGENTS.md` included, is outside its reach.
+
+Two kinds of file inside that reach still do not count. **Fixture case
+directories** (`good*`, `bad-*`) hold test data rather than navigation, and some
+of their links are deliberately broken — the rule
+[`link-lint.sh`](../links/link-lint.sh) already states for the same files; a link
+planted in one would otherwise satisfy this check for a real record. Their suite
+READMEs are prose a reader follows, and do count.
+
+And a document that only **names** a record is discussing it, not linking it: the
+`ADR-NNNN` shorthand in a sentence, the filename in a citation or a code span, a
+link-shaped example inside a fence, a link inside an HTML comment. None of those
+satisfies the check.
 
 That distinction was learned the hard way. The check used to match the shorthand
 or the stem as a plain string anywhere under `docs/`, so
@@ -53,7 +65,10 @@ a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job
 ([0007](0007-link-coverage-belongs-to-link-lint.md)), and the two compose: this
 one proves a link to the record exists, that one proves it points at something.
 Neither, on its own, proves the link is the *right* one — that stays a review
-responsibility.
+responsibility. Two limits follow from matching rather than resolving, and are
+written in the script beside the code that carries them: a link to a *different*
+file that happens to share the record's filename counts, and so does a reference
+definition nothing uses, which renders as nothing at all.
 
 ## Index
 
