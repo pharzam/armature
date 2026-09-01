@@ -1,0 +1,186 @@
+# Line endings are CONTENT in this tree, not formatting. Two rule blocks,
+# opposite directions, each the fix for a measured defect. They are ordered
+# fixtures-first for a reason the second block states.
+#
+# ADOPTERS: copy this file. Without it the kit's scripts do not run on a Windows
+# checkout, and the fixtures whose Windows endings ARE the assertion quietly
+# stop asserting. It claims nothing about your own files -- see WHAT IT DOES NOT
+# TOUCH, below.
+#
+#
+# WHY THE EXECUTABLES ARE PINNED: WITHOUT IT THE KIT DOES NOT RUN AT ALL
+#
+# `core.autocrlf=true` is git's DEFAULT ON WINDOWS, and it converts every text
+# file on checkout -- including the shell scripts. A .sh file with carriage
+# returns is not a shell script any more; the interpreter reads the return as
+# part of the last word on the line:
+#
+#     $ sh docs/adr/adr-lint.sh
+#     docs/adr/adr-lint.sh: line 27: : command not found
+#     docs/adr/adr-lint.sh: line 28: set: -: invalid option
+#
+# Measured on a real clone: TWELVE of twelve executables the kit ships would not
+# run. Six linters (adr, prd, link, agents, audit-record, pr-link), the
+# discipline-test runner, the two checks run by hand (expect-check,
+# provenance-check), and all three git hooks -- including the pre-commit hook
+# that is supposed to enforce the gate. The whole quality gate, silent, on the
+# platform where the kit is most likely to be adopted cold.
+#
+# It is also why the CRLF fixtures could not have been exercised by the adopter
+# they were written for: that adopter never reached the linter.
+#
+# `text eol=lf` normalises the blob to line feeds AND forces line feeds in the
+# working tree, whatever `core.autocrlf` says.
+#
+# WHAT THIS BUYS, AND WHAT IT DOES NOT. It makes the scripts RUNNABLE, nothing
+# more. Every ordinary Markdown file still arrives with carriage returns, and
+# reading those correctly is each linter's own job.
+#
+# Measured on a clone, over these seven, named so the count can be checked:
+# adr-lint, prd-lint, link-lint, agents-lint, audit-record-lint, pr-link-lint,
+# and expect-check.sh. 7 of 7 green. Against 0 of 7 before the work that added
+# this rule -- nothing ran at all -- and 4 of 7 with this rule alone and two of
+# the six linters fixed. So the halves are separable and both are needed: delete
+# this rule and nothing runs; keep it and revert the linters and four of the
+# seven fail on a tree they should accept.
+#
+# A draft said 3 of 7, from a run that quietly swapped run-discipline-tests.sh
+# in for pr-link-lint.sh -- it measured a different seven from the one the
+# sentence named. Fresh clone PER REVISION, too: reusing one clone across
+# revisions carries files across, because git does not rewrite a file whose blob
+# is unchanged even when an attribute now applies to it.
+#
+# (These seven are NOT the seven commands AGENTS.md lists under "Checks you can
+# run". That block is five linters -- adr, prd, agents, link, audit-record --
+# plus run-discipline-tests.sh plus `git diff --check`. pr-link-lint is absent
+# there by design: it reads a pull-request body and has no local run.)
+#
+#
+# WHY FIVE FIXTURE CASES ARE PINNED THE OTHER WAY
+#
+# One per linter that reads Markdown -- adr, links, agents, tasks -- plus
+# docs/links/tests/bad-crlf-expect/, which is CRLF down to its EXPECT file so
+# that expect-check.sh's own strip has a case. Their files carry Windows line
+# endings, and they are tests only while they keep them.
+#
+# The risk is a COMMIT, not a checkout. `core.autocrlf=input` converts CRLF to
+# LF when a file is STAGED and does nothing on checkout; `true` converts in both
+# directions. So the way these fixtures lose their carriage returns is someone
+# whose git is set to `input` or `true` staging them -- the returns are stripped
+# on the way into the blob and never come back.
+#
+# WITH ONE EXCEPTION THAT DOES NOT SAVE US, and a draft here stated the rule
+# without it. Git skips that conversion for a file whose INDEX BLOB ALREADY
+# HOLDS carriage returns, so an ordinary CRLF-tracked file survives a re-commit
+# untouched. Measured: 3 returns in the blob, still 3 after re-adding under
+# `input` and under `true`.
+#
+# These fixtures are not in that position, and deliberately so: `eol=crlf` keeps
+# their blobs as LINE FEEDS, which is what makes their diffs readable. The guard
+# has nothing to grip. Delete the pin and the next `add` writes line feeds into
+# the blob -- measured, under both settings. The same is true of a file NEW to an
+# index, which is the adopter who copies a fixture directory in. So the exception
+# is real, and it protects every file here except the ones this rule is for.
+#
+# Every one of them would then pass while testing nothing: a green with no
+# assertion behind it, which is the class of defect the fixtures exist to close.
+# run-discipline-tests.sh guards against that TWICE, and reads these rules
+# rather than holding a copy of them.
+#
+# `eol=crlf` keeps the blob as line feeds -- so the diff stays readable and the
+# files stay mergeable -- and forces carriage returns in the WORKING TREE on
+# every platform, whatever `core.autocrlf` is set to.
+#
+# Scoped to those five case directories on purpose. A repository-wide
+# `* text=auto eol=lf` would HIDE the carriage-return defect rather than fix it
+# (a workaround under R4), and would impose a line-ending policy on every
+# adopter's checkout, which is not this kit's business.
+#
+#
+# WHAT IT DOES NOT TOUCH, AND THE LIMIT THAT LEAVES
+#
+# Nothing outside the paths named below. Your own scripts are caught only if you
+# name one `docs/<area>/<x>-lint.sh` or put one under `docs/<area>/tests/`; a
+# `docs/scripts/build.sh`, a `scripts/deploy.sh` or a vendored tree resolves
+# `unspecified`. That is a claim, so it is stated rather than left to be found.
+#
+# The cost of that narrowness: an executable added or moved OUTSIDE these paths
+# loses the pin silently -- `install.sh`, `bin/armature` and
+# `scripts/bootstrap.sh` all resolve `unspecified` today. Unlike the fixtures,
+# no mechanism here is adopter-safe: a check enumerating every .sh in the
+# repository would fire on the adopter's own, which is the problem the narrow
+# form exists to solve. Recorded rather than half-mechanised.
+#
+#
+# --- the fixture cases whose carriage returns ARE the test --------------------
+#
+# If you ever need to pin a path holding a SPACE -- this tree ships two, under
+# docs/adr/tests/ and docs/prd/tests/ -- note that gitattributes cannot express
+# one. A literal space ends the pattern, so `good-path with space/**` is read as
+# the pattern `good-path` plus the attribute names `with` and `space/**`, and
+# git reports `is not a valid attribute name` against a token that looks
+# unrelated while the path itself silently resolves `unspecified`. Backslash
+# escaping and a bracket class both fail the same way. Only the `?` wildcard
+# works: `good-path?with?space/**`.
+#
+# run-discipline-tests.sh understands that form -- it expands each pattern before
+# testing it, rather than testing the literal text, which a draft did. That draft
+# made this very recommendation report itself as decoration: a trap that sprang
+# on the first person to follow the kit's own advice. Neither spaced fixture
+# needs pinning today, since their endings are not the assertion, so nothing here
+# does it -- but the advice now works if you take it.
+docs/adr/tests/good-crlf/**    eol=crlf
+docs/links/tests/good-crlf/**  eol=crlf
+docs/agents/tests/good-crlf/** eol=crlf
+docs/tasks/tests/good-crlf/**  eol=crlf
+# A bad case that is CRLF throughout, EXPECT file included, so expect-check.sh's
+# own carriage-return strip has a case. It reads EXPECT and demands that id in
+# the linter's output; without the strip the id is `L1` plus a return, which
+# matches nothing, and every case in that suite fails while the linter beside it
+# is right.
+#
+# The case is NAMED crlf on purpose: that is what puts it inside the runner's
+# case-name check, so deleting the line below cannot be silent. Pinning a single
+# file inside a case named anything else would sit outside that check.
+docs/links/tests/bad-crlf-expect/** eol=crlf
+
+# --- executable text: line feeds, or it will not run -------------------------
+#
+# THIS BLOCK COMES SECOND ON PURPOSE. Git resolves each attribute by LAST MATCH,
+# per attribute. With the executable rules first, a helper script added inside
+# one of the crlf fixtures above would take `text` from here and `eol=crlf` from
+# there, and be unrunnable on EVERY platform rather than only on Windows. No
+# such file exists; the ordering means one never can.
+#
+# PINNED BY THE KIT'S OWN NAMING, not by directory. Two wider forms were tried
+# and both reached too far. `*.sh` carries no slash, so git matches it against
+# the BASENAME AT EVERY DEPTH -- it governed every .sh file in an adopter's
+# repository, vendored trees included. `docs/**/*.sh` looked anchored and was
+# not: `docs/` is one of the commonest directory names anywhere, and this kit is
+# designed to land in one that already exists, so an adopter's own
+# `docs/scripts/build.sh` committed with carriage returns resolved `eol=lf` on
+# contact and lost them at their next commit -- silently, in a file nobody
+# opened.
+#
+# The forms below match what the kit actually ships: `<area>-lint.sh` linters,
+# the runner by name, and any script under a fixture `tests/` directory.
+#
+# `.githooks/*` and `.githooks/**/*.sh` rather than `.githooks/**`: the wide form
+# set an explicit `text` on everything under that directory, which switches OFF
+# git's binary auto-detection there, so a binary helper dropped into
+# .githooks/tests/ later would be converted rather than skipped. These two forms
+# reach every executable the kit ships -- the three hooks, and provenance-check.sh
+# one level down.
+#
+# `.githooks/*` does still catch one file that is not an executable:
+# .githooks/README.md resolves `text eol=lf`. Harmless, since it is text, and the
+# narrowing was never about that -- it was about the SUBDIRECTORY, where a binary
+# fixture could plausibly land. Verified: under `.githooks/**` a binary dropped in
+# .githooks/tests/ gets an explicit `text`; under these two forms it stays
+# `unspecified`. Stated because a draft here claimed the forms touch nothing that
+# is not an executable, and that is one file too strong.
+docs/*/*-lint.sh                   text eol=lf
+docs/tests/run-discipline-tests.sh text eol=lf
+docs/*/tests/**/*.sh               text eol=lf
+.githooks/*                        text eol=lf
+.githooks/**/*.sh                  text eol=lf

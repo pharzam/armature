@@ -92,10 +92,16 @@ record="$tasks_dir/T-3v9q.md"
 backlog="$tasks_dir/backlog.md"
 completed="$tasks_dir/completed.md"
 # A fixture case carries its own glossary; the real run uses the sibling one.
+# That is also how the run knows which it is, which block 2c below needs: a
+# fixture's citations are ILLUSTRATIVE -- `adr-lint.sh:75` in a fixture record
+# is there to exercise the citation SHAPE, and points into the real tree only
+# by accident of block 2b resolving against the repository root.
 if [ -f "$tasks_dir/glossary.md" ]; then
 	glossary="$tasks_dir/glossary.md"
+	is_fixture=1
 else
 	glossary=$(dirname "$tasks_dir")/glossary.md
+	is_fixture=0
 fi
 # The repository root, used to resolve the paths the record cites. For a fixture
 # case there is nothing to resolve against, so citation resolution is skipped.
@@ -105,7 +111,37 @@ repo_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 fail=0
 err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 
+# text FILE — the file's lines with any trailing carriage return removed.
+#
+# Every awk that reads a file goes through here, with ONE stated exception
+# below. A draft claimed that while block 8 still carried a file operand beside
+# its pipe -- and awk given an operand ignores standard input, so the pipe was
+# dead and the file was read raw. The claim was false and the reader silently
+# was not running; both are fixed.
+#
+# Block 9's two `grep -q` calls read a file directly and are left alone:
+# neither pattern anchors at end-of-line, so a trailing carriage return cannot
+# affect the match. That is a reason, not an oversight — but it does mean "every
+# read" would be the wrong word, so it is not used.
+#
+# Nothing here treats a carriage return as content, and the blocks
+# compare whole strings -- an ID, a verdict word, a task line -- so on a Windows
+# checkout (core.autocrlf=true, git's default there) every one of them compared
+# against a character that does not print: 37 FAIL lines on a record that
+# violates nothing.
+#
+# THE EXCEPTION is block 1-4, which reads the record TWICE in one awk run
+# (`FNR == NR`) to validate a table against rows declared later in the file. A
+# pipe can only be read once, so that block keeps its two file arguments and
+# strips the return inside awk instead. It is marked where it happens.
+text() { awk '{ sub(/\r$/, ""); print }' "$1"; }
+
 [ -f "$record" ]   || { printf 'FAIL  audit record not found: %s\n' "$record" >&2; exit 1; }
+# Readable, not merely present. Every block below reads it through a pipe, and a
+# pipeline reports its LAST command's status -- so an unreadable record made awk
+# succeed on empty input and each block report an empty record rather than an
+# unreadable one. Checked once, here, rather than guessed at nine call sites.
+[ -r "$record" ]   || { printf 'FAIL  audit record not readable: %s\n' "$record" >&2; exit 1; }
 [ -f "$backlog" ]  || { printf 'FAIL  backlog not found: %s (DoD 5 cannot resolve)\n' "$backlog" >&2; exit 1; }
 [ -f "$glossary" ] || { printf 'FAIL  glossary not found: %s (DoD 6 cannot resolve)\n' "$glossary" >&2; exit 1; }
 # completed.md is a hard dependency of block 5, not an optional extra: a
@@ -166,6 +202,13 @@ function resolve(id2) {
 	}
 }
 BEGIN { ndash = "\342\200\223"; mdash = "\342\200\224" }
+
+# THE ONE EXCEPTION to reading through text(): this block reads the record
+# TWICE, and a pipe can only be read once. So the file argument stays, and the
+# carriage return comes off here instead -- FIRST, before any rule below sees
+# the line. The rest of this script pipes through text(); see the note beside
+# it. Both passes are covered, because this rule has no pattern.
+{ sub(/\r$/, "") }
 
 # ---- pass one: the claim rows, the X-numbers, the two prose blocks --------
 FNR == NR {
@@ -301,7 +344,7 @@ printf '%s\n' "$out" | awk '/^COUNTS /{next} NF' >&2
 counts=$(printf '%s\n' "$out" | sed -n 's/^COUNTS //p')
 
 # --- 5. each follow-up is exactly one line under **Next** ------------------
-followups=$(awk '
+followups=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Out of scope/) ? 1 : 0; next }
 	sec {
 		line = $0
@@ -310,7 +353,7 @@ followups=$(awk '
 			line = substr(line, RSTART + RLENGTH)
 		}
 	}
-' "$record" | sort -u)
+' | sort -u)
 
 # A follow-up has a lifecycle, and the check has to know all of it. backlog.md
 # documents three states: `## Next` (deferred), `## Now` (being worked, and
@@ -321,9 +364,9 @@ followups=$(awk '
 #
 # The rule: exactly one line names the ID, across the three sections. Not two
 # (in Next and also logged as done), and not none (dropped without a trace).
-now_block=$(awk '/^## / { sec = ($0 ~ /^## Now/) ? 1 : 0; next } sec' "$backlog")
-next_block=$(awk '/^## / { sec = ($0 ~ /^## Next/) ? 1 : 0; next } sec' "$backlog")
-log_block=$(awk '/^## / { sec = ($0 ~ /^## Log/) ? 1 : 0; next } sec' "$completed")
+now_block=$(text "$backlog" | awk '/^## / { sec = ($0 ~ /^## Now/) ? 1 : 0; next } sec')
+next_block=$(text "$backlog" | awk '/^## / { sec = ($0 ~ /^## Next/) ? 1 : 0; next } sec')
+log_block=$(text "$completed" | awk '/^## / { sec = ($0 ~ /^## Log/) ? 1 : 0; next } sec')
 
 [ -n "$followups" ] || err "Out of scope (follow-ups): the section names no task ID (DoD 5)"
 for t in $followups; do
@@ -354,7 +397,7 @@ if [ -n "$repo_root" ]; then
 	# The three patterns below must stay in step with has_citation() above. A form
 	# that block 2 ACCEPTS but this block cannot EXTRACT is a hole: the citation
 	# passes the shape test and is never resolved, so `LICENSE:99999` survives.
-	cites=$(awk '
+	cites=$(text "$record" | awk '
 		function harvest(re,   line) {
 			line = $0
 			while (match(line, re)) {
@@ -370,7 +413,7 @@ if [ -n "$repo_root" ]; then
 			harvest("\\.git(hooks|hub)/[A-Za-z0-9_./-]+:[0-9]+")
 			harvest("(LICENSE|\\.gitignore|\\.gitattributes):[0-9]+")
 		}
-	' "$record" | sort -u)
+	' | sort -u)
 	# Enumerate the tree once, then match each cited path as a suffix on a path
 	# component boundary. Guessing a directory order instead would resolve
 	# `README.md:54` to whichever README the guess happened to reach first.
@@ -397,15 +440,124 @@ if [ -n "$repo_root" ]; then
 		# A path that matches more than one file is not itself an error -- the
 		# record cites by the shortest readable path -- but the line must exist
 		# in one of them, which is what catches a number past the end.
+		# The candidate list is NEWLINE-separated and is read one line at a
+		# time. `for f in $cands` split it on every blank as well, so a
+		# candidate under a path containing a space became two half-paths:
+		# `awk: can't open file .../good-path` on stderr, and $total_lines
+		# empty, which then made both numeric tests error out. It was also
+		# glob-expanded, since IFS does not disable pathname expansion.
+		#
+		# The fixture that exposed it is docs/adr/tests/good-path with space/,
+		# added for adr-lint. Its README.md is a candidate for any `README.md:N`
+		# citation, so the split began the moment the fixture landed. Same class
+		# as the one that fixture exists to catch, in a third script.
+		#
+		# "Exposed", NOT "caught", and the difference is the point. Revert this
+		# loop to `for f in $cands` and the run still EXITS 0 -- it prints
+		# `awk: can't open file …/good-path` and a numeric-test error to standard
+		# error, a later valid candidate sets ok=1, and every check stays green.
+		# Measured when it was found, against the loop as it then stood: 24
+		# stderr lines, exit 0, and a suite that reported all its cases passing.
+		# It was found by a person reading stderr, not by an assertion, and no
+		# arrangement of fixtures changes that while the harness compares exit
+		# codes only. `T-9c5t` is the task that would close it.
+		#
+		# Fed by a HERE-DOCUMENT, not a pipe, so the loop runs in THIS shell and
+		# $ok and $best are simply variables. A pipeline body runs in its own
+		# shell, which forced a draft of this to print its counters out and take
+		# them apart again with ${_res%% *}. The here-doc body is the single
+		# expansion `$cands`; its RESULT is not rescanned, so a candidate path
+		# holding a backslash, a dollar or a space arrives intact.
+		#
+		# `read -r` splits on newlines only, which is what keeps the spaced
+		# candidate whole. `for f in $cands` split it on every blank instead --
+		# `awk: can't open file .../good-path`, and $total_lines empty, which
+		# made both numeric tests error out.
+		#
+		# The early `break` is KEPT. A draft dropped it on the stated ground that
+		# the list "holds one or two entries". It does not: a citation by bare
+		# filename matches every file of that name in the tree, and `README.md:N`
+		# matches 80 of them. Measured across the record's 82 citations, dropping
+		# the break would open 1203 candidate files instead of stopping at the
+		# first that answered -- 1236 ms against 4956 ms when that was measured,
+		# for byte-identical output. `$best` is unaffected: it is only ever
+		# reported when $ok is 0, and on that path the loop never breaks anyway.
+		#
+		# Those counts grow with the tree, so treat them as a shape rather than a
+		# constant: they were 78 and 1166 before this branch added fixtures.
+		#
+		# No `text` on the line count. Stripping a trailing carriage return
+		# cannot change NR, so it was a second process per candidate for nothing:
+		# removing it is byte-identical and takes the block from ~1770 ms to
+		# ~1350 ms. Block 2c below DOES need it -- it compares a line's content.
 		ok=0
 		best=0
-		for f in $cands; do
+		while IFS= read -r f; do
+			[ -n "$f" ] || continue
 			total_lines=$(awk 'END { print NR }' "$repo_root/$f")
 			[ "$total_lines" -gt "$best" ] && best=$total_lines
-			if [ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ]; then ok=1; break; fi
-		done
+			[ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ] && ok=1
+			[ "$ok" -eq 1 ] && break
+		done <<EOF
+$cands
+EOF
 		[ "$ok" -eq 1 ] \
 			|| err "citation $c points past the end of every file it can name (longest has $best lines) (DoD 2)"
+
+		# 2c. AND the line must hold code, not a blank or a comment.
+		#
+		# Block 2b bounds-checks and nothing more, so a citation that has DRIFTED
+		# -- the file grew above it -- lands on some other line and stays green.
+		# That is not hypothetical: the citations into adr-lint.sh went stale
+		# three separate times on one branch, each time because a commit added
+		# lines above them, and each time the suite was green throughout.
+		#
+		# A drifted citation most often lands in the comment block that displaced
+		# it, so this catches the common case. It is PARTIAL and the measurement
+		# says how partial: of the eleven citations stale at the third
+		# recurrence, this rule catches five. The other six had slid onto a
+		# different line of real code, which no rule can distinguish from the
+		# right one without the record naming the construct it means.
+		#
+		# Blank and comment only, and only for a shell script: a Markdown or YAML
+		# citation legitimately points at prose. `#` at the start of a Markdown
+		# line is a heading, not a comment, which is why the suffix is checked.
+		case $p in
+		*.sh)
+			# Real record only. A fixture's citations are illustrative (see the
+			# note beside is_fixture), so holding them to the real tree's line
+			# numbers would make every fixture red the next time a linter grew a
+			# comment -- which is the very drift this rule exists to catch, aimed
+			# at the wrong file. The cost is that 2c has no fixture of its own;
+			# it was verified against the eight real citations that were stale
+			# when it was written.
+			[ "$is_fixture" -eq 1 ] && continue
+			# A here-document, for the same reason as the loop above: it runs in
+			# this shell, so $drift is just a variable. `text` IS load-bearing
+			# here -- unlike the line count above, this compares a line's
+			# CONTENT, and a line holding only a carriage return would otherwise
+			# read as non-blank.
+			drift=''
+			while IFS= read -r f; do
+				[ -n "$f" ] || continue
+				[ -f "$repo_root/$f" ] || continue
+				cited=$(text "$repo_root/$f" | awk -v n="$ln" 'NR == n { print; exit }')
+				trimmed=$(printf '%s' "$cited" | sed 's/^[ 	]*//')
+				if [ -z "$trimmed" ]; then
+					drift='a BLANK line'
+				else
+					case $trimmed in
+					('#'*) drift='a COMMENT rather than the construct the row names' ;;
+					esac
+				fi
+				break
+			done <<EOF
+$cands
+EOF
+			[ -z "$drift" ] \
+				|| err "citation $c points at $drift -- it has DRIFTED; re-derive it from the construct, not by arithmetic (DoD 2)"
+			;;
+		esac
 	done
 	# A block that checks nothing must say so rather than pass.
 	[ "$n_cites" -gt 0 ] || err "no resolvable citation found in the Findings tables -- block 2b checked nothing (DoD 2)"
@@ -414,10 +566,10 @@ fi
 # --- 6. every abbreviation used in prose has a glossary row ----------------
 # A stray code fence would silently blind the scan below, because it toggles on
 # ```. An odd fence count is itself a defect, so fail on it rather than scan.
-fences=$(awk '/^```/ { k++ } END { print k + 0 }' "$record")
+fences=$(text "$record" | awk '/^```/ { k++ } END { print k + 0 }')
 [ $((fences % 2)) -eq 0 ] \
 	|| err "the record holds $fences code fences, an odd number -- an unclosed fence hides the rest of the file from block 6 (DoD 6)"
-gloss_abbr=$(awk '
+gloss_abbr=$(text "$glossary" | awk '
 	/^[ \t]*\|/ {
 		m = split($0, p, "|")
 		if (m < 4) next
@@ -433,9 +585,9 @@ gloss_abbr=$(awk '
 			if (t != "") print t
 		}
 	}
-' "$glossary" | sort -u)
+' | sort -u)
 
-rec_abbr=$(awk '
+rec_abbr=$(text "$record" | awk '
 	/^```/ { f = !f; next }
 	f { next }
 	# A table separator carries no words. Every other table row is prose and is
@@ -461,11 +613,11 @@ rec_abbr=$(awk '
 			line = substr(line, RSTART + RLENGTH)
 		}
 	}
-' "$record" | sort -u)
+' | sort -u)
 
 for a in $rec_abbr; do
 	case " $EXEMPT " in *" $a "*) continue ;; esac
-	grep -Eq "$a\.(md|sh|ya?ml|json|toml|txt)" "$record" && continue
+	text "$record" | grep -Eq "$a\.(md|sh|ya?ml|json|toml|txt)" && continue
 	printf '%s\n' "$gloss_abbr" | grep -qx "$a" \
 		|| err "abbreviation \"$a\" is used in the prose of $(basename "$record") and has no row in $(basename "$glossary") (DoD 6)"
 done
@@ -476,14 +628,14 @@ done
 # the exact defect the review blocked on, left this linter green. This block
 # closes that hole. docs/tests/dod-checklist.md:22-25 is the rule: a Definition of
 # Done item maps to a traceability row whose status is `green` or `frozen`.
-dod_rows=$(awk '
+dod_rows=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Definition of Done/) ? 1 : 0; next }
 	sec && /^[ \t]*\|/ { print }
-' "$record")
-trace_rows=$(awk '
+')
+trace_rows=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Test traceability/) ? 1 : 0; next }
 	sec && /^[ \t]*\|/ { print }
-' "$record")
+')
 
 [ -n "$dod_rows" ]   || err "no '## Definition of Done' table found -- block 7 checked nothing (DoD 2)"
 [ -n "$trace_rows" ] || err "no '## Test traceability' table found; docs/tests/dod-checklist.md requires one row per DoD item (DoD 2)"
@@ -554,14 +706,14 @@ gap=$(printf '%s\n' "$expected_items" | awk 'BEGIN { want = 1 } { if ($1 != want
 # from both tables leaves a set that is still internally consistent and still
 # wrong. So the count is anchored in prose, the way block 3 anchors the claim
 # arithmetic, and read from a sentence the tables do not control.
-declared_items=$(awk '
+declared_items=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Definition of Done/) ? 1 : 0; next }
 	sec && match($0, /\*\*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\*\* Definition of Done items/) {
 		s = substr($0, RSTART + 2, RLENGTH - 2)
 		sub(/\*\*.*/, "", s)
 		print s; exit
 	}
-' "$record")
+')
 n_items=$(printf '%s\n' "$expected_items" | awk 'NF' | wc -l | tr -d ' ')
 if [ -z "$declared_items" ]; then
 	err "the Definition of Done section does not state how many items it has; block 7 needs that anchor to catch a table truncated at the top (docs/tests/dod-checklist.md:22-25)"
@@ -626,7 +778,7 @@ fi
 # holding the corrections has not been emptied. Nothing here is tuned to the text
 # it checks: a pattern chosen to fit the 17 rows that exist would be a decision
 # rule picked after seeing the result.
-uncited_corr=$(awk -F'|' '
+uncited_corr=$(text "$record" | awk -F'|' '
 	/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
 	sec && /^[ \t]*\|/ {
 		id = $2; gsub(/^[ \t]+|[ \t]+$/, "", id)
@@ -639,7 +791,14 @@ uncited_corr=$(awk -F'|' '
 		    body !~ /(LICENSE|\.gitignore|\.gitattributes):[0-9]+/) print id
 	}
 	END { if (n == 0) print "NONE" }
-' "$record") || err "block 8: awk failed to read the record (DoD 8)"
+')
+# No `|| err` here any more, because it could not fire. It was written when awk
+# read the record as a FILE OPERAND and its status was the read's. Routing this
+# block through text() made the status awk's own, reading standard input, which
+# succeeds on empty input -- so an unreadable record produced a green guard and
+# a wrong message. The `-r` test at the head of this script is where that is
+# caught now, and the `END { if (n == 0) print "NONE" }` floor below is what
+# catches an empty read for any other reason.
 for id in $uncited_corr; do
 	if [ "$id" = "NONE" ]; then
 		err "no claim row carries the verdict Corrected -- block 8 checked nothing (DoD 8)"
@@ -647,11 +806,11 @@ for id in $uncited_corr; do
 		err "Findings row $id is Corrected but cites no file and line; a correction with no evidence is an assertion (DoD 8)"
 	fi
 done
-corr_bullets=$(awk '
+corr_bullets=$(text "$record" | awk '
 	/^## / { sec = ($0 ~ /^## Corrections to the reports/) ? 1 : 0; next }
 	sec && /^- / { k++ }
 	END { print k + 0 }
-' "$record")
+')
 [ "${corr_bullets:-0}" -gt 0 ] \
 	|| err "the '## Corrections to the reports' section holds no bullets; a Corrected verdict with nothing recorded against it is not a correction (DoD 8)"
 

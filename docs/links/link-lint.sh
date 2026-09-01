@@ -62,7 +62,8 @@
 # because stripping the em-dash leaves two spaces. The slug() below began as a copy
 # of agents-lint.sh's A19. That assertion was removed (#67), and the named function
 # went with it -- what survives there is the same rule written inline in the
-# rule-anchor derivation (`RULES=$(awk …`, agents-lint.sh:498). The two must be
+# rule-anchor derivation (`RULES=$(text "$workflow" | awk …`, the `gsub(/[^a-z0-9
+# -]/, "", s)` inside it at agents-lint.sh:540). The two must be
 # kept in step by hand: if one changes, the other resolves anchors the other
 # rejects. Nothing enforces that today. It also drops underscores,
 # which GitHub keeps — harmless while no heading in the tree uses one, and stated
@@ -107,6 +108,10 @@ is_placeholder() {
 }
 
 # anchors_of FILE — the GitHub slug of every heading, one per line, fences skipped.
+# No carriage return is stripped here and none needs to be: slug() keeps only
+# [a-z0-9 -], so a CRLF file's trailing carriage return is dropped with the rest
+# of the punctuation. Stated because it is true by CONSEQUENCE rather than by
+# intent — narrow that character class and this becomes wrong, silently.
 anchors_of() {
 	awk '
 		function slug(s,   x) {
@@ -130,7 +135,21 @@ anchors_of() {
 # Collect the Markdown files to lint: everything under ROOT except .git and
 # fixture case directories. The skip is measured on the path RELATIVE to ROOT, so
 # pointing the linter AT a fixture case (as the test runner does) still lints it.
-files=$(find "$root" -name .git -prune -o -type f -name '*.md' -print | sort)
+# The list is RELATIVE to ROOT, and that is what keeps the operator's own
+# directory names out of it. This list is newline-joined and split with IFS
+# below, so any newline INSIDE an entry splits it -- and $root is absolute by
+# construction (the default is this script's own ../..), so with absolute
+# entries a checkout under a directory whose name contains a newline fed that
+# name through the split and killed the run: `awk: can't open file …`, exit 1,
+# plus the L5 floor firing because nothing resolved. A dead gate, on a
+# repository that violates nothing.
+#
+# Making the entries relative is the same shape that already keeps
+# audit-record-lint.sh safe, where the file list is relative to the repository
+# root for exactly this reason. It does not make a newline in an IN-TREE
+# filename safe -- nothing here does, and no such file exists -- but the
+# operator's path is not the kit's business to survive by luck.
+files=$(cd "$root" && find . -name .git -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
 
 lint_file() {
 	_f=$1
@@ -142,6 +161,15 @@ lint_file() {
 	# also resolved) or USE (a reference label, checked against the definitions).
 	_links=$(awk '
 		function isfence(s) { return (s ~ /^[ ]{0,3}(```|~~~)/) }
+		# A CRLF file ends every line with a carriage return. Strip it FIRST, so
+		# every rule below reads a clean line and there is one behaviour rather
+		# than one per form. Only the reference definition was ever wrong -- the
+		# other three destinations are closed by a `)` or a `"` that separates the
+		# carriage return from the path -- but patching that one branch would
+		# leave the next form added here to find the defect again.
+		# adr-lint.sh:links_to_record() strips it the same way, and the two must
+		# agree about what a link is (links/README.md limit 6).
+		{ sub(/\r$/, "") }
 		isfence($0) { fence = !fence; next }
 		fence { next }
 		/<!--/ { incomment = 1 }
@@ -271,20 +299,50 @@ lint_file() {
 
 		n_links=$((n_links + 1))
 		_abs=$(cd "$_dir" 2>/dev/null && printf '%s' "$PWD/$_path")
-		_norm=$(printf '%s' "$_abs" | awk '
-			BEGIN { FS = "/" }
-			{
-				n = 0
-				for (i = 1; i <= NF; i++) {
-					if ($i == "" || $i == ".") continue
-					if ($i == "..") { if (n > 0) n--; else out[++n] = ".."; continue }
-					out[++n] = $i
+		# The path arrives through the ENVIRONMENT and is split by hand in BEGIN,
+		# so awk never reads a record and record splitting cannot happen at all.
+		#
+		# It used to come in on standard input. With the default RS, a checkout
+		# under a directory whose name holds a NEWLINE arrived as two records,
+		# was normalised twice, and came back as two lines -- so the L4 test
+		# below compared against something that was never a path, and every link
+		# in the tree reported as escaping the root. A draft fixed that with
+		# `RS = "\001"` and a comment calling that "a byte no path can hold". It
+		# is not: APFS accepts it in a filename, and a checkout under such a name
+		# reproduced the identical dead gate -- 669 L4 failures. Betting on a
+		# byte was the wrong shape of fix; not reading records is the right one.
+		#
+		# ENVIRON, not `-v`: awk runs ESCAPE PROCESSING on a -v value, so a path
+		# holding a backslash would arrive mangled. collect_search_space() in
+		# adr-lint.sh carries the same note for the same reason.
+		#
+		# The segments are walked with index/substr rather than split(). Measured
+		# on the awk this kit runs against: `split(p, seg, "/")` breaks on a
+		# NEWLINE as well as on the separator, so the very path this rewrite
+		# exists to carry came back with its newline turned into a slash --
+		# `/a/we ird` + `name/b` rejoined as `/a/we ird/name/b`. index() and
+		# substr() have no separator semantics to surprise anyone. Verified
+		# across nine path shapes: plain, `.`, `..`, `..` past the root, a double
+		# slash, a space, a newline, a SOH byte, and `/` alone.
+		_norm=$(LINK_LINT_ABS="$_abs" awk '
+			BEGIN {
+				p = ENVIRON["LINK_LINT_ABS"]
+				m = 0
+				while (1) {
+					i = index(p, "/")
+					if (i == 0) { seg = p; p = "" }
+					else { seg = substr(p, 1, i - 1); p = substr(p, i + 1) }
+					if (seg != "" && seg != ".") {
+						if (seg == "..") { if (m > 0) m-- ; else out[++m] = ".." }
+						else out[++m] = seg
+					}
+					if (i == 0) break
 				}
 				s = ""
-				for (i = 1; i <= n; i++) s = s "/" out[i]
+				for (j = 1; j <= m; j++) s = s "/" out[j]
 				print (s == "" ? "/" : s)
 			}
-		')
+		' </dev/null)
 
 		# L4 — the target must stay inside the root
 		case $_norm/ in
@@ -320,14 +378,16 @@ oldIFS=$IFS
 IFS=$nl
 for f in $files; do
 	IFS=$oldIFS
-	rel=${f#"$root"/}
+	# $f is already relative to ROOT; the absolute form is built where it is
+	# needed, so the operator's directory names never enter the split above.
+	rel=$f
 	skip=0
 	# skip fixture CASE directories, by path component, relative to ROOT
 	case /$rel in
 	*/good/*|*/good-*/*|*/bad-*/*) skip=1 ;;
 	esac
 	[ "$skip" -eq 1 ] && { IFS=$nl; continue; }
-	lint_file "$f"
+	lint_file "$root/$f"
 	IFS=$nl
 done
 IFS=$oldIFS

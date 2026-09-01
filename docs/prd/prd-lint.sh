@@ -37,25 +37,35 @@ err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 
 [ -d "$prd_dir" ] || { printf 'FAIL  PRD directory not found: %s\n' "$prd_dir" >&2; exit 1; }
 
-prd_files=""
+# The file list is held in the POSITIONAL PARAMETERS, not in a string. It was a
+# space-joined string looped over unquoted, so a PRD under a path containing a
+# space became two words and awk was handed two half-paths it could open
+# neither of. adr-lint.sh carried the identical construct; the note there
+# records the measurement and why a newline-joined string was rejected.
+#
+# This one was quiet on the kit's own tree only because the kit ships no
+# PRD-*.md, so the loop never ran. An adopter meets it on the first real PRD.
+#
+# $1 is read into $prd_dir at the head of this script and is not wanted again.
+set --
 for path in "$prd_dir"/PRD-*.md; do
 	[ -e "$path" ] || continue
 	name=$(basename "$path")
 	if printf '%s' "$name" | grep -Eq '^PRD-[0-9]{4}-[a-z0-9][a-z0-9-]*\.md$'; then
-		prd_files="$prd_files $path"
+		set -- "$@" "$path"
 	else
 		err "$name: filename must be PRD-NNNN-kebab-case.md"
 	fi
 done
 
-if [ -z "${prd_files# }" ]; then
+if [ "$#" -eq 0 ]; then
 	[ "$fail" -eq 0 ] && { printf 'prd-lint: OK\n'; exit 0; } || exit 1
 fi
 
 existing_facts=$(ls "$facts_dir" 2>/dev/null \
 	| sed -n 's/^\(F-[0-9]\{4\}\).*\.md$/\1/p' | sort -u)
 
-for path in $prd_files; do
+for path do
 	awk -v fname="$(basename "$path")" -v facts="$existing_facts" '
 	function split_row(line,   m, i, c, parts) {
 		gsub(/\\\|/, "\001", line)

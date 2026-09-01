@@ -43,7 +43,7 @@ the ceiling against the *file* would flatter the conclusion; it holds either way
 The premise was that the size lives in the parsing. It does not. The largest
 assertions are link resolution (65 code lines), entry-point discoverability (54)
 and the sources-of-truth table (46), and violations are reported from **49 call
-sites** — 48 naming an assertion id literally, plus one at `agents-lint.sh:282`
+sites** — 48 naming an assertion id literally, plus one at `agents-lint.sh:316`
 passing the id in a variable. That figure is given with its method because an
 unqualified count of it is method-sensitive: an independent re-derivation of this
 ADR reached 49 where a first pass said 50, and a third method 48. The file is long

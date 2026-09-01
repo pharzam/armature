@@ -42,11 +42,14 @@ note() { printf 'WARN  %s\n' "$*" >&2; }
 [ -d "$adr_dir" ] || { printf 'FAIL  ADR directory not found: %s\n' "$adr_dir" >&2; exit 1; }
 
 # A canonical form of the directory, used ONLY where the path is compared as a
-# STRING. $adr_dir itself is left exactly as the caller spelled it, because the
-# record list further down is space-joined and looped unquoted (see the note at
-# section 1): forcing it absolute would push the operator checkout prefix through
-# that loop and break every run at a path containing a space, including the
-# fixture suite, which passes relative paths.
+# STRING. $adr_dir itself is still left exactly as the caller spelled it, and it
+# is now a free choice rather than a forced one: the reason used to be that the
+# record list at section 1 was space-joined and looped unquoted, so forcing this
+# absolute would have pushed the operator checkout prefix through that loop and
+# broken every run at a path containing a space. That list is positional
+# parameters now and carries any path safely, so nothing here depends on the
+# spelling any more. The caller's spelling is kept because the messages read
+# better with the path the operator typed.
 #
 # The comparison needs one spelling because $adr_dir is used both as a path --
 # handed to find and dirname -- and as a prefix matched against what find prints.
@@ -76,9 +79,9 @@ nl='
 # on a real file is link-lint's single job, and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
-# NINE LIMITS, stated rather than left to be found. This is the full list; the
-# README states only the one an adopter has to know. Seven are about what the
-# MATCHING reads; the last two are about the SHAPE of the tree.
+# TEN LIMITS, stated rather than left to be found. This is the full list; the
+# README states only the one an adopter has to know. Limits 1 to 7 and 10 are
+# about what the MATCHING reads; 8 and 9 are about the SHAPE of the tree.
 #
 #   1. The two checks compose only for an IN-TREE target. link-lint skips http,
 #      https and mailto by design, because resolving them needs the network, so a
@@ -111,13 +114,31 @@ nl='
 #      a worktree, a vendored submodule, a build cache -- is not excluded: the
 #      exclusion is one literal path prefix. Its index README then links every
 #      record, and every record reads as cross-linked. This one is SILENT, which
-#      makes it the worst of the nine. An adopter who puts the per-task worktree
+#      makes it the worst of the ten. An adopter who puts the per-task worktree
 #      directory under docs/ walks straight into it.
 #   9. The ADR directory is assumed to sit DIRECTLY under the documents root:
 #      the search space is its parent, and the extra file read is that parent
 #      directory of THAT. Move it to docs/architecture/adr/ and the space
 #      narrows to docs/architecture/, so every record warns. Loud, and no
 #      adopter has to keep the layout -- but nothing tells them, so it is here.
+#  10. A destination containing a SPACE is not read as naming the record --
+#      EXCEPT in the raw HTML form. The reference-definition and `](` branches
+#      cut at the first space or tab, so a link into one of this tree's spaced
+#      fixture directories, or any spaced path an adopter has, reads as no link
+#      and the record draws a false orphan WARN. `href="[^"]*"` captures the
+#      whole quoted value, so a raw HTML anchor into a spaced directory DOES
+#      count as an inbound link. Measured on three ADR trees identical but for
+#      the link form: inline gives a false orphan, raw HTML gives none, and no
+#      link at all gives the same WARN as inline.
+#
+#      This is links/README.md's limit 7, and it reaches this function for the
+#      same reason limits 4, 5 and 6 do: the same reading of the same forms.
+#      Listed because limit 6 in that file exists precisely to stop these two
+#      extractors drifting, and a limit recorded on one side only IS the drift.
+#      An earlier draft of both entries said "both extractors cut at the first
+#      space" without qualification -- recorded wrongly on BOTH sides, which is
+#      the failure limit 6 describes, arrived at by reasoning rather than
+#      measuring.
 #
 # Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
 # forms. The sharing is BY HAND, though, not by construction -- the fence and
@@ -177,6 +198,27 @@ links_to_record() {
 				# would otherwise ride along on a reference definition target
 				# and stop it naming the record. An inline destination is
 				# unaffected -- the closing paren separates it.
+				#
+				# NO FIXTURE COVERS THIS ONE, and it is not for want of trying.
+				# Delete this line and the whole suite still reports
+				# `104 passed, 0 failed`. Two things compound to make it
+				# unreachable:
+				#
+				#   1. What it serves is the no-orphan WARNING, which is
+				#      non-fatal. The runner compares EXIT CODES, so no
+				#      arrangement of fixtures can see the difference -- the same
+				#      gap docs/adr/tests/README.md records for is_cross_linked,
+				#      and the one `T-9c5t` would close by asserting output.
+				#   2. Even by eye it does not move. The search space for a case
+				#      is its PARENT directory, whose only file is the suite
+				#      README -- which is line feeds, and is the one file that
+				#      README says must never link a fixture record. So there is
+				#      nowhere in scope to put the CRLF reference definition
+				#      that would exercise this.
+				#
+				# Measured both ways: the good-crlf case draws two warnings with
+				# this line and two without. Recorded rather than papered over
+				# with a fixture that would not fail.
 				sub(/\r$/, "", line)
 				if (isfence(line)) { fence = !fence; continue }
 				if (fence) continue
@@ -315,39 +357,48 @@ is_cross_linked() {
 }
 
 # --- 1. filenames; collect the valid ADR files -----------------------------
-# KNOWN DEFECT, older than the cross-link work and not fixed here: this list is
-# a SPACE-JOINED string that is then looped over unquoted, so a checkout at a
-# path containing a space breaks the run -- `FAIL duplicate ADR number: sp`, on
-# a repository that violates nothing. prd-lint.sh carries the identical
-# construct. It fails loud rather than silent, and no fixture can reach it: the
-# discipline runner hands the linters relative paths, which never carry the
-# spaced prefix, and this script keeps $adr_dir as spelled so that stays true.
-# The gate is NOT so lucky, and that is the half worth knowing: the no-argument
-# default is $script_dir, absolute by construction at the head of this file, so
-# the pre-commit hook and every CI job meet this on every run at such a checkout,
-# unconditionally rather than through an unlucky spelling. An absolute argument
-# is exposed the same way. Recorded in the tree because the issue that found it
-# is closed.
-adr_files=""
+# The record list is held in the POSITIONAL PARAMETERS, not in a string.
+#
+# It was a SPACE-JOINED string looped over unquoted, so a path split into one
+# word per space: at a checkout under `…/sp ace/` the run reported
+# `FAIL duplicate ADR number: sp` and 89 more, on a repository that violates
+# nothing, and a two-space prefix such as `…/a b c/` gave 138. Both measured
+# against the pre-fix script; a draft here paired the one-space EXAMPLE with the
+# two-space COUNT, which read as consistent because the first clause was right.
+# The exposed invocations were the ones the gate itself uses -- the
+# no-argument default is $script_dir, absolute by construction at the head of
+# this file -- so the pre-commit hook and every CI job met it on every run.
+#
+# Positional parameters are the POSIX way to carry a list of paths. They need no
+# separator, so they close the whole class rather than the reported symptom:
+# a space, a tab, a newline and a glob character are all safe. The alternative
+# considered and rejected was a newline-joined string with IFS, which fixes the
+# space and leaves the glob -- IFS does not disable pathname expansion, and this
+# script never sets -f. collect_search_space() note 1 above is that same trap,
+# measured.
+#
+# $1 is read into $adr_dir at the head of this script and is not wanted again,
+# so overwriting the parameters here costs nothing.
+set --
 for path in "$adr_dir"/*.md; do
 	[ -e "$path" ] || continue
 	name=$(basename "$path")
 	[ "$name" = "README.md" ] && continue
 	[ "$name" = "template.md" ] && continue
 	if printf '%s' "$name" | grep -Eq '^[0-9]{4}-[a-z0-9][a-z0-9-]*\.md$'; then
-		adr_files="$adr_files $path"
+		set -- "$@" "$path"
 	else
 		err "$name: filename must be NNNN-kebab-case.md (four digits, zero-padded)"
 	fi
 done
 
-if [ -z "${adr_files# }" ]; then
+if [ "$#" -eq 0 ]; then
 	# No ADRs yet is a valid state for a fresh project.
 	[ "$fail" -eq 0 ] && exit 0 || exit 1
 fi
 
 # --- 2. sequential + unique numbering --------------------------------------
-numbers=$(for p in $adr_files; do basename "$p" | cut -c1-4; done | sort)
+numbers=$(for p in "$@"; do basename "$p" | cut -c1-4; done | sort)
 prev=""
 expected=1
 for n in $numbers; do
@@ -368,19 +419,51 @@ if [ "$cross_files_seen" -eq 0 ]; then
 fi
 
 # --- 3. per-file structure -------------------------------------------------
-for path in $adr_files; do
+for path do
 	name=$(basename "$path")
 	num=$(printf '%s' "$name" | cut -c1-4)
 	numval=$(printf '%s' "$num" | sed 's/^0*//'); [ -z "$numval" ] && numval=0
 
 	# 3a. title: first non-blank line is "# NNNN. <title>" (padded or unpadded).
-	title=$(awk 'NF{print; exit}' "$path")
+	#     The strip is here for the same reason it is inside 3c's awk, not for
+	#     the reason 3b gives below. This rule selects a line by NF, and on a
+	#     CRLF file an empty line is the record `\r`, which is NOT a blank under
+	#     the default FS -- so NF is 1 and the FIRST BLANK LINE was chosen as the
+	#     "first non-blank" one. A record with a leading blank line then failed
+	#     with `got: ` and an invisible character, which is precisely the report
+	#     shape this whole change exists to remove.
+	title=$(awk '{ sub(/\r$/, "") } NF { print; exit }' "$path")
 	printf '%s' "$title" | grep -Eq "^# 0*${numval}\. " \
 		|| err "$name: first non-blank line must be '# $num. <title>' (got: ${title:-<empty>})"
 
 	# 3b. Date: a plain 'Date: YYYY-MM-DD' line — a real date or the unfilled
 	#     placeholder (the kit ships the placeholder so it self-lints green).
-	dateline=$(grep -E '^Date:' "$path" | head -n1)
+	#
+	#     The strip is what makes this read a CRLF file. This check and 3c
+	#     compare the value as a WHOLE STRING, so a trailing carriage return
+	#     made every record in such a file fail -- and the report was worse than
+	#     the failure, because the character does not print:
+	#     `Date must be YYYY-MM-DD ...; got 'YYYY-MM-DD'`, a linter appearing to
+	#     reject the value it asks for. 3d and 3e are the two that really were
+	#     never affected: they match a PREFIX or a substring, which a trailing
+	#     character cannot reach. 3a is NOT in that group, although an earlier
+	#     draft of this comment said it was — it selects a line by NF rather than
+	#     matching within one, and a carriage return is not a blank. See the note
+	#     at 3a. links_to_record() above already stripped the return, so one
+	#     script disagreed with itself about the same file.
+	#
+	#     ONE IDIOM for all three, `{ sub(/\r$/, "") }` as awk's first rule. A
+	#     draft used `grep | head | tr -d '\r'` here, which made this the only
+	#     one of the three that stripped differently, and cost a paragraph
+	#     explaining why. It also cost two extra processes: awk selects the first
+	#     matching line itself. Rejected on the way: `sed 's/\r$//'`, because
+	#     sed's \r is not POSIX (the seds tested here happen to accept it), and
+	#     routing all three through a `text()` helper like the two big linters
+	#     use, which measured SLOWER -- 3a and 3c already run an awk, so a helper
+	#     turns one process into two apiece, +21 ms per run over ten runs -- and
+	#     would have put a third hand-maintained copy of the same helper in the
+	#     kit.
+	dateline=$(awk '{ sub(/\r$/, "") } /^Date:/ { print; exit }' "$path")
 	if [ -z "$dateline" ]; then
 		err "$name: missing 'Date: YYYY-MM-DD' line"
 	else
@@ -398,7 +481,14 @@ for path in $adr_files; do
 	if ! grep -Eq '^## Status[[:space:]]*$' "$path"; then
 		err "$name: missing '## Status' section"
 	else
-		statusval=$(awk '/^## Status[[:space:]]*$/{f=1; next} f && NF {print; exit}' "$path")
+		# The strip runs INSIDE awk, and it has to. Piping the result through
+		# `tr` instead leaves the blank line after the heading holding a
+		# carriage return, and a carriage return is not a blank under the
+		# default FS -- so NF is 1, awk takes that line as the status value, and
+		# the check reports `Status '<empty>'`. Measured: it turned one wrong
+		# answer into a worse one. Stripping first makes the line genuinely
+		# empty, which is what `f && NF` was always reading it as.
+		statusval=$(awk '{ sub(/\r$/, "") } /^## Status[[:space:]]*$/{f=1; next} f && NF {print; exit}' "$path")
 		case "$statusval" in
 			Proposed|Accepted|Deprecated) : ;;
 			"Superseded by "*|"Accepted. Amended by "*) : ;;

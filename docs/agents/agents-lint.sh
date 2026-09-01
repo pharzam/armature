@@ -219,6 +219,45 @@ emit() {
 # `wc -w`, used by A7 and A10 alike so both counts are reproducible by hand.
 words() { awk '{ n += NF } END { print n + 0 }'; }
 
+# text FILE — the file's lines with any trailing carriage return removed.
+#
+# EVERY file this script reads goes through here — A2's word count included, which
+# an earlier draft left reading the file directly. Not one of the checks below
+# treats a carriage return as content.
+#
+# Most of them COMPARE a whole string, so on a Windows checkout --
+# core.autocrlf=true, git's default there -- they compared against a character
+# that does not print. A5 and A7 do something else: they COUNT. A carriage
+# return is not a field separator, so every blank line scored as one word, and
+# A7's budget reads 1447 against the 1414 it reads on a line-feed tree -- the gap
+# is one word per blank line, of which AGENTS.md has 33, so both numbers move
+# together as the file is edited and only the gap is stable. Under the
+# 1500 ceiling either way, so no verdict moved -- but it is the case where the
+# strip does more than fix a comparison, and a tighter budget would have made it
+# a false failure.
+#
+# NO FIXTURE CATCHES THAT ONE, and it is worth saying why rather than leaving it
+# to be found. A mutation sweep over all 31 text() sites kills 8 of them on the
+# crlf fixtures; of the survivors, the word count at A7 is the ONLY one whose
+# removal changes a number this script prints. Catching it needs a fixture whose
+# AGENTS.md sits just under MAX_WORDS on line feeds and just over it with the
+# carriage returns counted -- a file sized to a pre-registered constant, which is
+# the fitted parameter docs/guardrails.md names and the note beside MAX_WORDS
+# forbids. What would catch it honestly is an assertion on OUTPUT rather than on
+# the exit code, which is `T-9c5t`. Recorded, not mechanised.
+#
+# A8 said the comparison half best:
+#
+#   heading 1: got "## What this repository is", want "## What this repository is"
+#
+# Two strings a reader cannot tell apart, and an operator with no way to see why.
+# A6 failed the same way on CLAUDE.md's single import line.
+#
+# One reader rather than a strip at each site, because the sites are sixteen and
+# the next one added would be the seventeenth. If a check ever does need the raw
+# bytes, it must say so where it reads them, and say why.
+text() { awk '{ sub(/\r$/, ""); print }' "$1"; }
+
 # sect FILE HEADING — print the body under an exact HEADING, up to the next
 # heading at the same or a shallower level. Entry is exact equality, not a
 # prefix match. Level-awareness is what stops a deeper `### ` subheading from
@@ -226,7 +265,7 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 # fenced block from ending one early. An empty extraction is always a violation
 # at the call site, never a silent pass.
 sect() {
-	awk -v h="$2" '
+	text "$1" | awk -v h="$2" '
 		function lvl(s,   n) { n = 0; while (substr(s, n + 1, 1) == "#") n++; return n }
 		# A fence may carry up to three leading spaces and still be a fence
 		# (CommonMark), and the kit own README opens one that way inside a
@@ -249,7 +288,7 @@ sect() {
 		$0 == h && !fence { s = 1; hl = lvl($0); next }
 		s && !fence && substr($0, 1, 1) == "#" && lvl($0) <= hl { s = 0 }
 		s
-	' "$1"
+	'
 }
 
 # word_to_int WORD — the spelled numbers A13 and A17 read out of prose. The
@@ -321,11 +360,11 @@ HEADINGS='## What this repository is
 
 # --- A1. AGENTS.md is present and not empty --------------------------------
 [ -f "$agents" ] || die A1 "AGENTS.md not found or empty: $agents"
-[ "$(words < "$agents")" -gt 0 ] || die A1 "AGENTS.md not found or empty: $agents"
+[ "$(text "$agents" | words)" -gt 0 ] || die A1 "AGENTS.md not found or empty: $agents"
 
 # --- A2. CLAUDE.md is present and not empty --------------------------------
 [ -f "$claude" ] || die A2 "CLAUDE.md not found or empty: $claude"
-[ "$(words < "$claude")" -gt 0 ] || die A2 "CLAUDE.md not found or empty: $claude"
+[ "$(text "$claude" | words)" -gt 0 ] || die A2 "CLAUDE.md not found or empty: $claude"
 
 # --- A3. the documents the expectations derive from ------------------------
 # One loop over the four paths, not four statements, so the single fixture that
@@ -343,17 +382,17 @@ done
 [ -e "$root/AGENT.md" ] && err A4 'root AGENT.md exists; the entry point is AGENTS.md (plural), and a second name gives an agent two competing sources of instruction (ADR-0004)'
 
 # --- A5, A6. CLAUDE.md is one exact import line ----------------------------
-claude_lines=$(sed 's/[ 	]*$//' "$claude" | awk 'NF { k++ } END { print k + 0 }')
+claude_lines=$(text "$claude" | sed 's/[ 	]*$//' | awk 'NF { k++ } END { print k + 0 }')
 [ "$claude_lines" -eq 1 ] || err A5 "CLAUDE.md holds $claude_lines non-blank lines; it must hold exactly one, the import, so no policy can be duplicated there"
-claude_first=$(sed 's/[ 	]*$//' "$claude" | awk 'NF { print; exit }')
+claude_first=$(text "$claude" | sed 's/[ 	]*$//' | awk 'NF { print; exit }')
 [ "$claude_first" = '@AGENTS.md' ] || err A6 "CLAUDE.md's import line is \"$claude_first\"; it must be exactly @AGENTS.md"
 
 # --- A7. the word budget ----------------------------------------------------
-agents_words=$(words < "$agents")
+agents_words=$(text "$agents" | words)
 [ "$agents_words" -lt "$MAX_WORDS" ] || err A7 "AGENTS.md holds $agents_words words; the pre-registered budget is under $MAX_WORDS"
 
 # --- A8. the heading sequence equals the required list ---------------------
-got_headings=$(awk '/^## / { print }' "$agents")
+got_headings=$(text "$agents" | awk '/^## / { print }')
 if [ "$got_headings" != "$HEADINGS" ]; then
 	diffline=$(printf '%s\n' "$got_headings" | WANT="$HEADINGS" awk '
 		BEGIN { wn = split(ENVIRON["WANT"], w, "\n") }
@@ -375,8 +414,8 @@ fi
 # to A8, which reads only `## ` lines. Everything after it — an invented
 # command, a false enforcement claim, a filled placeholder — would go unchecked.
 # A9 is what makes sect() provably total over AGENTS.md.
-first_nonblank=$(awk 'NF { print; exit }' "$agents")
-hashlines=$(awk 'substr($0, 1, 1) == "#" { printf "%d\t%s\n", NR, $0 }' "$agents")
+first_nonblank=$(text "$agents" | awk 'NF { print; exit }')
+hashlines=$(text "$agents" | awk 'substr($0, 1, 1) == "#" { printf "%d\t%s\n", NR, $0 }')
 if [ -n "$hashlines" ]; then
 	oldIFS=$IFS; IFS=$nl
 	seen_title=0
@@ -408,7 +447,7 @@ fi
 # required section can be commented out with the gate still green — the exact
 # bypass the bad-empty-section fixture exists to catch. Numbered A26 because it
 # was added after A25; the order here is execution order, not numeric order.
-comment_line=$(awk 'index($0, "<!--") { print NR; exit }' "$agents")
+comment_line=$(text "$agents" | awk 'index($0, "<!--") { print NR; exit }')
 [ -n "$comment_line" ] && err A26 "AGENTS.md holds an HTML comment at line $comment_line; a comment is invisible to a reader but still counts as body, so this file carries none"
 
 # --- A10. every required section has a real body ---------------------------
@@ -423,14 +462,14 @@ done
 IFS=$oldIFS
 
 # --- the gate steps, DERIVED from the source -------------------------------
-STEPS=$(awk '
+STEPS=$(text "$discipline" | awk '
 	/^## / { sec = ($0 == "## Working a task under the quality gate") ? 1 : 0; next }
 	sec && /^[0-9]+\. \*\*/ {
 		t = $0
 		sub(/^[0-9]+\. \*\*/, "", t)
 		sub(/\*\*.*$/, "", t)
 		print t
-	}' "$discipline")
+	}')
 n_steps=$(printf '%s' "$STEPS" | awk 'NF { n++ } END { print n + 0 }')
 
 GATE=$(sect "$agents" '## The quality gate')
@@ -495,7 +534,7 @@ fi
 # --- the rules, DERIVED from the source ------------------------------------
 # id|anchor|title. The anchor is the GitHub heading slug the source's own
 # `## R<n> — Title` line produces, so a renamed rule breaks the link here.
-RULES=$(awk '
+RULES=$(text "$workflow" | awk '
 	/^## R[0-9]+ / {
 		id = $0; sub(/^## /, "", id); sub(/ .*$/, "", id)
 		title = $0; sub(/^## R[0-9]+ [^A-Za-z]* /, "", title)
@@ -503,7 +542,7 @@ RULES=$(awk '
 		gsub(/[^a-z0-9 -]/, "", s)
 		gsub(/ /, "-", s)
 		printf "%s|%s|%s\n", id, s, title
-	}' "$workflow")
+	}')
 n_rules=$(printf '%s' "$RULES" | awk 'NF { n++ } END { print n + 0 }')
 
 # --- the mechanized rules, DERIVED from the enforcement table --------------
@@ -652,7 +691,7 @@ fi
 # this as a property of AGENTS.md, and an invented rule is no less invented for
 # being named in another section — which a section-scoped scan would have missed.
 if [ -n "$RSEC" ]; then
-	out=$(KNOWN="$RULES" awk '
+	out=$(text "$agents" | KNOWN="$RULES" awk '
 		BEGIN {
 			n = split(ENVIRON["KNOWN"], k, "\n")
 			for (i = 1; i <= n; i++) {
@@ -679,7 +718,7 @@ if [ -n "$RSEC" ]; then
 			sub(/^- \*\*/, "", id)
 			sub(/\*\*.*$/, "", id)
 			if (!(id in okid)) print "AGENTS.md names rule " id ", which docs/issue-workflow.md does not define"
-		}' "$agents" | sort -u)
+		}' | sort -u)
 	emit A16 "$out"
 fi
 
@@ -787,7 +826,7 @@ fi
 # A whole-file harvest, not a section-scoped one: several sections carry
 # commands by design, and an invented command in inline backticks in any of
 # them is exactly what acceptance criterion 5 forbids.
-CMDS=$(awk '
+CMDS=$(text "$agents" | awk '
 	{
 		line = $0
 		gsub(/`/, "", line)
@@ -806,7 +845,7 @@ CMDS=$(awk '
 			# .sh suffix -- `sh scripts/build` -- is outside this harvest.
 			if (c ~ /\.sh$/) print c
 		}
-	}' "$agents")
+	}')
 n_cmds=0
 oldIFS=$IFS; IFS=$nl
 for c in $CMDS; do
@@ -898,7 +937,7 @@ for t in $A24_TRIPLES; do
 	body=$(sect "$root/$f" "$h")
 	scope="under \"$h\""
 	if [ -z "$body" ]; then
-		body=$(cat "$root/$f")
+		body=$(text "$root/$f")
 		scope="anywhere in it (it carries no \"$h\" section)"
 	fi
 	if [ -z "$body" ]; then
@@ -947,7 +986,7 @@ IFS=$oldIFS
 # this literal matched the A23 data table, this comment, the grep line itself and
 # the message below -- so the assertion was green for every possible content of
 # the header, which is exactly the check-that-cannot-fail this kit forbids.
-own_header=$(awk 'substr($0, 1, 1) == "#" { print; next } { exit }' "$self")
+own_header=$(text "$self" | awk 'substr($0, 1, 1) == "#" { print; next } { exit }')
 printf '%s\n' "$own_header" | grep -Fq -e 'coverage, not semantic agreement' \
 	|| err A25 "agents-lint.sh's own leading comment block no longer states what it does not prove"
 

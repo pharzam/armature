@@ -53,6 +53,7 @@ the record that something was removed rather than renumbered.
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
 | `good` | `agents-lint: OK`, exit 0 | a valid mini-root: every required heading in order, one H1 and no other heading-shaped line, three numbered gate steps under `**three** ordered steps`, three rule lines with derived anchors and source titles under `**three** numbered rules`, resolving links, a sources table, and every required literal |
+| `good-crlf` | `agents-lint: OK`, exit 0 | the same mini-root with **Windows line endings**, `docs/stub/demo-lint.sh` excepted — a shell script with carriage returns is not a shell script. `A6` and `A8` compare whole strings, so before the strip they failed while printing two values a reader cannot tell apart: `got "## What this repository is", want "## What this repository is"`. It exists because a mutation survived without it: replace `text()` with `cat` and every other case still passed. Endings pinned by [`.gitattributes`](../../../.gitattributes) and asserted by the runner |
 | `bad-no-agents` | FAIL, exit 1 | `AGENTS.md` deleted — the deliverable-absent case, and the same failure the real tree produced before this work landed (A1) |
 | `bad-no-claude` | FAIL, exit 1 | `CLAUDE.md` deleted; the Claude entry point is a deliverable, not an option (A2) |
 | `bad-no-gate-source` | FAIL, exit 1 | `docs/engineering-discipline.md` deleted, so the gate steps cannot be derived (A3) |

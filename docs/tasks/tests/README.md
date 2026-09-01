@@ -14,6 +14,7 @@ below and asserts the exit code.
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
 | `good` | `audit-record-lint: OK`, exit 0 | a small, valid record: 3 claims, matching arithmetic, every item covered, and two follow-ups in different lifecycle states — `T-8b4r` scheduled under **Next**, `T-4x2k` done and logged |
+| `good-crlf` | `audit-record-lint: OK`, exit 0 | the same case with **Windows line endings**. This linter compares whole strings everywhere — a verdict word, a claim ID, a task line — so before the carriage return was stripped it reported 37 failures on a record that violates nothing. It exists because a mutation survived without it: replace `text()` with `cat`, or delete the strip inside the two-pass block, and every other case still passed. Endings pinned by [`.gitattributes`](../../../.gitattributes) and asserted by the runner |
 | `bad-uncited-claim` | FAIL, exit 1 | a standing claim with no `file:line` (block 2 — issue #55 criterion 1) |
 | `bad-arithmetic` | FAIL, exit 1 | prose that says 3 of 3 stand over a table holding 1 Stands (block 3) |
 | `bad-dod-uncovered` | FAIL, exit 1 | a Definition of Done row whose `Covered by` cell names a document, not a test (block 7) |

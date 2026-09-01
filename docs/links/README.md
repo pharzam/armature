@@ -64,6 +64,18 @@ not this script.
   link in a fixture's own prose goes unseen.** Fixture *suite* READMEs are not
   skipped — they are prose a reader follows, and that is exactly where the one
   real defect was found.
+- **Most links into a path containing a space** — worth knowing before you write
+  such a path, not after. Three of the four destination forms cut at the first
+  space: `[a](Design Notes/target.md)` is read as a link to `Design` and fails
+  `L1`; a `%20` is never decoded and fails too; and the CommonMark angle form
+  `[a](<Design Notes/target.md>)` is **skipped in silence**, because what
+  survives the cut is `<Design`, which reads as a `‹…›` adopter placeholder.
+  Measured: a *correct* spaced link and a *dead* one produce byte-identical
+  output, so the check cannot tell those two apart. **The raw HTML form is the
+  exception and the one that works** — `<a href="Design Notes/target.md">` is
+  captured between its quotes, spaces and all, and resolves. So if your
+  repository has a `docs/Design Notes/` or an `RFC 001/`, links into it are
+  checked only when written that way. Limits 7 and 8 below carry the detail.
 
 ## The forms it reads
 
@@ -102,13 +114,13 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Seven limits, recorded rather than hidden
+## Eight limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
    ([#67](https://github.com/pharzam/armature/issues/67)) and the named function went
    with it. What survives there is the same rule written inline in the rule-anchor
-   derivation (`agents-lint.sh:498`). If one changes and the other does not, one
+   derivation (`agents-lint.sh:540`). If one changes and the other does not, one
    check resolves anchors the other rejects — **by hand, with no mechanism**. It also
    drops underscores, which GitHub keeps in an anchor: harmless while no heading in
    the tree uses one, and a defect the day one does.
@@ -137,22 +149,39 @@ change excluded the repository root from the walk.
    file does, the same way, to decide whether a record has an inbound link
    ([#73](https://github.com/pharzam/armature/issues/73)). It resolves nothing —
    that stays this linter's job — but the two must agree about what a link *is*.
-   They already disagreed once: this one strips a CommonMark angle destination and
-   that one did not, so `[a](<x.md>)` resolved here and read as no link there.
-   Fixed on sight, **by hand, with no mechanism** — the same shape as limit 1, and
-   the reason ADR-0007 recorded that one rather than leaving it to be found.
-7. **A trailing carriage return is not stripped, so every link in a CRLF file
-   reports as broken.** `[r]: target.md` in a file with Windows line endings
-   resolves as `target.md\r`, which no path matches, and `L1` fails on a link that
-   is perfectly good. Found while checking this extractor against `adr-lint`'s,
-   which does strip it ([#73](https://github.com/pharzam/armature/issues/73)) —
-   so the two disagree about a CRLF file, and this one is the side that is wrong.
-   No such file is in the tree, and the failure is loud rather than silent, which
-   is why it is recorded here rather than fixed in a change about something else.
-   **Prior art:** [#39](https://github.com/pharzam/armature/issues/39) recorded
-   this class for `backlog-lint` and `adr-lint` before this linter existed. It is
-   closed `NOT_PLANNED` and its items 2 and 3 are still live, so it is prior art
-   rather than an owner; `T-5h8n` holds the triage of every issue closed that way.
+   They have disagreed **twice**, and both were found by reading one against the
+   other rather than by any mechanism. This one strips a CommonMark angle
+   destination and that one did not, so `[a](<x.md>)` resolved here and read as no
+   link there. Then the reverse: that one stripped a trailing carriage return and
+   this one did not, so every reference definition in a CRLF file reported as
+   broken here and resolved there
+   ([#76](https://github.com/pharzam/armature/issues/76)). Both are fixed, both
+   **by hand, with no mechanism** — the same shape as limit 1, and the reason
+   ADR-0007 recorded that one rather than leaving it to be found.
+7. **Three of the four destination forms drop a link to a path containing a
+   space, and the CommonMark angle form does it *silently*.** The `](…)`,
+   reference-definition and angle branches cut a destination at the first space
+   or tab, so `[a](<dir with space/target.md>)` — a legal link — is cut to
+   `<dir`, which `is_placeholder()` then reads as an adopter `<…>` marker and
+   skips. The **raw HTML** branch is the exception: `href="[^"]*"` captures the
+   whole quoted value, so `<a href="dir with space/target.md">` resolves
+   correctly. Measured, not assumed. No error, nothing resolved, and the reader is not told — the direction a
+   bug should never point. Limit 3 is the only other silent one, and it is silent
+   *locally*: CI is a case-sensitive filesystem and rejects there. This one is
+   silent everywhere.
+   An unbracketed `[c](dir with space/target.md)` fails `L1` on `dir`, which is
+   *correct* — CommonMark stops at the space too. Reachable since
+   [#76](https://github.com/pharzam/armature/issues/76) put two spaced fixture
+   directories in the tree; no document links into one today, so nothing is
+   currently missed. Recorded rather than fixed, by decision on that issue.
+8. **A percent-encoded space is not decoded, so a correct link reports as broken.**
+   `[b](dir%20with%20space/target.md)` is what a forge writes and what GitHub
+   resolves; this linter looks for a file literally named `dir%20with%20space`,
+   does not find one, and fails `L1`. Loud rather than silent, and the mirror of
+   limit 7. Between them, exactly **one** spelling of a spaced path both resolves
+   here and works on the forge: the raw HTML anchor. An earlier draft of this
+   entry said none did, which was wrong — it reasoned from the three Markdown
+   branches and never measured the fourth.
 
 ## The `EXPECT` convention
 
@@ -171,7 +200,9 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
 | `good` | `link-lint: OK`, exit 0 | every rule and every form in its passing shape — inline, nested, reference, HTML, angle destination, a fragment, a same-file fragment, a directory, the double-hyphen slug, an external link, both placeholder shapes, and a link-shaped example in a code span |
+| `good-crlf` | `link-lint: OK`, exit 0 | the same file with **Windows line endings**. Its three reference definitions — a path, a path with a fragment, and a same-file fragment — each failed `L1`, `L2` and `L3` before the carriage return was stripped; the inline, angle and raw-HTML forms beside them never did, and are there to show where the boundary was. Its endings are pinned by [`.gitattributes`](../../.gitattributes); without that pin, anyone whose git is set to `core.autocrlf=input` or `true` strips the returns the next time they stage it — the conversion happens on the way *into* the blob, not on checkout — and the case then passes while testing nothing. Git normally skips that conversion for a file whose blob already holds returns, but `eol=crlf` keeps these blobs as line feeds on purpose, so that guard does not cover them |
 | `bad-dead-path` | FAIL `L1`, exit 1 | a link to a file that does not exist |
+| `bad-crlf-expect` | FAIL `L1`, exit 1 | the same, on a case that is **CRLF throughout — its `EXPECT` file included**. That is what gives [`expect-check.sh`](tests/expect-check.sh)'s own carriage-return strip a case: it reads `EXPECT` and demands that id in the linter's output, and before the strip the id was `L1` plus a return, which matches no line — so every case in this suite failed there while the linter beside it was right. The case is *named* `crlf` on purpose, which is what puts it inside the runner's case-name check |
 | `bad-dead-fragment` | FAIL `L2`, exit 1 | a real file, an anchor it does not have |
 | `bad-same-file-fragment` | FAIL `L3`, exit 1 | a bare `#anchor` this file does not have |
 | `bad-escapes-root` | FAIL `L4`, exit 1 | a target that climbs out of the tree |
