@@ -37,16 +37,24 @@ note() { printf 'WARN  %s\n' "$*" >&2; }
 
 [ -d "$adr_dir" ] || { printf 'FAIL  ADR directory not found: %s\n' "$adr_dir" >&2; exit 1; }
 
-# Canonicalise the directory argument before anything reads it. It is used BOTH
-# as a path -- handed to find and dirname -- and as a string PREFIX compared
-# against what find prints, and those two only agree if it is spelled one way.
-# Four spellings of the same directory broke that comparison, and each one made
-# the ADR directory fail to exclude ITSELF, so its own index README entered the
-# search space and linked every record: a trailing slash made the prefix end in
-# //, a bare relative name left find printing a ./ the prefix did not carry, "."
-# made it prefix everything, and a symlink named a path find never prints. All
-# four are silent -- the check reports OK on a tree full of orphans.
-adr_dir=$(CDPATH= cd -- "$adr_dir" && pwd)
+# A canonical form of the directory, used ONLY where the path is compared as a
+# STRING. $adr_dir itself is left exactly as the caller spelled it, because the
+# record list further down is space-joined and looped unquoted (see the note at
+# section 1): forcing it absolute would push the operator checkout prefix through
+# that loop and break every run at a path containing a space, including the
+# fixture suite, which passes relative paths.
+#
+# The comparison needs one spelling because $adr_dir is used both as a path --
+# handed to find and dirname -- and as a prefix matched against what find prints.
+# Five spellings of one directory broke that, and each made the ADR directory
+# fail to exclude ITSELF, so its own index README entered the search space and
+# linked every record: a trailing slash made the prefix end in //, a bare
+# relative name left find printing a ./ the prefix did not carry, "." prefixed
+# everything, a path holding .. never matched, and a SYMLINKED directory named a
+# path find never prints. All five are silent -- the check reports OK on a tree
+# full of orphans. -P resolves the symlink; a logical cd would keep it and leave
+# that fifth spelling broken.
+adr_dir_canon=$(CDPATH= cd -P -- "$adr_dir" && pwd -P)
 [ -f "$readme" ]  || err "missing $readme (the ADR index)"
 
 nl='
@@ -224,7 +232,7 @@ links_to_record() {
 # shorthand is short and generic enough to appear in any prose about ADRs, so the
 # check was quietest exactly where it was needed.
 collect_search_space() {
-	_docs=$(dirname "$adr_dir")
+	_docs=$(dirname "$adr_dir_canon")
 	_root=$(dirname "$_docs")
 
 	# Four things below are load-bearing, and each one is the fix for a defect
@@ -250,11 +258,11 @@ collect_search_space() {
 	# 4. The ADR directory is excluded by a LITERAL prefix comparison, because a
 	#    directory argument is an operator path and can hold a regex
 	#    metacharacter: a checkout under x[y once excluded nothing. The
-	#    comparison is safe only because the argument is canonicalised at the
-	#    head of this script; without that, four spellings of the same directory
-	#    each made it exclude nothing, silently.
+	#    comparison is safe only because it runs against the canonical form
+	#    built at the head of this script; without that, five spellings of the
+	#    same directory each made it exclude nothing, silently.
 	_files=$(find "$_docs" -type f -name '*.md' 2>/dev/null \
-		| ADR_LINT_DOCS="$_docs/" ADR_LINT_SELF="$adr_dir/" awk '
+		| ADR_LINT_DOCS="$_docs/" ADR_LINT_SELF="$adr_dir_canon/" awk '
 			BEGIN { docs = ENVIRON["ADR_LINT_DOCS"]; self = ENVIRON["ADR_LINT_SELF"] }
 			{
 				if (index($0, self) == 1) next
@@ -308,7 +316,8 @@ is_cross_linked() {
 # a repository that violates nothing. prd-lint.sh carries the identical
 # construct. It fails loud rather than silent, and no fixture can reach it: the
 # discipline runner hands the linters relative paths, which never carry the
-# spaced prefix. Recorded in the tree because the issue that found it is closed.
+# spaced prefix, and this script keeps $adr_dir as spelled so that stays true.
+# Recorded in the tree because the issue that found it is closed.
 adr_files=""
 for path in "$adr_dir"/*.md; do
 	[ -e "$path" ] || continue
