@@ -229,10 +229,22 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 # core.autocrlf=true, git's default there -- they compared against a character
 # that does not print. A5 and A7 do something else: they COUNT. A carriage
 # return is not a field separator, so every blank line scored as one word, and
-# A7's budget read 1428 against the 1395 it reads on a line-feed tree. That one
-# was under the 1500 ceiling either way, so it changed no verdict -- but it is
-# the case where the strip does more than fix a comparison, and a tighter budget
-# would have made it a false failure. A8 said the comparison half best:
+# A7's budget read 1428 against the 1395 it reads on a line-feed tree. Under the
+# 1500 ceiling either way, so no verdict moved -- but it is the case where the
+# strip does more than fix a comparison, and a tighter budget would have made it
+# a false failure.
+#
+# NO FIXTURE CATCHES THAT ONE, and it is worth saying why rather than leaving it
+# to be found. A mutation sweep over all 31 text() sites kills 8 of them on the
+# crlf fixtures; of the survivors, the word count at A7 is the ONLY one whose
+# removal changes a number this script prints. Catching it needs a fixture whose
+# AGENTS.md sits just under MAX_WORDS on line feeds and just over it with the
+# carriage returns counted -- a file sized to a pre-registered constant, which is
+# the fitted parameter docs/guardrails.md names and the note beside MAX_WORDS
+# forbids. What would catch it honestly is an assertion on OUTPUT rather than on
+# the exit code, which is `T-9c5t`. Recorded, not mechanised.
+#
+# A8 said the comparison half best:
 #
 #   heading 1: got "## What this repository is", want "## What this repository is"
 #

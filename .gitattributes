@@ -37,8 +37,10 @@
 # WHAT THIS RULE DOES, AND WHAT THE LINTERS DO. This rule only makes the scripts
 # RUNNABLE. Every ordinary Markdown file in the tree still arrives with carriage
 # returns, and reading those correctly is each linter's own job -- done on this
-# branch for all six, plus expect-check.sh. Measured on a clone, counting the
-# seven commands AGENTS.md lists under "Checks you can run": 7 of 7 green, where
+# branch for all six, plus expect-check.sh. Measured on a clone over those seven
+# scripts -- NOT the seven commands AGENTS.md lists under "Checks you can run",
+# which are the same six linters plus `git diff --check` rather than
+# expect-check.sh; an earlier draft here named the wrong seven: 7 of 7 green, where
 # before this branch it was 0 of 7 (nothing ran at all) and at 7f92eeb, the
 # commit that added this rule, it was 3 of 7. Naming the commit rather than
 # saying "after the eol rule alone" because 7f92eeb already carried two of the
@@ -90,11 +92,17 @@ docs/adr/tests/good-crlf/**    eol=crlf
 docs/links/tests/good-crlf/**  eol=crlf
 docs/agents/tests/good-crlf/** eol=crlf
 docs/tasks/tests/good-crlf/**  eol=crlf
-# One EXPECT file, so expect-check.sh's own carriage-return strip has a case.
-# It reads this file and compares the id against linter output; without the
-# strip the id is `L1<CR>`, which matches nothing, and every case fails while
-# the linter beside it is right.
-docs/links/tests/bad-dead-path/EXPECT eol=crlf
+# A bad case that is CRLF throughout, EXPECT file included, so expect-check.sh's
+# own carriage-return strip has a case. It reads EXPECT and demands that id in
+# the linter's output; without the strip the id is `L1` plus a return, which
+# matches nothing, and every case in that suite fails while the linter beside it
+# is right.
+#
+# It is a case NAMED crlf on purpose. Pinning one file inside a case named
+# something else -- bad-dead-path, as a draft did -- put it outside the runner's
+# case-name check, so deleting this line was silent. The name is what makes the
+# claim checkable without reading this file.
+docs/links/tests/bad-crlf-expect/** eol=crlf
 
 # 2 — executable text. Line feeds, or it will not run.
 #

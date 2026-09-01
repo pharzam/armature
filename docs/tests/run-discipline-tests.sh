@@ -104,52 +104,110 @@ suite_available() {
 	return 1
 }
 
-# check_crlf_fixture NAME LABEL PATH — a case whose name says `crlf` must really
+# check_crlf_pins — every path .gitattributes pins with `eol=crlf` must really
 # hold a carriage return.
 #
-# The two CRLF cases are tests only while they keep their line endings, and
-# .gitattributes pins them with `eol=crlf`. That pin was documented in three
-# places and enforced by NOTHING: strip the returns and both cases degrade into
-# duplicates of `good`, every linter still exits 0, and this runner still
-# reported `101 passed, 0 failed`. A green with no assertion behind it — the
-# exact defect the fixtures exist to close, in the one part of the change that
-# was not guarded against it.
+# Those files are tests only while they keep their line endings. The pin was
+# once documented in three places and enforced by NOTHING: strip the returns and
+# the CRLF cases degrade into duplicates of their `good` twins, every linter
+# still exits 0, and this runner still reported `101 passed, 0 failed`. A green
+# with no assertion behind it — the exact defect those fixtures exist to close,
+# in the part of the change nothing was guarding.
 #
-# Two realistic ways to lose it, neither of them careless: someone edits the
-# `eol=crlf` lines out, or an adopter copies a fixture directory WITHOUT the
-# repository's .gitattributes — a normal way to copy a kit that AGENTS.md says
-# is meant to be copied.
+# Two realistic ways to lose it, neither careless: someone edits an `eol=crlf`
+# line out, or an adopter copies a fixture directory WITHOUT the repository's
+# .gitattributes — a normal way to copy a kit AGENTS.md says is meant to be
+# copied.
 #
-# Keyed on the case NAME rather than a list of paths, so a third CRLF case added
-# later is covered the day it is named, with no second place to remember.
-check_crlf_fixture() {
-	case $1 in
-	*crlf*) : ;;
-	*) return ;;
-	esac
-	# PER FILE, not per case. Summing carriage returns across the whole
-	# directory passed as long as ONE file kept them, so a case could lose the
-	# endings on every file but the first and stay green -- and in
-	# adr-lint/good-crlf the second record is the one that reaches the date
-	# check's other branch, so half that assertion would go silent. A shell
-	# script inside such a case is skipped: .gitattributes pins those to line
-	# feeds on purpose, because a .sh with carriage returns will not run.
-	_root=$3
-	_bare=$(find "$_root" -type f | while IFS= read -r _f; do
-		# The pattern is written `(*.sh)`, with the opening parenthesis, because
-		# this case sits inside a `$( )`: without it the pattern's closing
-		# parenthesis is read as the end of the command substitution, and the
-		# script does not parse.
+# TWO CHECKS, because either one alone is silent on a real way to lose the pin.
+#
+#   check_crlf_cases  keys on the CASE NAME: a directory named `*crlf*` must hold
+#                     carriage returns. Independent of .gitattributes, so it is
+#                     the one that survives the pin being DELETED.
+#   check_crlf_pins   keys on the PINS themselves: every path .gitattributes
+#                     names eol=crlf must hold carriage returns. Covers what the
+#                     convention cannot see, and covers a pin added later on the
+#                     day it is written.
+#
+# Deriving from .gitattributes alone looked cleaner and was wrong in the way that
+# matters: delete the line and the check that would have complained is deleted
+# with it. Measured -- with only the derived check, dropping a pin and stripping
+# the files scored `103 passed, 0 failed`, which is the exact silence this whole
+# section exists to end. The convention check cannot be dropped that way, because
+# the case's NAME is the claim.
+#
+# PER FILE, not per directory. Summing across a directory passed as long as ONE
+# file kept its returns, so a case could lose them on every file but the first
+# and stay green — and in adr-lint/good-crlf the second record is the one that
+# reaches the date check's other branch, so half that assertion would go silent.
+#
+# A `.sh` under a pinned directory is skipped: the executable rules pin those to
+# line feeds on purpose, because a shell script with carriage returns will not
+# run, and that ordering is deliberate (see .gitattributes).
+# bare_files PATH… — the paths under here holding no carriage return, one per
+# line. A `.sh` is skipped: the executable rules pin those to line feeds on
+# purpose, because a shell script with carriage returns will not run.
+#
+# The `(*.sh)` pattern is written with its opening parenthesis because this runs
+# inside a `$( )`, where a bare `*.sh)` closes the substitution and the script
+# stops parsing.
+bare_files() {
+	find "$@" -type f 2>/dev/null | while IFS= read -r _f; do
 		case $_f in
 		(*.sh) continue ;;
 		esac
 		tr -dc '\r' < "$_f" | grep -q '.' || printf '%s\n' "$_f"
-	done)
-	[ -n "$_bare" ] || return
-	printf '%s\n' "$_bare" | while IFS= read -r _b; do
-		printf 'FAIL  %s: %s holds no carriage return, and this case name says crlf — its line endings ARE the assertion; check .gitattributes still pins it with eol=crlf\n' "$2" "$_b"
 	done
-	fail=$((fail + $(printf '%s\n' "$_bare" | awk 'END { print NR }')))
+}
+
+# check_crlf_cases — a fixture case whose NAME says crlf must hold carriage
+# returns, whatever .gitattributes does or does not say.
+check_crlf_cases() {
+	_seen=0
+	for _d in docs/*/tests/*crlf*/; do
+		[ -d "$_d" ] || continue
+		_seen=$((_seen + 1))
+		_bad=$(bare_files "$_d")
+		[ -n "$_bad" ] || continue
+		printf '%s\n' "$_bad" | while IFS= read -r _b; do
+			printf 'FAIL  crlf case: %s holds no carriage return, and its case name says crlf — its line endings ARE the assertion; check .gitattributes still pins it eol=crlf\n' "$_b"
+		done
+		fail=$((fail + $(printf '%s\n' "$_bad" | awk 'END { print NR }')))
+	done
+	if [ "$_seen" -eq 0 ]; then
+		fail=$((fail + 1))
+		printf 'FAIL  crlf case: no fixture case named crlf was found — the line-ending coverage is gone, not passing\n'
+	fi
+}
+
+check_crlf_pins() {
+	[ -f .gitattributes ] || return
+	_pins=$(awk '$0 !~ /^#/ && $0 ~ /eol=crlf/ { print $1 }' .gitattributes)
+	if [ -z "$_pins" ]; then
+		fail=$((fail + 1))
+		printf 'FAIL  crlf pins: .gitattributes names no eol=crlf path — the CRLF fixtures are unpinned, so they are duplicates of their good twins\n'
+		return
+	fi
+	# Resolve each pattern to real paths: `dir/**` is the directory, anything
+	# else is taken as a single file. A pattern matching nothing is a defect in
+	# the pin, not an absence of work, so it is counted and reported below.
+	_paths=$(printf '%s\n' "$_pins" | while IFS= read -r _p; do
+		case $_p in
+		(*/'**') _p=${_p%/'**'} ;;
+		esac
+		[ -e "$_p" ] && printf '%s\n' "$_p"
+	done)
+	if [ -z "$_paths" ]; then
+		fail=$((fail + 1))
+		printf 'FAIL  crlf pins: .gitattributes pins paths that match no file — this check proved nothing\n'
+		return
+	fi
+	_bad=$(printf '%s\n' "$_paths" | while IFS= read -r _p; do bare_files "$_p"; done)
+	[ -n "$_bad" ] || return
+	printf '%s\n' "$_bad" | while IFS= read -r _b; do
+		printf 'FAIL  crlf pins: %s holds no carriage return, and .gitattributes pins it eol=crlf — its line endings ARE the assertion\n' "$_b"
+	done
+	fail=$((fail + $(printf '%s\n' "$_bad" | awk 'END { print NR }')))
 }
 
 # run_dir_suite LINTER FIXTURE_ROOT LABEL — each case is a directory under the root.
@@ -159,7 +217,6 @@ run_dir_suite() {
 	for case_dir in "$2"/*/; do
 		[ -d "$case_dir" ] || continue
 		name=$(basename "$case_dir")
-		check_crlf_fixture "$name" "$3/$name" "$case_dir"
 		assert_case "$name" "$3/$name" sh "$1" "$case_dir"
 	done
 	check_floor "$3"
@@ -184,6 +241,12 @@ run_file_suite .githooks/commit-msg    .githooks/tests/commit-msg  .txt  commit-
 run_dir_suite  docs/tasks/audit-record-lint.sh docs/tasks/tests    audit-record-lint
 run_dir_suite  docs/agents/agents-lint.sh      docs/agents/tests   agents-lint
 run_dir_suite  docs/links/link-lint.sh        docs/links/tests    link-lint
+
+# Repository-wide, so they run once rather than per suite. Both, for the reason
+# written above them: the case-name check survives a deleted pin, the pin check
+# sees what no naming convention can.
+check_crlf_cases
+check_crlf_pins
 
 # Global floor: if nothing ran at all, the runner is misconfigured (wrong working
 # directory, an invocation via a symlink, or a kit with every suite deleted) — a
