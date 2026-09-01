@@ -170,7 +170,15 @@ docs/links/tests/bad-crlf-expect/** eol=crlf
 # git's binary auto-detection there, so a binary helper dropped into
 # .githooks/tests/ later would be converted rather than skipped. These two forms
 # reach every executable the kit ships -- the three hooks, and provenance-check.sh
-# one level down -- without claiming anything about a file that is not one.
+# one level down.
+#
+# `.githooks/*` does still catch one file that is not an executable:
+# .githooks/README.md resolves `text eol=lf`. Harmless, since it is text, and the
+# narrowing was never about that -- it was about the SUBDIRECTORY, where a binary
+# fixture could plausibly land. Verified: under `.githooks/**` a binary dropped in
+# .githooks/tests/ gets an explicit `text`; under these two forms it stays
+# `unspecified`. Stated because a draft here claimed the forms touch nothing that
+# is not an executable, and that is one file too strong.
 docs/*/*-lint.sh                   text eol=lf
 docs/tests/run-discipline-tests.sh text eol=lf
 docs/*/tests/**/*.sh               text eol=lf

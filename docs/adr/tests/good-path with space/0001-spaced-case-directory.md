@@ -25,8 +25,9 @@ the one reason it exists to catch.
 The exit code alone proves the fix. A split list never reaches this file: the
 one path becomes the three words `good-path`, `with` and the filename, so the
 numbering test errors with `[: good: integer expression expected`, awk cannot
-open `…/good-path`, and five sections are reported missing from a fragment that
-is not a file — none of it true of the record you are reading.
+open `…/good-path`, and five things are reported missing from a fragment that is
+not a file — a `Date:` line and four sections, fifteen failures across the three
+fragments — none of it true of the record you are reading.
 
 It does **not** report a duplicate ADR number, although an early draft of this
 note said so. That symptom needs several records whose first four characters

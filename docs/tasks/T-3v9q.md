@@ -288,7 +288,7 @@ One piped fixture kills it.
 | K6 | No agent entry file — `git ls-files` matches no `AGENTS.md`, `CLAUDE.md`, `.cursorrules` or Copilot file. The kit's own pattern is to ship tool-specific files inert under `docs/templates/` (`docs/templates/README.md:7`), so that is where one belongs. | Stands | low |
 | K7 | No numeric quality bar — no threshold is written down anywhere. At `b684a96` a repository search for `complexity`, `cyclomatic`, `mutation`, `mutant` and `CRAP` found nothing at all; the only hits today are this record, `backlog.md`, and the `CRAP` glossary row at `glossary.md:80` that this task added, none of which sets a bar. **But the coverage placeholder does exist** — `issue-workflow.md:171` reserves `‹add a coverage gate›` in the enforcement table. Report B's premise for its coverage recommendation is wrong. | Corrected | low |
 | K8 | "Substantive task" is undefined at 3 sites — `README.md:36`, `engineering-discipline.md:11` and `:93` — and `glossary.md` has no row for it. Adoption markers number **350** outside this record, not 297, and the one unclosed `‹` is at `README.md:92`. | Corrected | low |
-| K9 | The reports disagree on scale. Both are right at `b684a96`: 76 markdown files before `T-7k3m.md` landed at `70611c0`, 77 after; `git ls-files "*-lint.sh"` returned 3 files, while `run-discipline-tests.sh:303-309` dispatched 4 discipline linters, counting the `.githooks/commit-msg` hook. Neither stated its counting rule, and neither named a commit. | Stands | none |
+| K9 | The reports disagree on scale. Both are right at `b684a96`: 76 markdown files before `T-7k3m.md` landed at `70611c0`, 77 after; `git ls-files "*-lint.sh"` returned 3 files, while the dispatch block now at `run-discipline-tests.sh:303-309` dispatched 4 discipline linters, counting the `.githooks/commit-msg` hook. (That block holds seven lines today; the 4 is the audit-day figure this row is scoped to.) Neither stated its counting rule, and neither named a commit. | Stands | none |
 
 ## What neither report found
 
@@ -397,8 +397,9 @@ draft of this bullet did, is the same loose counting the bullet objects to.
 **X9 — report A's cost estimate for its linters is false.** A ranks "ship the two
 linters" as its first action, "most value for the least work", on the premise that
 fixtures are "picked up by `run-discipline-tests.sh` with no change to the runner".
-The runner has no discovery loop: `run-discipline-tests.sh:303-309` hardcodes four
-dispatch lines. Every new suite needs a new line, and neither proposed linter fits
+The runner has no discovery loop: `run-discipline-tests.sh:303-309` hardcodes its
+dispatch lines — four on the audit day, seven now, one per suite added since.
+Every new suite needs a new line, and neither proposed linter fits
 either existing shape — a glossary or link check is repo-wide, not
 one-fixture-per-directory or one-fixture-per-file, so it needs a third helper too.
 Report B's R1 gets this right and budgets for a new dispatch. A's ranking rests on
