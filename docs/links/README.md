@@ -102,7 +102,7 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Seven limits, recorded rather than hidden
+## Six limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
@@ -137,22 +137,15 @@ change excluded the repository root from the walk.
    file does, the same way, to decide whether a record has an inbound link
    ([#73](https://github.com/pharzam/armature/issues/73)). It resolves nothing —
    that stays this linter's job — but the two must agree about what a link *is*.
-   They already disagreed once: this one strips a CommonMark angle destination and
-   that one did not, so `[a](<x.md>)` resolved here and read as no link there.
-   Fixed on sight, **by hand, with no mechanism** — the same shape as limit 1, and
-   the reason ADR-0007 recorded that one rather than leaving it to be found.
-7. **A trailing carriage return is not stripped, so every link in a CRLF file
-   reports as broken.** `[r]: target.md` in a file with Windows line endings
-   resolves as `target.md\r`, which no path matches, and `L1` fails on a link that
-   is perfectly good. Found while checking this extractor against `adr-lint`'s,
-   which does strip it ([#73](https://github.com/pharzam/armature/issues/73)) —
-   so the two disagree about a CRLF file, and this one is the side that is wrong.
-   No such file is in the tree, and the failure is loud rather than silent, which
-   is why it is recorded here rather than fixed in a change about something else.
-   **Prior art:** [#39](https://github.com/pharzam/armature/issues/39) recorded
-   this class for `backlog-lint` and `adr-lint` before this linter existed. It is
-   closed `NOT_PLANNED` and its items 2 and 3 are still live, so it is prior art
-   rather than an owner; `T-5h8n` holds the triage of every issue closed that way.
+   They have disagreed **twice**, and both were found by reading one against the
+   other rather than by any mechanism. This one strips a CommonMark angle
+   destination and that one did not, so `[a](<x.md>)` resolved here and read as no
+   link there. Then the reverse: that one stripped a trailing carriage return and
+   this one did not, so every reference definition in a CRLF file reported as
+   broken here and resolved there
+   ([#76](https://github.com/pharzam/armature/issues/76)). Both are fixed, both
+   **by hand, with no mechanism** — the same shape as limit 1, and the reason
+   ADR-0007 recorded that one rather than leaving it to be found.
 
 ## The `EXPECT` convention
 
@@ -171,6 +164,7 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
 | `good` | `link-lint: OK`, exit 0 | every rule and every form in its passing shape — inline, nested, reference, HTML, angle destination, a fragment, a same-file fragment, a directory, the double-hyphen slug, an external link, both placeholder shapes, and a link-shaped example in a code span |
+| `good-crlf` | `link-lint: OK`, exit 0 | the same file with **Windows line endings**. Its three reference definitions — a path, a path with a fragment, and a same-file fragment — each failed `L1`, `L2` and `L3` before the carriage return was stripped; the inline, angle and raw-HTML forms beside them never did, and are there to show where the boundary was. Its endings are pinned by [`.gitattributes`](../../.gitattributes); without that pin a checkout under `core.autocrlf=input` rewrites the file and the case passes while testing nothing |
 | `bad-dead-path` | FAIL `L1`, exit 1 | a link to a file that does not exist |
 | `bad-dead-fragment` | FAIL `L2`, exit 1 | a real file, an anchor it does not have |
 | `bad-same-file-fragment` | FAIL `L3`, exit 1 | a bare `#anchor` this file does not have |

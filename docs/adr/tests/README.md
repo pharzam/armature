@@ -13,6 +13,8 @@ drives every case below and asserts the exit code.
 | ---- | -------- | --------- |
 | `good` | `adr-lint: OK`, exit 0 | two contiguous, well-formed ADRs with an index |
 | `good-mention-not-link` | exit 0 — all the runner checks | a record this file names three ways and links nowhere. By eye it draws the no-orphan `WARN`; the runner cannot see that, so the case pins the exit code and no more |
+| `good-path with space` | `adr-lint: OK`, exit 0 | a **space in the case directory's own name**. The record list was a space-joined string looped over unquoted, so one path became two words and the run reported a duplicate number, an unreadable file and five missing sections — none of them true ([#76](https://github.com/pharzam/armature/issues/76)) |
+| `good-crlf` | `adr-lint: OK`, exit 0 | records with **Windows line endings**. The `Date:` and `## Status` checks compare a whole string, so a trailing carriage return failed both — reporting `got 'YYYY-MM-DD'` for a record whose date *is* the placeholder, because the character does not print. Two records, to reach both branches of the date check. Endings pinned by [`.gitattributes`](../../../.gitattributes) |
 | `bad-filename` | FAIL, exit 1 | a filename that is not `NNNN-kebab-case.md` |
 | `bad-numbering` | FAIL, exit 1 | a gap in the sequence (0001 then 0003) |
 | `bad-status` | FAIL, exit 1 | a `## Status` value outside the allowed set |
