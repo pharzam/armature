@@ -64,6 +64,16 @@ not this script.
   link in a fixture's own prose goes unseen.** Fixture *suite* READMEs are not
   skipped — they are prose a reader follows, and that is exactly where the one
   real defect was found.
+- **Any link into a path containing a space** — and this one is worth knowing
+  before you write such a path, not after. A destination is cut at the first
+  space, so `[a](Design Notes/target.md)` is read as a link to `Design` and
+  fails `L1`; a `%20` is never decoded and fails too; and the CommonMark angle
+  form `[a](<Design Notes/target.md>)` is **skipped in silence**, because what
+  survives the cut is `<Design`, which reads as a `‹…›` adopter placeholder.
+  Measured: a *correct* spaced link and a *dead* one produce byte-identical
+  output, so the check cannot tell them apart. If your repository has a
+  `docs/Design Notes/` or an `RFC 001/`, links into it are not being checked.
+  Limits 7 and 8 below carry the detail.
 
 ## The forms it reads
 
