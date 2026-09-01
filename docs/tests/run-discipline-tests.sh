@@ -104,6 +104,36 @@ suite_available() {
 	return 1
 }
 
+# check_crlf_fixture NAME LABEL PATH — a case whose name says `crlf` must really
+# hold a carriage return.
+#
+# The two CRLF cases are tests only while they keep their line endings, and
+# .gitattributes pins them with `eol=crlf`. That pin was documented in three
+# places and enforced by NOTHING: strip the returns and both cases degrade into
+# duplicates of `good`, every linter still exits 0, and this runner still
+# reported `101 passed, 0 failed`. A green with no assertion behind it — the
+# exact defect the fixtures exist to close, in the one part of the change that
+# was not guarded against it.
+#
+# Two realistic ways to lose it, neither of them careless: someone edits the
+# `eol=crlf` lines out, or an adopter copies a fixture directory WITHOUT the
+# repository's .gitattributes — a normal way to copy a kit that AGENTS.md says
+# is meant to be copied.
+#
+# Keyed on the case NAME rather than a list of paths, so a third CRLF case added
+# later is covered the day it is named, with no second place to remember.
+check_crlf_fixture() {
+	case $1 in
+	*crlf*) : ;;
+	*) return ;;
+	esac
+	_cr=$(find "$3" -type f -exec cat {} + 2>/dev/null | tr -dc '\r' | wc -c | tr -d ' 	')
+	if [ "${_cr:-0}" -eq 0 ]; then
+		fail=$((fail + 1))
+		printf 'FAIL  %s: the case name says crlf and it holds no carriage return — its line endings ARE the assertion; check .gitattributes still pins it with eol=crlf\n' "$2"
+	fi
+}
+
 # run_dir_suite LINTER FIXTURE_ROOT LABEL — each case is a directory under the root.
 run_dir_suite() {
 	suite_available "$1" "$2" "$3" || return 0
@@ -111,6 +141,7 @@ run_dir_suite() {
 	for case_dir in "$2"/*/; do
 		[ -d "$case_dir" ] || continue
 		name=$(basename "$case_dir")
+		check_crlf_fixture "$name" "$3/$name" "$case_dir"
 		assert_case "$name" "$3/$name" sh "$1" "$case_dir"
 	done
 	check_floor "$3"

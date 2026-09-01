@@ -13,11 +13,17 @@
 #     docs/adr/adr-lint.sh: line 27: : command not found
 #     docs/adr/adr-lint.sh: line 28: set: -: invalid option
 #
-# Measured on a real clone: ELEVEN of eleven executables the kit ships would not
-# run -- all six linters, the discipline-test runner, the PR link check, the
-# EXPECT check, and all three git hooks, including the pre-commit hook that is
-# supposed to enforce the gate. The whole quality gate, silent, on the platform
-# where the kit is most likely to be adopted cold.
+# Measured on a real clone: TWELVE of twelve executables the kit ships would not
+# run. Six linters (adr, prd, link, agents, audit-record, pr-link), the
+# discipline-test runner, the two checks run by hand (expect-check,
+# provenance-check), and all three git hooks -- including the pre-commit hook
+# that is supposed to enforce the gate. The whole quality gate, silent, on the
+# platform where the kit is most likely to be adopted cold.
+#
+# An earlier count here said eleven. It both omitted provenance-check.sh and
+# named pr-link-lint twice -- once inside "all six linters" and again as "the
+# PR link check". The rule always covered all twelve; only the arithmetic was
+# wrong, which is its own small lesson about counting by prose.
 #
 # This is why the CRLF fixtures below could not have been exercised by the
 # adopter they were written for: that adopter never reached the linter.
@@ -72,5 +78,16 @@ docs/**/*.sh                  text eol=lf
 .githooks/**                  text eol=lf
 
 # 2 — the two fixtures whose carriage returns ARE the test.
+#
+# If you ever need to pin a path holding a SPACE -- this tree ships two, under
+# docs/adr/tests/ and docs/prd/tests/ -- note that gitattributes cannot express
+# one. A literal space ends the pattern, so `good-path with space/**` is read as
+# the pattern `good-path` plus the attribute names `with` and `space/**`, and
+# git reports `is not a valid attribute name` against a token that looks
+# unrelated while the path itself silently resolves `unspecified`. Backslash
+# escaping and a bracket class both fail the same way. Only the `?` wildcard
+# works: `good-path?with?space/**`. Neither spaced fixture needs pinning today
+# -- their endings are not the assertion -- so nothing here does this; it is
+# written down because the obvious attempt fails quietly.
 docs/adr/tests/good-crlf/**   eol=crlf
 docs/links/tests/good-crlf/** eol=crlf
