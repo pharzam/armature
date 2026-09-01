@@ -19,10 +19,13 @@ drives every case below and asserts the exit code.
 | `bad-missing-section` | FAIL, exit 1 | an ADR missing a required `## Decision` section |
 | `bad-no-index` | FAIL, exit 1 | a valid ADR the case `README.md` does not list |
 
-Each `bad-*` case is otherwise valid, so it fails for its own single reason. A
-`good`-case ADR draws a non-fatal `WARN` about a missing inbound cross-link (a
-fixture is not linked from a real plan); the run still exits 0, as the runner
-asserts.
+Each `bad-*` case is otherwise valid, so it fails for its own single reason.
+
+**Every** case draws the non-fatal no-orphan `WARN`, one per record — a fixture
+record is not linked from a real plan, and since the check began skipping fixture
+directories it cannot be linked from a neighbouring case either. Exit codes are
+unaffected, which is all the runner asserts, so a `bad-*` case still fails for its
+own single reason and a `good*` case still passes.
 
 Run one: `sh docs/adr/adr-lint.sh docs/adr/tests/good`
 

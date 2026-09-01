@@ -52,16 +52,32 @@ nl='
 # on a real file is link-lint's single job (ADR-0007), and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
-# Three limits follow from matching rather than resolving, and are stated rather
-# than left to be found. A link to a DIFFERENT file that happens to share the
-# record's filename counts, and a reference DEFINITION with no use anywhere
-# counts although it renders as nothing (link-lint's L6 catches only the
-# reverse); both need a file deliberately shaped to defeat the check. The third
-# is not contrived at all: the two checks compose only for an IN-TREE target.
-# link-lint skips http, https and mailto by design, because resolving them needs
-# the network, so a record whose only inbound link is an absolute forge URL reads
-# as cross-linked here and is resolved by nothing -- the URL can name a file that
-# does not exist and both checks stay green.
+# FIVE LIMITS, stated rather than left to be found. This is the full list; the
+# README states only the one an adopter has to know.
+#
+#   1. The two checks compose only for an IN-TREE target. link-lint skips http,
+#      https and mailto by design, because resolving them needs the network, so a
+#      record whose only inbound link is an absolute forge URL reads as
+#      cross-linked here and is resolved by nothing -- that URL can name a file
+#      that does not exist and both checks stay green. This is the one that is
+#      not contrived, and the one the README carries.
+#   2. A link to a DIFFERENT file that happens to share the record's filename
+#      counts. Resolving the path would answer it, and resolving is link-lint's
+#      job, not this one.
+#   3. A reference DEFINITION nothing uses counts, although it renders as
+#      nothing at all. link-lint's L6 catches only the reverse case.
+#   4. A link-shaped example in a FOUR-SPACE indented code block counts. Only
+#      fences, HTML comments and inline code spans are excluded. Skipping every
+#      indented line would drop real links from list continuations, which is the
+#      more expensive error; link-lint reads indented blocks the same way.
+#   5. A real link is MISSED on a line that also opens an HTML comment, even one
+#      that closes on the same line, because the whole line is skipped. This
+#      fails loud -- a spurious warning, not a silent pass -- and link-lint.sh
+#      carries the identical construct, so the two agree.
+#
+# Limits 4 and 5 are shared with link-lint by construction: the extractor is the
+# same reading of the same forms. If one is fixed, fix both (links/README.md
+# limit 6).
 #
 # The fence and indent tests are spelled out rather than written `{0,3}`, for the
 # awks with no interval expressions — the same reason anchors_of() in

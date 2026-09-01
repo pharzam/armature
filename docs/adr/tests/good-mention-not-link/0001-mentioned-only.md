@@ -11,7 +11,7 @@ Accepted
 A fixture ADR for adr-lint's self-test. Not a real project decision.
 
 This record exists to be *talked about* and never linked. The suite README names
-it three ways — by shorthand, by stem in a code span, and inside a fenced
+it three ways — by shorthand, by filename in a code span, and inside a fenced
 example that is link-shaped — and links it nowhere.
 
 ## Decision

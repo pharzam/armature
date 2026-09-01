@@ -67,15 +67,14 @@ and the two compose: this one proves a link to the record exists, that one prove
 it points at something. Neither, on its own, proves the link is the *right* one —
 that stays a review responsibility.
 
-Three limits follow from matching rather than resolving, written in the script
-beside the code that carries them. Two are contrived: a link to a *different* file
-that happens to share the record's filename counts, and so does a reference
-definition nothing uses, which renders as nothing at all. The third is not.
-**The two checks compose only for an in-tree target.** `link-lint` skips `http`,
-`https` and `mailto` deliberately — resolving them needs the network, which would
-cost the offline property every check here depends on — so a record whose only
-inbound link is an absolute forge URL reads as cross-linked and is resolved by
-nothing. That URL can name a file that does not exist and both checks stay green.
+One limit is worth knowing before you rely on that pair: **they compose only for
+an in-tree target.** `link-lint` skips `http`, `https` and `mailto` deliberately —
+resolving them needs the network, which would cost the offline property every
+check here depends on — so a record whose only inbound link is an absolute forge
+URL reads as cross-linked and is resolved by nothing. That URL can name a file
+that does not exist and both checks stay green. Four narrower ones, all of them
+about matching rather than resolving, are listed in
+[`adr-lint.sh`](adr-lint.sh)'s header beside the code that carries them.
 
 One rule for writing in **this** file, which follows from a different check. The
 index-row check is a bare filename match against this README, so any sentence here
