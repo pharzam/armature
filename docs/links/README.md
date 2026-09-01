@@ -150,8 +150,10 @@ change excluded the repository root from the walk.
    angle form is skipped *silently*.** The extractor cuts a destination at the
    first space or tab, so `[a](<dir with space/target.md>)` — a legal link — is cut
    to `<dir`, which `is_placeholder()` then reads as an adopter `<…>` marker and
-   skips. No error, nothing resolved, and the reader is not told. That makes it the
-   only **silent** one on this list, and the direction a bug should never point.
+   skips. No error, nothing resolved, and the reader is not told — the direction a
+   bug should never point. Limit 3 is the only other silent one, and it is silent
+   *locally*: CI is a case-sensitive filesystem and rejects there. This one is
+   silent everywhere.
    An unbracketed `[c](dir with space/target.md)` fails `L1` on `dir`, which is
    *correct* — CommonMark stops at the space too. Reachable since
    [#76](https://github.com/pharzam/armature/issues/76) put two spaced fixture

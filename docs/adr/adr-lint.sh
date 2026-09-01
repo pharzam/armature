@@ -79,9 +79,9 @@ nl='
 # on a real file is link-lint's single job, and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
-# NINE LIMITS, stated rather than left to be found. This is the full list; the
-# README states only the one an adopter has to know. Seven are about what the
-# MATCHING reads; the last two are about the SHAPE of the tree.
+# TEN LIMITS, stated rather than left to be found. This is the full list; the
+# README states only the one an adopter has to know. Limits 1 to 7 and 10 are
+# about what the MATCHING reads; 8 and 9 are about the SHAPE of the tree.
 #
 #   1. The two checks compose only for an IN-TREE target. link-lint skips http,
 #      https and mailto by design, because resolving them needs the network, so a
@@ -121,6 +121,16 @@ nl='
 #      directory of THAT. Move it to docs/architecture/adr/ and the space
 #      narrows to docs/architecture/, so every record warns. Loud, and no
 #      adopter has to keep the layout -- but nothing tells them, so it is here.
+#  10. A destination containing a SPACE is not read as naming the record. Both
+#      extractors cut a destination at the first space or tab, so a link into
+#      one of this tree's spaced fixture directories -- or any spaced path an
+#      adopter has -- reads as no link here and the record draws a false orphan
+#      WARN. This is links/README.md's limit 7, and it reaches this function for
+#      the same reason limits 4, 5 and 6 do: it is the same reading of the same
+#      forms. Loud rather than silent, and unreachable today because nothing
+#      links into a spaced directory. Listed because limit 6 in that file exists
+#      precisely to stop these two extractors drifting apart, and a limit
+#      recorded on one side only IS the drift.
 #
 # Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
 # forms. The sharing is BY HAND, though, not by construction -- the fence and
