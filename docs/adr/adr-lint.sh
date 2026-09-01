@@ -198,6 +198,27 @@ links_to_record() {
 				# would otherwise ride along on a reference definition target
 				# and stop it naming the record. An inline destination is
 				# unaffected -- the closing paren separates it.
+				#
+				# NO FIXTURE COVERS THIS ONE, and it is not for want of trying.
+				# Delete this line and the whole suite still reports
+				# `104 passed, 0 failed`. Two things compound to make it
+				# unreachable:
+				#
+				#   1. What it serves is the no-orphan WARNING, which is
+				#      non-fatal. The runner compares EXIT CODES, so no
+				#      arrangement of fixtures can see the difference -- the same
+				#      gap docs/adr/tests/README.md records for is_cross_linked,
+				#      and the one `T-9c5t` would close by asserting output.
+				#   2. Even by eye it does not move. The search space for a case
+				#      is its PARENT directory, whose only file is the suite
+				#      README -- which is line feeds, and is the one file that
+				#      README says must never link a fixture record. So there is
+				#      nowhere in scope to put the CRLF reference definition
+				#      that would exercise this.
+				#
+				# Measured both ways: the good-crlf case draws two warnings with
+				# this line and two without. Recorded rather than papered over
+				# with a fixture that would not fail.
 				sub(/\r$/, "", line)
 				if (isfence(line)) { fence = !fence; continue }
 				if (fence) continue
@@ -415,10 +436,10 @@ for path do
 	# 3b. Date: a plain 'Date: YYYY-MM-DD' line — a real date or the unfilled
 	#     placeholder (the kit ships the placeholder so it self-lints green).
 	#
-	#     `tr -d '\r'` is what makes this read a CRLF file. Both this check and
-	#     3c below compare the value as a WHOLE STRING, so a trailing carriage
-	#     return made every record in such a file fail -- and the report was
-	#     worse than the failure, because the character does not print:
+	#     The strip is what makes this read a CRLF file. This check and 3c
+	#     compare the value as a WHOLE STRING, so a trailing carriage return
+	#     made every record in such a file fail -- and the report was worse than
+	#     the failure, because the character does not print:
 	#     `Date must be YYYY-MM-DD ...; got 'YYYY-MM-DD'`, a linter appearing to
 	#     reject the value it asks for. 3d and 3e are the two that really were
 	#     never affected: they match a PREFIX or a substring, which a trailing
@@ -428,12 +449,18 @@ for path do
 	#     at 3a. links_to_record() above already stripped the return, so one
 	#     script disagreed with itself about the same file.
 	#
-	#     `tr` rather than `sed 's/\r$//'`: tr's \r escape is POSIX-defined,
-	#     sed's is not (the seds tested here happen to accept it). Deleting every
-	#     carriage return rather than only a trailing one is safe here -- a date
-	#     may not contain one. 3c strips it a different way, inside awk, and the
-	#     note there says why the same pipe would not work.
-	dateline=$(grep -E '^Date:' "$path" | head -n1 | tr -d '\r')
+	#     ONE IDIOM for all three, `{ sub(/\r$/, "") }` as awk's first rule. A
+	#     draft used `grep | head | tr -d '\r'` here, which made this the only
+	#     one of the three that stripped differently, and cost a paragraph
+	#     explaining why. It also cost two extra processes: awk selects the first
+	#     matching line itself. Rejected on the way: `sed 's/\r$//'`, because
+	#     sed's \r is not POSIX (the seds tested here happen to accept it), and
+	#     routing all three through a `text()` helper like the two big linters
+	#     use, which measured SLOWER -- 3a and 3c already run an awk, so a helper
+	#     turns one process into two apiece, +21 ms per run over ten runs -- and
+	#     would have put a third hand-maintained copy of the same helper in the
+	#     kit.
+	dateline=$(awk '{ sub(/\r$/, "") } /^Date:/ { print; exit }' "$path")
 	if [ -z "$dateline" ]; then
 		err "$name: missing 'Date: YYYY-MM-DD' line"
 	else

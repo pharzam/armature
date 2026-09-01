@@ -173,8 +173,25 @@ check_crlf() {
 				case $_t in
 				(*/'**') _t=${_t%/'**'} ;;
 				esac
-				if [ -e "$_t" ]; then
-					printf 'OK %s\n' "$_t"
+				# The pattern is EXPANDED before it is tested, not tested as a
+				# literal string. gitattributes cannot express a space, so the
+				# only way to pin a spaced path is the `?` wildcard -- which
+				# .gitattributes recommends. `[ -e ]` does no globbing, so that
+				# recommendation resolved to nothing and the dead-pin report
+				# fired on the kit's own advice: a trap that springs on the first
+				# person who follows it.
+				#
+				# IFS is emptied for the expansion so the RESULT is not split on
+				# spaces -- which is the whole point, since the paths being
+				# matched contain them. Positional parameters inside a function
+				# are local, so nothing outside is disturbed.
+				_oi=$IFS; IFS=
+				set -- $_t
+				IFS=$_oi
+				if [ -e "$1" ]; then
+					for _m do
+						[ -e "$_m" ] && printf 'OK %s\n' "$_m"
+					done
 				else
 					printf 'DEAD %s\n' "$_p"
 				fi

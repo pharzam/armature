@@ -99,15 +99,14 @@
 # git reports `is not a valid attribute name` against a token that looks
 # unrelated while the path itself silently resolves `unspecified`. Backslash
 # escaping and a bracket class both fail the same way. Only the `?` wildcard
-# works for GIT: `good-path?with?space/**`.
+# works: `good-path?with?space/**`.
 #
-# It would not be enough on its own, though. run-discipline-tests.sh resolves
-# these pins itself, with `[ -e ]` on the pattern text, which treats `?` as a
-# literal character -- so such a pin would resolve to nothing and be reported as
-# decoration. Pinning a spaced path means teaching that resolver about `?` in
-# the same change. Neither spaced fixture needs pinning today (their endings are
-# not the assertion), so nothing here does it; both halves are written down
-# because each fails quietly on its own.
+# run-discipline-tests.sh understands that form -- it expands each pattern before
+# testing it, rather than testing the literal text, which a draft did. That draft
+# made this very recommendation report itself as decoration: a trap that sprang
+# on the first person to follow the kit's own advice. Neither spaced fixture
+# needs pinning today, since their endings are not the assertion, so nothing here
+# does it -- but the advice now works if you take it.
 docs/adr/tests/good-crlf/**    eol=crlf
 docs/links/tests/good-crlf/**  eol=crlf
 docs/agents/tests/good-crlf/** eol=crlf
