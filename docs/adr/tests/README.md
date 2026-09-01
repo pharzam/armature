@@ -61,7 +61,8 @@ linter's loose matching was the thing that defeated this linter's loose matching
 
 None of the three is a link, so the `WARN` fires — with or without a trailing
 slash on the argument, since the case directory is excluded by its `good-*` name
-as well as by the self-exclusion that `T-8q3f` made slash-proof. Before
+as well as by the self-exclusion, which `T-8q3f` made independent of how the
+directory argument is spelled. Before
 [#73](https://github.com/pharzam/armature/issues/73) **any one of the three**
 silenced it: the check matched the record's stem or its `ADR-NNNN` shorthand as a
 plain string anywhere in a file, so the fenced example counted as much as the

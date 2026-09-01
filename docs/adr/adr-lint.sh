@@ -27,6 +27,10 @@
 
 set -u
 
+# Logical, deliberately: this is only a default for adr_dir, and the canonical
+# form built below is the one thing ever compared as a string. Do not "align"
+# the two by making that one logical as well -- it is -P so that a symlinked
+# directory resolves to the path find prints.
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 adr_dir=${1:-$script_dir}
 readme="$adr_dir/README.md"
@@ -318,7 +322,12 @@ is_cross_linked() {
 # construct. It fails loud rather than silent, and no fixture can reach it: the
 # discipline runner hands the linters relative paths, which never carry the
 # spaced prefix, and this script keeps $adr_dir as spelled so that stays true.
-# Recorded in the tree because the issue that found it is closed.
+# The gate is NOT so lucky, and that is the half worth knowing: the no-argument
+# default is $script_dir, absolute by construction at the head of this file, so
+# the pre-commit hook and every CI job meet this on every run at such a checkout,
+# unconditionally rather than through an unlucky spelling. An absolute argument
+# is exposed the same way. Recorded in the tree because the issue that found it
+# is closed.
 adr_files=""
 for path in "$adr_dir"/*.md; do
 	[ -e "$path" ] || continue
@@ -355,7 +364,7 @@ done
 
 # A search space of nothing is a defect in the run, not a tree of orphans.
 if [ "$cross_files_seen" -eq 0 ]; then
-	note "no document outside $(basename "$adr_dir")/ was read, so every record below reports as an orphan — check the directory argument and where the ADR directory sits"
+	note "no document outside $(basename "$adr_dir_canon")/ was read, so every record below reports as an orphan — check the directory argument and where the ADR directory sits"
 fi
 
 # --- 3. per-file structure -------------------------------------------------
@@ -409,7 +418,7 @@ for path in $adr_files; do
 	#     mention of it: see is_cross_linked() above for why the difference is the
 	#     whole check.
 	is_cross_linked "$name" \
-		|| note "$name: nothing outside $(basename "$adr_dir")/ LINKS it — a mention of $name or ADR-$num is not one; cross-link it from the plan/spec it supports"
+		|| note "$name: nothing outside $(basename "$adr_dir_canon")/ LINKS it — a mention of $name or ADR-$num is not one; cross-link it from the plan/spec it supports"
 done
 
 [ "$fail" -eq 0 ] && { printf 'adr-lint: OK\n'; exit 0; } || exit 1
