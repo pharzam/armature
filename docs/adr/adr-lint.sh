@@ -114,7 +114,7 @@ nl='
 #      a worktree, a vendored submodule, a build cache -- is not excluded: the
 #      exclusion is one literal path prefix. Its index README then links every
 #      record, and every record reads as cross-linked. This one is SILENT, which
-#      makes it the worst of the nine. An adopter who puts the per-task worktree
+#      makes it the worst of the ten. An adopter who puts the per-task worktree
 #      directory under docs/ walks straight into it.
 #   9. The ADR directory is assumed to sit DIRECTLY under the documents root:
 #      the search space is its parent, and the extra file read is that parent
@@ -359,10 +359,13 @@ is_cross_linked() {
 # --- 1. filenames; collect the valid ADR files -----------------------------
 # The record list is held in the POSITIONAL PARAMETERS, not in a string.
 #
-# It was a SPACE-JOINED string looped over unquoted, so one path containing a
-# space became two words: at a checkout under `…/sp ace/` the run reported
-# `FAIL duplicate ADR number: sp` and 137 more, on a repository that violates
-# nothing. The exposed invocations were the ones the gate itself uses -- the
+# It was a SPACE-JOINED string looped over unquoted, so a path split into one
+# word per space: at a checkout under `…/sp ace/` the run reported
+# `FAIL duplicate ADR number: sp` and 89 more, on a repository that violates
+# nothing, and a two-space prefix such as `…/a b c/` gave 138. Both measured
+# against the pre-fix script; a draft here paired the one-space EXAMPLE with the
+# two-space COUNT, which read as consistent because the first clause was right.
+# The exposed invocations were the ones the gate itself uses -- the
 # no-argument default is $script_dir, absolute by construction at the head of
 # this file -- so the pre-commit hook and every CI job met it on every run.
 #
