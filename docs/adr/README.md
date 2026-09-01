@@ -50,6 +50,13 @@ a case **file** under a `tests/` directory. Their suite READMEs
 are prose a reader follows, and do count — the naming is the whole mechanism, so
 fixture data called something else is read like any other document.
 
+**A link to a real record from any suite README satisfies that record's inbound
+link**, which is rarely what the author of a fixture intends. The one exception is
+[this suite's own](tests/README.md): it sits inside this directory, which is
+excluded before anything else, so a link there counts for nothing. Every other
+one — `docs/agents/tests/`, `docs/prd/`, `docs/tasks/` — counts. Nothing enforces
+this; it is a rule for whoever writes a fixture.
+
 And a document that only **names** a record is discussing it, not linking it: the
 `ADR-NNNN` shorthand in a sentence, the filename in a citation or a code span, a
 link-shaped example inside a fence, a link inside an HTML comment. None of those
