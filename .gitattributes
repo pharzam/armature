@@ -34,15 +34,26 @@
 #
 # WHAT THIS BUYS, AND WHAT IT DOES NOT. It makes the scripts RUNNABLE, nothing
 # more. Every ordinary Markdown file still arrives with carriage returns, and
-# reading those correctly is each linter's own job. Measured on a clone across
-# the six linters plus expect-check.sh: 7 of 7 green, against 0 of 7 before the
-# work that added this rule -- nothing ran at all -- and 3 of 7 with this rule
-# alone and two of the six linters fixed. So the halves are separable and both
-# are needed: delete this rule and nothing runs; keep it and revert the linters
-# and four of the seven fail on a tree they should accept.
+# reading those correctly is each linter's own job.
 #
-# (Those seven are not the seven commands AGENTS.md lists under "Checks you can
-# run", which are the same six linters plus `git diff --check`.)
+# Measured on a clone, over these seven, named so the count can be checked:
+# adr-lint, prd-lint, link-lint, agents-lint, audit-record-lint, pr-link-lint,
+# and expect-check.sh. 7 of 7 green. Against 0 of 7 before the work that added
+# this rule -- nothing ran at all -- and 4 of 7 with this rule alone and two of
+# the six linters fixed. So the halves are separable and both are needed: delete
+# this rule and nothing runs; keep it and revert the linters and four of the
+# seven fail on a tree they should accept.
+#
+# A draft said 3 of 7, from a run that quietly swapped run-discipline-tests.sh
+# in for pr-link-lint.sh -- it measured a different seven from the one the
+# sentence named. Fresh clone PER REVISION, too: reusing one clone across
+# revisions carries files across, because git does not rewrite a file whose blob
+# is unchanged even when an attribute now applies to it.
+#
+# (These seven are NOT the seven commands AGENTS.md lists under "Checks you can
+# run". That block is five linters -- adr, prd, agents, link, audit-record --
+# plus run-discipline-tests.sh plus `git diff --check`. pr-link-lint is absent
+# there by design: it reads a pull-request body and has no local run.)
 #
 #
 # WHY FIVE FIXTURE CASES ARE PINNED THE OTHER WAY
@@ -55,10 +66,21 @@
 # The risk is a COMMIT, not a checkout. `core.autocrlf=input` converts CRLF to
 # LF when a file is STAGED and does nothing on checkout; `true` converts in both
 # directions. So the way these fixtures lose their carriage returns is someone
-# whose git is set to `input` or `true` re-committing them -- the returns are
-# stripped on the way into the blob and never come back. Measured: with a CRLF
-# blob, a clone under `input` still delivers CRLF, and it is the committer's
-# setting that decides.
+# whose git is set to `input` or `true` staging them -- the returns are stripped
+# on the way into the blob and never come back.
+#
+# WITH ONE EXCEPTION THAT DOES NOT SAVE US, and a draft here stated the rule
+# without it. Git skips that conversion for a file whose INDEX BLOB ALREADY
+# HOLDS carriage returns, so an ordinary CRLF-tracked file survives a re-commit
+# untouched. Measured: 3 returns in the blob, still 3 after re-adding under
+# `input` and under `true`.
+#
+# These fixtures are not in that position, and deliberately so: `eol=crlf` keeps
+# their blobs as LINE FEEDS, which is what makes their diffs readable. The guard
+# has nothing to grip. Delete the pin and the next `add` writes line feeds into
+# the blob -- measured, under both settings. The same is true of a file NEW to an
+# index, which is the adopter who copies a fixture directory in. So the exception
+# is real, and it protects every file here except the ones this rule is for.
 #
 # Every one of them would then pass while testing nothing: a green with no
 # assertion behind it, which is the class of defect the fixtures exist to close.
