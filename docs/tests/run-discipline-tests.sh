@@ -170,7 +170,7 @@ check_crlf_cases() {
 		_bad=$(bare_files "$_d")
 		[ -n "$_bad" ] || continue
 		printf '%s\n' "$_bad" | while IFS= read -r _b; do
-			printf 'FAIL  crlf case: %s holds no carriage return, and its case name says crlf — its line endings ARE the assertion; check .gitattributes still pins it eol=crlf\n' "$_b"
+			printf 'FAIL  crlf case: %s holds no carriage return, and its case name says crlf — its line endings ARE the assertion. Copy the kit .gitattributes into your repository root (it pins this path eol=crlf), then restore the endings with: git checkout -- %s\n' "$_b" "$_b"
 		done
 		fail=$((fail + $(printf '%s\n' "$_bad" | awk 'END { print NR }')))
 	done
@@ -181,11 +181,23 @@ check_crlf_cases() {
 }
 
 check_crlf_pins() {
-	[ -f .gitattributes ] || return
+	# A missing .gitattributes is only silence when there is nothing to pin. If
+	# a crlf case is present without one, the endings are held by nothing but
+	# luck -- which is the shape an adopter arrives in, having copied a fixture
+	# directory and left the root file behind.
+	if [ ! -f .gitattributes ]; then
+		for _d in docs/*/tests/*crlf*/; do
+			[ -d "$_d" ] || continue
+			fail=$((fail + 1))
+			printf 'FAIL  crlf pins: %s needs Windows line endings and no .gitattributes pins them — copy the kit .gitattributes into your repository root\n' "$_d"
+			return
+		done
+		return
+	fi
 	_pins=$(awk '$0 !~ /^#/ && $0 ~ /eol=crlf/ { print $1 }' .gitattributes)
 	if [ -z "$_pins" ]; then
 		fail=$((fail + 1))
-		printf 'FAIL  crlf pins: .gitattributes names no eol=crlf path — the CRLF fixtures are unpinned, so they are duplicates of their good twins\n'
+		printf 'FAIL  crlf pins: .gitattributes names no eol=crlf path — the CRLF fixtures are unpinned, so they are duplicates of their good twins. Copy the kit .gitattributes into your repository root\n'
 		return
 	fi
 	# Resolve each pattern to real paths: `dir/**` is the directory, anything

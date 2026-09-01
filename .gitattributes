@@ -52,10 +52,14 @@
 # runner and expect-check.
 #
 #
-# 2. TWO FIXTURES MUST KEEP THEIR CARRIAGE RETURNS
+# 2. FIVE FIXTURE CASES MUST KEEP THEIR CARRIAGE RETURNS
 #
-# docs/adr/tests/good-crlf/ and docs/links/tests/good-crlf/ are fixtures whose
-# files carry Windows line endings. They are tests only while they keep them.
+# One per linter that reads Markdown -- adr, links, agents, tasks -- plus
+# docs/links/tests/bad-crlf-expect/, which is CRLF down to its EXPECT file so
+# that expect-check.sh's own strip has a case. Their files carry Windows line
+# endings, and they are tests only while they keep them. The rules are at the
+# foot of this file; this count and that list must stay in step, and
+# run-discipline-tests.sh reads the rules rather than a copy of them.
 #
 # The risk is a COMMIT, not a checkout, and an earlier draft here had that
 # backwards. `core.autocrlf=input` converts CRLF to LF when a file is STAGED and
@@ -65,18 +69,18 @@
 # and never come back. Measured: with a CRLF blob, a clone under `input` still
 # delivers CRLF, and it is the committer's setting that decides.
 #
-# Both cases would then pass while testing nothing: a green with no assertion
-# behind it, which is the class of defect the fixtures exist to close.
+# Every one of them would then pass while testing nothing: a green with no
+# assertion behind it, which is the class of defect the fixtures exist to close.
 #
 # `eol=crlf` keeps the blob as line feeds -- so the diff stays readable and the
 # files stay mergeable -- and forces carriage returns in the WORKING TREE on
 # every platform, whatever `core.autocrlf` is set to.
 #
-# Scoped to these two directories on purpose. A repository-wide
+# Scoped to those five case directories on purpose. A repository-wide
 # `* text=auto eol=lf` would HIDE the defect rather than fix it (a workaround
 # under R4), and would impose a line-ending policy on every adopter's checkout,
 # which is not this kit's business.
-# 1 — the two fixtures whose carriage returns ARE the test.
+# 1 — the fixture cases whose carriage returns ARE the test.
 #
 # If you ever need to pin a path holding a SPACE -- this tree ships two, under
 # docs/adr/tests/ and docs/prd/tests/ -- note that gitattributes cannot express
@@ -112,10 +116,25 @@ docs/links/tests/bad-crlf-expect/** eol=crlf
 # would have been unrunnable on EVERY platform rather than only on Windows. No
 # such file exists; the ordering means one never can.
 #
-# ANCHORED to the two directories the kit owns. A bare `*.sh` carries no slash,
-# so git matches it against the BASENAME AT EVERY DEPTH: it governed every .sh
-# file in an adopter's repository, vendored trees included, and on contact it
-# marked their CRLF-committed scripts modified.
+# PINNED BY THE KIT'S OWN NAMING, not by directory. Two earlier forms were both
+# too wide, and the second was the subtler mistake:
+#
+#   `*.sh`         carries no slash, so git matches it against the BASENAME AT
+#                  EVERY DEPTH. It governed every .sh file in an adopter's
+#                  repository, vendored trees included.
+#   `docs/**/*.sh` looked anchored and was not. `docs/` is not this kit's
+#                  directory -- it is one of the commonest names in any
+#                  repository, and the kit is designed to land in one that
+#                  already exists. An adopter's own `docs/scripts/build.sh`,
+#                  committed with carriage returns, resolved `eol=lf` on
+#                  contact and lost them at their next commit. Silently, and in
+#                  a file nobody opened.
+#
+# The forms below match what the kit actually ships: `<area>-lint.sh` linters,
+# the runner by name, and any script under a fixture `tests/` directory. An
+# adopter's script is caught only if they name it `docs/<area>/<x>-lint.sh` or
+# put it under `docs/<area>/tests/`, which is a far narrower claim -- and it is
+# a claim, so it is stated here rather than left to be discovered.
 #
 # `.githooks/*` and `.githooks/**/*.sh` rather than `.githooks/**`: the wide form
 # set an explicit `text` on everything under that directory, which switches OFF
@@ -132,6 +151,8 @@ docs/links/tests/bad-crlf-expect/** eol=crlf
 # own tree — no mechanism here is adopter-safe: any check that enumerated every
 # .sh in the repository would fire on an adopter's own scripts, which is the
 # problem this anchoring exists to solve. Recorded rather than half-mechanised.
-docs/**/*.sh                  text eol=lf
-.githooks/*                   text eol=lf
-.githooks/**/*.sh             text eol=lf
+docs/*/*-lint.sh                   text eol=lf
+docs/tests/run-discipline-tests.sh text eol=lf
+docs/*/tests/**/*.sh               text eol=lf
+.githooks/*                        text eol=lf
+.githooks/**/*.sh                  text eol=lf
