@@ -12,7 +12,7 @@ drives every case below and asserts the exit code.
 | Case | Expected | Exercises |
 | ---- | -------- | --------- |
 | `good` | `adr-lint: OK`, exit 0 | two contiguous, well-formed ADRs with an index |
-| `good-mention-not-link` | `adr-lint: OK`, exit 0, one `WARN` | a record this file names but never links — the no-orphan `WARN` fires, and the exit code stays 0 |
+| `good-mention-not-link` | exit 0 — all the runner checks | a record this file names three ways and links nowhere. By eye it draws the no-orphan `WARN`; the runner cannot see that, so the case pins the exit code and no more |
 | `bad-filename` | FAIL, exit 1 | a filename that is not `NNNN-kebab-case.md` |
 | `bad-numbering` | FAIL, exit 1 | a gap in the sequence (0001 then 0003) |
 | `bad-status` | FAIL, exit 1 | a `## Status` value outside the allowed set |
