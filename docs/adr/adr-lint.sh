@@ -94,6 +94,26 @@ nl='
 #      narrows to docs/architecture/, so every record warns. That failure is
 #      loud rather than silent, and no adopter has to keep the layout -- but
 #      nothing tells them, so it is written here.
+#   8. Stripping code spans REWRITES the line before any destination is read,
+#      which cuts both ways: `[x]`foo`(../adr/0001-x.md)` is not a link and is
+#      counted as one, and a line carrying an odd backtick -- an apostrophe
+#      written as one, say -- can have a real link eaten and the record reported
+#      an orphan. Both are shared with link-lint, which strips the same way.
+#   9. Filenames are compared with ==, so on a case-insensitive filesystem a
+#      link written [x](0001-Thing.md) resolves for link-lint and does not count
+#      here. Loud, and the mirror of link-lint limit 3.
+#
+# The two extractors are the same reading of the same forms, but the sharing is
+# by hand, not by construction: the fence and indent tests are unrolled here for
+# the awks that lack interval expressions, and link-lint still writes {0,3}. On
+# such an awk the two disagree about an indented fence.
+#
+# COST: one pass over the search space per record, so O(records x files). The
+# search space itself is built once. Measured on a 10,000-file tree with 40
+# records it is about 18 seconds -- past the ten that gate step 4 says must show
+# progress, and the pre-commit hook shows none. The kit's own tree runs in under
+# a second, and the honest shape of the fix is one pass collecting every linked
+# filename, not a faster loop.
 #
 # The fence and indent tests are spelled out rather than written `{0,3}`, for the
 # awks with no interval expressions — the same reason anchors_of() in
@@ -198,8 +218,7 @@ links_to_record() {
 # inbound link reported "cross-linked" for a record nothing linked, and the
 # shorthand is short and generic enough to appear in any prose about ADRs, so the
 # check was quietest exactly where it was needed (#73).
-is_cross_linked() {
-	_name=$1
+collect_search_space() {
 	_docs=$(dirname "$adr_dir")
 	_root=$(dirname "$_docs")
 
@@ -250,9 +269,22 @@ is_cross_linked() {
 	if [ -f "$_root/README.md" ]; then
 		_files=$_files$nl$_root/README.md
 	fi
-	[ -n "$_files" ] || return 1
+	printf '%s' "$_files"
+}
 
-	printf '%s\n' "$_files" | links_to_record "$_name"
+# The search space does not vary per record, so it is built ONCE -- and a run
+# that read NOTHING has to say so. Without this, an empty search space is
+# indistinguishable from a tree of genuine orphans: every record warns, the run
+# exits 0, and the wall of warnings looks like a correct answer. Three separate
+# defects presented exactly that way (a file list past ARG_MAX, an operator path
+# that matched everything, an ADR directory moved a level deeper), which is why
+# the kit puts a coverage floor under link-lint (L5) and under the test runner.
+cross_files=$(collect_search_space)
+[ -n "$cross_files" ] && cross_files_seen=1 || cross_files_seen=0
+
+is_cross_linked() {
+	[ "$cross_files_seen" -eq 1 ] || return 1
+	printf '%s\n' "$cross_files" | links_to_record "$1"
 }
 
 # --- 1. filenames; collect the valid ADR files -----------------------------
@@ -289,6 +321,11 @@ for n in $numbers; do
 	fi
 	prev="$n"
 done
+
+# A search space of nothing is a defect in the run, not a tree of orphans.
+if [ "$cross_files_seen" -eq 0 ]; then
+	note "no document outside $(basename "$adr_dir")/ was read, so every record below reports as an orphan — check the directory argument and where the ADR directory sits"
+fi
 
 # --- 3. per-file structure -------------------------------------------------
 for path in $adr_files; do
