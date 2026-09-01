@@ -170,11 +170,22 @@ is_cross_linked() {
 	# The limit is the convention itself. Fixture data that follows neither
 	# naming -- docs/prd/tests/facts/ in this tree -- is still read, and a link
 	# to a record from there would count. Name a fixture good* or bad-*.
+	# The fixture patterns are measured on the path RELATIVE to the documents
+	# root, as link-lint.sh measures its own. Matching the absolute path would
+	# read the OPERATOR directory names: a checkout in a directory called
+	# bad-anything or good would delete the whole tree from the search space and
+	# report every record as an orphan.
 	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
 	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null \
 		| grep -v "^$adr_dir/" \
-		| grep -Ev '/(good|good-[^/]*|bad-[^/]*)/' \
-		| grep -Ev '/tests/(.*/)?(good|bad)[^/]*\.md$')
+		| awk -v docs="$_docs/" '
+			{
+				rel = $0
+				if (index(rel, docs) == 1) rel = substr(rel, length(docs) + 1)
+				if (rel ~ /(^|\/)(good|good-[^\/]*|bad-[^\/]*)\//) next
+				if (rel ~ /(^|\/)tests\/(.*\/)?(good|bad)[^\/]*\.md$/) next
+				print
+			}')
 	IFS=$_oldIFS
 	[ -f "$_root/README.md" ] && set -- "$@" "$_root/README.md"
 
