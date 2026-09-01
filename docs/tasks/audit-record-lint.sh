@@ -137,6 +137,11 @@ err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 text() { awk '{ sub(/\r$/, ""); print }' "$1"; }
 
 [ -f "$record" ]   || { printf 'FAIL  audit record not found: %s\n' "$record" >&2; exit 1; }
+# Readable, not merely present. Every block below reads it through a pipe, and a
+# pipeline reports its LAST command's status -- so an unreadable record made awk
+# succeed on empty input and each block report an empty record rather than an
+# unreadable one. Checked once, here, rather than guessed at nine call sites.
+[ -r "$record" ]   || { printf 'FAIL  audit record not readable: %s\n' "$record" >&2; exit 1; }
 [ -f "$backlog" ]  || { printf 'FAIL  backlog not found: %s (DoD 5 cannot resolve)\n' "$backlog" >&2; exit 1; }
 [ -f "$glossary" ] || { printf 'FAIL  glossary not found: %s (DoD 6 cannot resolve)\n' "$glossary" >&2; exit 1; }
 # completed.md is a hard dependency of block 5, not an optional extra: a
@@ -782,7 +787,14 @@ uncited_corr=$(text "$record" | awk -F'|' '
 		    body !~ /(LICENSE|\.gitignore|\.gitattributes):[0-9]+/) print id
 	}
 	END { if (n == 0) print "NONE" }
-') || err "block 8: awk failed to read the record (DoD 8)"
+')
+# No `|| err` here any more, because it could not fire. It was written when awk
+# read the record as a FILE OPERAND and its status was the read's. Routing this
+# block through text() made the status awk's own, reading standard input, which
+# succeeds on empty input -- so an unreadable record produced a green guard and
+# a wrong message. The `-r` test at the head of this script is where that is
+# caught now, and the `END { if (n == 0) print "NONE" }` floor below is what
+# catches an empty read for any other reason.
 for id in $uncited_corr; do
 	if [ "$id" = "NONE" ]; then
 		err "no claim row carries the verdict Corrected -- block 8 checked nothing (DoD 8)"

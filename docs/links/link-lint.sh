@@ -299,28 +299,50 @@ lint_file() {
 
 		n_links=$((n_links + 1))
 		_abs=$(cd "$_dir" 2>/dev/null && printf '%s' "$PWD/$_path")
-		# RS is set to a byte no path can hold, so the WHOLE path is one record
-		# however many newlines it contains. With the default RS, a checkout
-		# under a directory whose name holds a newline arrived here as two
-		# records, was normalised twice, and came back as two lines -- so the L4
-		# root-prefix test below compared against something that was never a
-		# path, and every link in the tree reported as escaping the root. FS
-		# still splits on "/", so a newline inside a segment simply rides along
-		# inside that segment, which is what it is.
-		_norm=$(printf '%s' "$_abs" | awk '
-			BEGIN { RS = "\001"; FS = "/" }
-			{
-				n = 0
-				for (i = 1; i <= NF; i++) {
-					if ($i == "" || $i == ".") continue
-					if ($i == "..") { if (n > 0) n--; else out[++n] = ".."; continue }
-					out[++n] = $i
+		# The path arrives through the ENVIRONMENT and is split by hand in BEGIN,
+		# so awk never reads a record and record splitting cannot happen at all.
+		#
+		# It used to come in on standard input. With the default RS, a checkout
+		# under a directory whose name holds a NEWLINE arrived as two records,
+		# was normalised twice, and came back as two lines -- so the L4 test
+		# below compared against something that was never a path, and every link
+		# in the tree reported as escaping the root. A draft fixed that with
+		# `RS = "\001"` and a comment calling that "a byte no path can hold". It
+		# is not: APFS accepts it in a filename, and a checkout under such a name
+		# reproduced the identical dead gate -- 669 L4 failures. Betting on a
+		# byte was the wrong shape of fix; not reading records is the right one.
+		#
+		# ENVIRON, not `-v`: awk runs ESCAPE PROCESSING on a -v value, so a path
+		# holding a backslash would arrive mangled. collect_search_space() in
+		# adr-lint.sh carries the same note for the same reason.
+		#
+		# The segments are walked with index/substr rather than split(). Measured
+		# on the awk this kit runs against: `split(p, seg, "/")` breaks on a
+		# NEWLINE as well as on the separator, so the very path this rewrite
+		# exists to carry came back with its newline turned into a slash --
+		# `/a/we ird` + `name/b` rejoined as `/a/we ird/name/b`. index() and
+		# substr() have no separator semantics to surprise anyone. Verified
+		# across nine path shapes: plain, `.`, `..`, `..` past the root, a double
+		# slash, a space, a newline, a SOH byte, and `/` alone.
+		_norm=$(LINK_LINT_ABS="$_abs" awk '
+			BEGIN {
+				p = ENVIRON["LINK_LINT_ABS"]
+				m = 0
+				while (1) {
+					i = index(p, "/")
+					if (i == 0) { seg = p; p = "" }
+					else { seg = substr(p, 1, i - 1); p = substr(p, i + 1) }
+					if (seg != "" && seg != ".") {
+						if (seg == "..") { if (m > 0) m-- ; else out[++m] = ".." }
+						else out[++m] = seg
+					}
+					if (i == 0) break
 				}
 				s = ""
-				for (i = 1; i <= n; i++) s = s "/" out[i]
+				for (j = 1; j <= m; j++) s = s "/" out[j]
 				print (s == "" ? "/" : s)
 			}
-		')
+		' </dev/null)
 
 		# L4 — the target must stay inside the root
 		case $_norm/ in

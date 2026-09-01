@@ -233,9 +233,22 @@ check_crlf() {
 		*"$_nl$_b$_nl"*) _pinned=1 ;;
 		*) _pinned=0 ;;
 		esac
-		[ "$_pinned" -eq 0 ] && for _p in $_pins; do
-			case $_b in ("$_p"/*) _pinned=1 ;; esac
-		done
+		# IFS is set to a newline for this loop, not left at the default. A
+		# pinned path holding a SPACE would otherwise split into pieces here and
+		# the file be misclassified as unpinned -- which would print the wrong
+		# cause, in the one script whose subject is paths that split on spaces.
+		# Nothing pins a spaced path today; the loop does not depend on that.
+		if [ "$_pinned" -eq 0 ]; then
+			_oi=$IFS; IFS=$_nl
+			for _p in $_pins; do
+				IFS=$_oi
+				case $_b in
+				("$_p"/*) _pinned=1 ;;
+				esac
+				IFS=$_nl
+			done
+			IFS=$_oi
+		fi
 		if [ "$_pinned" -eq 1 ]; then
 			printf 'FAIL  crlf: %s lost its carriage returns — .gitattributes pins it eol=crlf, so something rewrote it locally (a formatter, dos2unix, an .editorconfig). Restore with: git checkout -- %s\n' "$_b" "$_b"
 		else

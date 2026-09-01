@@ -64,16 +64,18 @@ not this script.
   link in a fixture's own prose goes unseen.** Fixture *suite* READMEs are not
   skipped — they are prose a reader follows, and that is exactly where the one
   real defect was found.
-- **Any link into a path containing a space** — and this one is worth knowing
-  before you write such a path, not after. A destination is cut at the first
-  space, so `[a](Design Notes/target.md)` is read as a link to `Design` and
-  fails `L1`; a `%20` is never decoded and fails too; and the CommonMark angle
-  form `[a](<Design Notes/target.md>)` is **skipped in silence**, because what
+- **Most links into a path containing a space** — worth knowing before you write
+  such a path, not after. Three of the four destination forms cut at the first
+  space: `[a](Design Notes/target.md)` is read as a link to `Design` and fails
+  `L1`; a `%20` is never decoded and fails too; and the CommonMark angle form
+  `[a](<Design Notes/target.md>)` is **skipped in silence**, because what
   survives the cut is `<Design`, which reads as a `‹…›` adopter placeholder.
   Measured: a *correct* spaced link and a *dead* one produce byte-identical
-  output, so the check cannot tell them apart. If your repository has a
-  `docs/Design Notes/` or an `RFC 001/`, links into it are not being checked.
-  Limits 7 and 8 below carry the detail.
+  output, so the check cannot tell those two apart. **The raw HTML form is the
+  exception and the one that works** — `<a href="Design Notes/target.md">` is
+  captured between its quotes, spaces and all, and resolves. So if your
+  repository has a `docs/Design Notes/` or an `RFC 001/`, links into it are
+  checked only when written that way. Limits 7 and 8 below carry the detail.
 
 ## The forms it reads
 
@@ -156,11 +158,14 @@ change excluded the repository root from the walk.
    ([#76](https://github.com/pharzam/armature/issues/76)). Both are fixed, both
    **by hand, with no mechanism** — the same shape as limit 1, and the reason
    ADR-0007 recorded that one rather than leaving it to be found.
-7. **A link to a path containing a space is not resolved, and the CommonMark
-   angle form is skipped *silently*.** The extractor cuts a destination at the
-   first space or tab, so `[a](<dir with space/target.md>)` — a legal link — is cut
-   to `<dir`, which `is_placeholder()` then reads as an adopter `<…>` marker and
-   skips. No error, nothing resolved, and the reader is not told — the direction a
+7. **Three of the four destination forms drop a link to a path containing a
+   space, and the CommonMark angle form does it *silently*.** The `](…)`,
+   reference-definition and angle branches cut a destination at the first space
+   or tab, so `[a](<dir with space/target.md>)` — a legal link — is cut to
+   `<dir`, which `is_placeholder()` then reads as an adopter `<…>` marker and
+   skips. The **raw HTML** branch is the exception: `href="[^"]*"` captures the
+   whole quoted value, so `<a href="dir with space/target.md">` resolves
+   correctly. Measured, not assumed. No error, nothing resolved, and the reader is not told — the direction a
    bug should never point. Limit 3 is the only other silent one, and it is silent
    *locally*: CI is a case-sensitive filesystem and rejects there. This one is
    silent everywhere.
@@ -173,8 +178,10 @@ change excluded the repository root from the walk.
    `[b](dir%20with%20space/target.md)` is what a forge writes and what GitHub
    resolves; this linter looks for a file literally named `dir%20with%20space`,
    does not find one, and fails `L1`. Loud rather than silent, and the mirror of
-   limit 7: between them, **no** spelling of a spaced path both resolves here and
-   works on the forge.
+   limit 7. Between them, exactly **one** spelling of a spaced path both resolves
+   here and works on the forge: the raw HTML anchor. An earlier draft of this
+   entry said none did, which was wrong — it reasoned from the three Markdown
+   branches and never measured the fourth.
 
 ## The `EXPECT` convention
 

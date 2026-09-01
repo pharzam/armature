@@ -121,16 +121,24 @@ nl='
 #      directory of THAT. Move it to docs/architecture/adr/ and the space
 #      narrows to docs/architecture/, so every record warns. Loud, and no
 #      adopter has to keep the layout -- but nothing tells them, so it is here.
-#  10. A destination containing a SPACE is not read as naming the record. Both
-#      extractors cut a destination at the first space or tab, so a link into
-#      one of this tree's spaced fixture directories -- or any spaced path an
-#      adopter has -- reads as no link here and the record draws a false orphan
-#      WARN. This is links/README.md's limit 7, and it reaches this function for
-#      the same reason limits 4, 5 and 6 do: it is the same reading of the same
-#      forms. Loud rather than silent, and unreachable today because nothing
-#      links into a spaced directory. Listed because limit 6 in that file exists
-#      precisely to stop these two extractors drifting apart, and a limit
-#      recorded on one side only IS the drift.
+#  10. A destination containing a SPACE is not read as naming the record --
+#      EXCEPT in the raw HTML form. The reference-definition and `](` branches
+#      cut at the first space or tab, so a link into one of this tree's spaced
+#      fixture directories, or any spaced path an adopter has, reads as no link
+#      and the record draws a false orphan WARN. `href="[^"]*"` captures the
+#      whole quoted value, so a raw HTML anchor into a spaced directory DOES
+#      count as an inbound link. Measured on three ADR trees identical but for
+#      the link form: inline gives a false orphan, raw HTML gives none, and no
+#      link at all gives the same WARN as inline.
+#
+#      This is links/README.md's limit 7, and it reaches this function for the
+#      same reason limits 4, 5 and 6 do: the same reading of the same forms.
+#      Listed because limit 6 in that file exists precisely to stop these two
+#      extractors drifting, and a limit recorded on one side only IS the drift.
+#      An earlier draft of both entries said "both extractors cut at the first
+#      space" without qualification -- recorded wrongly on BOTH sides, which is
+#      the failure limit 6 describes, arrived at by reasoning rather than
+#      measuring.
 #
 # Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
 # forms. The sharing is BY HAND, though, not by construction -- the fence and
