@@ -88,6 +88,8 @@ links_to_record() {
 	_needle=$1
 	shift
 	[ "$#" -gt 0 ] || return 1
+	# The needle is safe on -v: it is a record FILENAME, already forced to
+	# NNNN-kebab-case.md by the filename check, so it holds no backslash.
 	awk -v needle="$_needle" '
 		function isfence(s) {
 			return (s ~ /^```/    || s ~ /^~~~/ ||
@@ -204,9 +206,15 @@ is_cross_linked() {
 	# The comparison is deliberately prefix-exact, so a trailing slash on the
 	# argument still excludes nothing, which is finding A1 of T-3v9q, open as
 	# T-6f3w. Do not fix that here; it is a different task with its own tests.
+	# Both operator paths reach awk through the ENVIRONMENT, not through -v.
+	# `awk -v x=VALUE` runs ESCAPE PROCESSING on the value, so a checkout under
+	# a directory holding a backslash arrives mangled: the prefixes then match
+	# nothing, and the check either silences a genuine orphan or reports every
+	# record as one. ENVIRON is read verbatim.
 	# shellcheck disable=SC2046  # the split is deliberate and IFS is newline
 	set -- $(find "$_docs" -type f -name '*.md' 2>/dev/null \
-		| awk -v docs="$_docs/" -v self="$adr_dir/" '
+		| ADR_LINT_DOCS="$_docs/" ADR_LINT_SELF="$adr_dir/" awk '
+			BEGIN { docs = ENVIRON["ADR_LINT_DOCS"]; self = ENVIRON["ADR_LINT_SELF"] }
 			{
 				if (index($0, self) == 1) next
 				rel = $0

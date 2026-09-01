@@ -21,11 +21,14 @@ drives every case below and asserts the exit code.
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 
-**Every** case draws the non-fatal no-orphan `WARN`, one per record — a fixture
-record is not linked from a real plan, and since the check began skipping fixture
-directories it cannot be linked from a neighbouring case either. Exit codes are
-unaffected, which is all the runner asserts, so a `bad-*` case still fails for its
-own single reason and a `good*` case still passes.
+Every case whose records reach the per-record checks draws the non-fatal
+no-orphan `WARN`, one per record — a fixture record is not linked from a real
+plan, and since the check began skipping fixture directories it cannot be linked
+from a neighbouring case either. `bad-filename` is the exception, and shows where
+the boundary is: its record is rejected by the filename rule before the per-record
+checks run, so it draws none. Exit codes are unaffected, which is all the runner
+asserts, so a `bad-*` case still fails for its own single reason and a `good*`
+case still passes.
 
 Run one: `sh docs/adr/adr-lint.sh docs/adr/tests/good`
 
