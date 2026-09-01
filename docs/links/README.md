@@ -102,7 +102,7 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Four limits, recorded rather than hidden
+## Five limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
@@ -121,7 +121,12 @@ change excluded the repository root from the walk.
    on macOS accepts `Target.md` for `target.md`, where Linux CI rejects it, so the
    local hook is more lenient than the authority. CI is the authority precisely
    for this class of difference.
-4. **A line beginning `[word]: text` is read as a reference definition**, and its
+4. **A protocol-relative target `//host/path` is reported as an absolute path.**
+   It is really an external link, and `L7`'s message misnames it. Inherited
+   unchanged from `agents-lint`'s A19, which matched `/*` the same way, so this is
+   a limit carried over rather than introduced — recorded here because it was
+   never written down there.
+5. **A line beginning `[word]: text` is read as a reference definition**, and its
    first word is resolved as a target. So a description-list line such as
    `[TODO]: revisit this later` reports a broken link to `revisit`. That is what
    CommonMark does with the same line, so the linter is not wrong — but it is
