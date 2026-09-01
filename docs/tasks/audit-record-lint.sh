@@ -456,33 +456,42 @@ if [ -n "$repo_root" ]; then
 		# and no arrangement of fixtures changes that while the harness compares
 		# exit codes only. `T-9c5t` is the task that would close it.
 		#
-		# The counters are printed out of the subshell rather than assigned
-		# across it: a pipeline body runs in its own shell, so $ok and $best set
-		# inside it would be discarded.
+		# Fed by a HERE-DOCUMENT, not a pipe, so the loop runs in THIS shell and
+		# $ok and $best are simply variables. A pipeline body runs in its own
+		# shell, which forced a draft of this to print its counters out and take
+		# them apart again with ${_res%% *}. The here-doc body is the single
+		# expansion `$cands`; its RESULT is not rescanned, so a candidate path
+		# holding a backslash, a dollar or a space arrives intact.
 		#
-		# The early `break` is KEPT. A draft of this loop dropped it, on the
-		# stated ground that the list "holds one or two entries". It does not: a
-		# citation by bare filename matches every file of that name in the tree,
-		# and `README.md:N` matches 78 of them. Measured across the record's 82
-		# citations, dropping the break opened 1166 candidate files instead of
-		# stopping at the first that answered, and each open now costs two
-		# processes rather than one -- 1236 ms to 4956 ms on the same tree, for
-		# byte-identical output. `$best` is unaffected: it is only ever reported
-		# when $ok is 0, and on that path the loop never breaks anyway.
-		_res=$(printf '%s\n' "$cands" | (
-			ok=0
-			best=0
-			while IFS= read -r f; do
-				[ -n "$f" ] || continue
-				total_lines=$(text "$repo_root/$f" | awk 'END { print NR }')
-				[ "$total_lines" -gt "$best" ] && best=$total_lines
-				[ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ] && ok=1
-				[ "$ok" -eq 1 ] && break
-			done
-			printf '%s %s' "$ok" "$best"
-		))
-		ok=${_res%% *}
-		best=${_res##* }
+		# `read -r` splits on newlines only, which is what keeps the spaced
+		# candidate whole. `for f in $cands` split it on every blank instead --
+		# `awk: can't open file .../good-path`, and $total_lines empty, which
+		# made both numeric tests error out.
+		#
+		# The early `break` is KEPT. A draft dropped it on the stated ground that
+		# the list "holds one or two entries". It does not: a citation by bare
+		# filename matches every file of that name in the tree, and `README.md:N`
+		# matches 78 of them. Measured across the record's 82 citations, dropping
+		# the break opened 1166 candidate files instead of stopping at the first
+		# that answered -- 1236 ms to 4956 ms on the same tree, for byte-identical
+		# output. `$best` is unaffected: it is only ever reported when $ok is 0,
+		# and on that path the loop never breaks anyway.
+		#
+		# No `text` on the line count. Stripping a trailing carriage return
+		# cannot change NR, so it was a second process per candidate for nothing:
+		# removing it is byte-identical and takes the block from ~1770 ms to
+		# ~1350 ms. Block 2c below DOES need it -- it compares a line's content.
+		ok=0
+		best=0
+		while IFS= read -r f; do
+			[ -n "$f" ] || continue
+			total_lines=$(awk 'END { print NR }' "$repo_root/$f")
+			[ "$total_lines" -gt "$best" ] && best=$total_lines
+			[ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ] && ok=1
+			[ "$ok" -eq 1 ] && break
+		done <<EOF
+$cands
+EOF
 		[ "$ok" -eq 1 ] \
 			|| err "citation $c points past the end of every file it can name (longest has $best lines) (DoD 2)"
 
@@ -514,22 +523,28 @@ if [ -n "$repo_root" ]; then
 			# it was verified against the eight real citations that were stale
 			# when it was written.
 			[ "$is_fixture" -eq 1 ] && continue
-			# The verdict is printed out of the subshell, not assigned across
-			# it: a pipeline body runs in its own shell.
-			drift=$(printf '%s\n' "$cands" | while IFS= read -r f; do
+			# A here-document, for the same reason as the loop above: it runs in
+			# this shell, so $drift is just a variable. `text` IS load-bearing
+			# here -- unlike the line count above, this compares a line's
+			# CONTENT, and a line holding only a carriage return would otherwise
+			# read as non-blank.
+			drift=''
+			while IFS= read -r f; do
 				[ -n "$f" ] || continue
 				[ -f "$repo_root/$f" ] || continue
 				cited=$(text "$repo_root/$f" | awk -v n="$ln" 'NR == n { print; exit }')
 				trimmed=$(printf '%s' "$cited" | sed 's/^[ 	]*//')
 				if [ -z "$trimmed" ]; then
-					printf 'a BLANK line\n'
+					drift='a BLANK line'
 				else
 					case $trimmed in
-					('#'*) printf 'a COMMENT rather than the construct the row names\n' ;;
+					('#'*) drift='a COMMENT rather than the construct the row names' ;;
 					esac
 				fi
 				break
-			done)
+			done <<EOF
+$cands
+EOF
 			[ -z "$drift" ] \
 				|| err "citation $c points at $drift -- it has DRIFTED; re-derive it from the construct, not by arithmetic (DoD 2)"
 			;;
