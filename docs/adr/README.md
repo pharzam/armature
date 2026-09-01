@@ -59,23 +59,29 @@ or the stem as a plain string anywhere under `docs/`, so ADR-0007 — indexed be
 ([#73](https://github.com/pharzam/armature/issues/73)). A warning that cannot
 fire for a record everyone is talking about is worst where it is needed most.
 
-The check matches link syntax; it does not **resolve** it. Whether a link lands on
-a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job (ADR-0007),
-and the two compose: this
-one proves a link to the record exists, that one proves it points at something.
-Neither, on its own, proves the link is the *right* one — that stays a review
-responsibility.
+The check matches link syntax; it does not **resolve** it. Whether a link lands
+on a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job (ADR-0007),
+and the two compose: this one proves a link to the record exists, that one proves
+it points at something. Neither, on its own, proves the link is the *right* one —
+that stays a review responsibility.
+
+Three limits follow from matching rather than resolving, written in the script
+beside the code that carries them. Two are contrived: a link to a *different* file
+that happens to share the record's filename counts, and so does a reference
+definition nothing uses, which renders as nothing at all. The third is not.
+**The two checks compose only for an in-tree target.** `link-lint` skips `http`,
+`https` and `mailto` deliberately — resolving them needs the network, which would
+cost the offline property every check here depends on — so a record whose only
+inbound link is an absolute forge URL reads as cross-linked and is resolved by
+nothing. That URL can name a file that does not exist and both checks stay green.
+
 A note on why this section names ADR-0007 rather than linking it: the index-row
-check below (`3e`) is a bare filename match against this file, so any sentence
-here that carries a record's **filename** makes that check unfalsifiable — the row
-could be deleted and the linter would still find the name. Prose in this file
-refers to a record by number; the index table is what links it. The one exception
-is the sentence at the top of this file, which predates the rule and leaves
-`0001`'s row in the same position; `T-6f3w`, which owns `3e`, carries the fix.
- Two limits follow from matching rather than resolving, and are
-written in the script beside the code that carries them: a link to a *different*
-file that happens to share the record's filename counts, and so does a reference
-definition nothing uses, which renders as nothing at all.
+check (`3e`) is a bare filename match against this file, so any sentence here that
+carries a record's **filename** makes that check unfalsifiable — the row could be
+deleted and the linter would still find the name. Prose in this file refers to a
+record by number; the index table below is what links it. The one exception is the
+sentence at the top of this file, older than this rule, which leaves `0001`'s row
+in that position; `T-6f3w`, which owns `3e`, carries the fix.
 
 ## Index
 

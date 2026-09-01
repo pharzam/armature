@@ -44,18 +44,24 @@ nl='
 # links_to_record NEEDLE FILE... — does any FILE carry a Markdown link whose
 # DESTINATION names NEEDLE (a record's filename)? The three destination forms are
 # link-lint.sh's, read the same way: inline `](dest)`, a reference definition
-# `[label]: dest`, and a raw `href="dest"`. Fenced blocks, HTML comments and
-# inline code spans are stripped first, so a link-SHAPED example is not a link.
+# `[label]: dest`, and a raw `href="dest"`. A fenced block and an HTML comment
+# are skipped whole and an inline code span is stripped from the line, so a
+# link-SHAPED example is not a link.
 #
 # It matches link syntax; it does not RESOLVE it. Whether the destination lands
 # on a real file is link-lint's single job (ADR-0007), and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
-# Two limits follow from matching rather than resolving, and are stated rather
-# than left to be found: a link to a DIFFERENT file that happens to share the
+# Three limits follow from matching rather than resolving, and are stated rather
+# than left to be found. A link to a DIFFERENT file that happens to share the
 # record's filename counts, and a reference DEFINITION with no use anywhere
 # counts although it renders as nothing (link-lint's L6 catches only the
-# reverse). Both need a file deliberately shaped to defeat the check.
+# reverse); both need a file deliberately shaped to defeat the check. The third
+# is not contrived at all: the two checks compose only for an IN-TREE target.
+# link-lint skips http, https and mailto by design, because resolving them needs
+# the network, so a record whose only inbound link is an absolute forge URL reads
+# as cross-linked here and is resolved by nothing -- the URL can name a file that
+# does not exist and both checks stay green.
 #
 # The fence and indent tests are spelled out rather than written `{0,3}`, for the
 # awks with no interval expressions — the same reason anchors_of() in

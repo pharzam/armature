@@ -37,7 +37,9 @@ three lines below name that case's record the three ways a document names one,
 and **link it nowhere**:
 
 - by shorthand, the way a review note does: ADR-0001 of that case is the record.
-- by stem in a code span, the way a citation does: `0001-mentioned-only.md`.
+  The check can no longer match this form at all — it compares filenames — and
+  that is the point: this is the shape that used to silence it.
+- by filename in a code span, the way a citation does: `0001-mentioned-only.md`.
 - link-*shaped*, inside a fence, the way a document that explains link syntax does:
 
 ```markdown
@@ -47,10 +49,11 @@ and **link it nowhere**:
 None of the three is a link, so the `WARN` fires — with or without a trailing
 slash on the argument, since the case directory is excluded by its `good-*` name
 rather than by the `^$adr_dir/` filter that finding A1 defeats. Before
-[#73](https://github.com/pharzam/armature/issues/73) the first two silenced it:
-the check matched the record's stem or its `ADR-NNNN` shorthand as a plain string
-anywhere under `docs/`, and a document that merely discusses a record was read as
-one that links it. **Do not link that record from this file** — a link here ends
+[#73](https://github.com/pharzam/armature/issues/73) **any one of the three**
+silenced it: the check matched the record's stem or its `ADR-NNNN` shorthand as a
+plain string anywhere in a file, so the fenced example counted as much as the
+sentence, and a document that merely discusses a record was read as one that
+links it. **Do not link that record from this file** — a link here ends
 the case's whole purpose, and nothing mechanical would tell you.
 
 ## What this suite does not prove

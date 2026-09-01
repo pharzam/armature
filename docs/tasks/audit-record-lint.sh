@@ -136,7 +136,7 @@ function is_sep(   i) {
 }
 # A citation is a path and a line number. Three forms are accepted, because the
 # kit cites three kinds of file:
-#   1. a file with an extension          adr-lint.sh:75, engineering-discipline.md:454
+#   1. a file with an extension          adr-lint.sh:191, engineering-discipline.md:454
 #   2. a hook or a workflow, which the kit ships without an extension
 #                                        .githooks/pre-push:20, .githooks/commit-msg:25
 #   3. a root file with no extension     LICENSE:3, .gitignore:2
