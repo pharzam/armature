@@ -102,7 +102,7 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Six limits, recorded rather than hidden
+## Eight limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
@@ -146,6 +146,23 @@ change excluded the repository root from the walk.
    ([#76](https://github.com/pharzam/armature/issues/76)). Both are fixed, both
    **by hand, with no mechanism** — the same shape as limit 1, and the reason
    ADR-0007 recorded that one rather than leaving it to be found.
+7. **A link to a path containing a space is not resolved, and the CommonMark
+   angle form is skipped *silently*.** The extractor cuts a destination at the
+   first space or tab, so `[a](<dir with space/target.md>)` — a legal link — is cut
+   to `<dir`, which `is_placeholder()` then reads as an adopter `<…>` marker and
+   skips. No error, nothing resolved, and the reader is not told. That makes it the
+   only **silent** one on this list, and the direction a bug should never point.
+   An unbracketed `[c](dir with space/target.md)` fails `L1` on `dir`, which is
+   *correct* — CommonMark stops at the space too. Reachable since
+   [#76](https://github.com/pharzam/armature/issues/76) put two spaced fixture
+   directories in the tree; no document links into one today, so nothing is
+   currently missed. Recorded rather than fixed, by decision on that issue.
+8. **A percent-encoded space is not decoded, so a correct link reports as broken.**
+   `[b](dir%20with%20space/target.md)` is what a forge writes and what GitHub
+   resolves; this linter looks for a file literally named `dir%20with%20space`,
+   does not find one, and fails `L1`. Loud rather than silent, and the mirror of
+   limit 7: between them, **no** spelling of a spaced path both resolves here and
+   works on the forge.
 
 ## The `EXPECT` convention
 
