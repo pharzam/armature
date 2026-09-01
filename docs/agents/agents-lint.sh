@@ -221,7 +221,8 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 
 # text FILE — the file's lines with any trailing carriage return removed.
 #
-# EVERY file this script reads goes through here. Not one of the checks below
+# EVERY file this script reads goes through here — A2's word count included, which
+# an earlier draft left reading the file directly. Not one of the checks below
 # treats a carriage return as content, and most of them compare a WHOLE STRING,
 # so on a Windows checkout -- core.autocrlf=true, git's default there -- they
 # compared against a character that does not print. A8 said it best:
@@ -342,7 +343,7 @@ HEADINGS='## What this repository is
 
 # --- A2. CLAUDE.md is present and not empty --------------------------------
 [ -f "$claude" ] || die A2 "CLAUDE.md not found or empty: $claude"
-[ "$(words < "$claude")" -gt 0 ] || die A2 "CLAUDE.md not found or empty: $claude"
+[ "$(text "$claude" | words)" -gt 0 ] || die A2 "CLAUDE.md not found or empty: $claude"
 
 # --- A3. the documents the expectations derive from ------------------------
 # One loop over the four paths, not four statements, so the single fixture that

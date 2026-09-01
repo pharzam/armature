@@ -107,8 +107,13 @@ err() { printf 'FAIL  %s\n' "$*" >&2; fail=1; }
 
 # text FILE — the file's lines with any trailing carriage return removed.
 #
-# Every file this script reads goes through here, with ONE stated exception
-# below. Nothing here treats a carriage return as content, and the blocks
+# Every awk that reads a file goes through here, with ONE stated exception
+# below. Block 9's two `grep -q` calls read a file directly and are left alone:
+# neither pattern anchors at end-of-line, so a trailing carriage return cannot
+# affect the match. That is a reason, not an oversight — but it does mean "every
+# read" would be the wrong word, so it is not used.
+#
+# Nothing here treats a carriage return as content, and the blocks
 # compare whole strings -- an ID, a verdict word, a task line -- so on a Windows
 # checkout (core.autocrlf=true, git's default there) every one of them compared
 # against a character that does not print: 37 FAIL lines on a record that

@@ -383,7 +383,14 @@ for path do
 	numval=$(printf '%s' "$num" | sed 's/^0*//'); [ -z "$numval" ] && numval=0
 
 	# 3a. title: first non-blank line is "# NNNN. <title>" (padded or unpadded).
-	title=$(awk 'NF{print; exit}' "$path")
+	#     The strip is here for the same reason it is inside 3c's awk, not for
+	#     the reason 3b gives below. This rule selects a line by NF, and on a
+	#     CRLF file an empty line is the record `\r`, which is NOT a blank under
+	#     the default FS -- so NF is 1 and the FIRST BLANK LINE was chosen as the
+	#     "first non-blank" one. A record with a leading blank line then failed
+	#     with `got: ` and an invisible character, which is precisely the report
+	#     shape this whole change exists to remove.
+	title=$(awk '{ sub(/\r$/, "") } NF { print; exit }' "$path")
 	printf '%s' "$title" | grep -Eq "^# 0*${numval}\. " \
 		|| err "$name: first non-blank line must be '# $num. <title>' (got: ${title:-<empty>})"
 
@@ -395,10 +402,13 @@ for path do
 	#     return made every record in such a file fail -- and the report was
 	#     worse than the failure, because the character does not print:
 	#     `Date must be YYYY-MM-DD ...; got 'YYYY-MM-DD'`, a linter appearing to
-	#     reject the value it asks for. 3a, 3d and 3e were never affected: they
-	#     match a PREFIX or a substring, which a trailing character cannot reach.
-	#     links_to_record() above already stripped it, so one script disagreed
-	#     with itself about the same file.
+	#     reject the value it asks for. 3d and 3e are the two that really were
+	#     never affected: they match a PREFIX or a substring, which a trailing
+	#     character cannot reach. 3a is NOT in that group, although an earlier
+	#     draft of this comment said it was — it selects a line by NF rather than
+	#     matching within one, and a carriage return is not a blank. See the note
+	#     at 3a. links_to_record() above already stripped the return, so one
+	#     script disagreed with itself about the same file.
 	#
 	#     `tr` rather than `sed 's/\r$//'`: tr's \r escape is POSIX-defined,
 	#     sed's is not (the seds tested here happen to accept it). Deleting every

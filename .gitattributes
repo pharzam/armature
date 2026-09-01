@@ -23,9 +23,10 @@
 # adopter they were written for: that adopter never reached the linter.
 #
 # `text eol=lf` normalises the blob to line feeds AND forces line feeds in the
-# working tree, whatever core.autocrlf says. Scoped to what must be line feeds
-# to execute. It is NOT the repository-wide `* text=auto eol=lf` rejected below:
-# it decides nothing about an adopter's own files.
+# working tree, whatever core.autocrlf says. It is NOT the repository-wide
+# `* text=auto eol=lf` rejected below: it is anchored to docs/ and .githooks/,
+# the two directories the kit owns, so an adopter's own scripts elsewhere in
+# their repository are left entirely alone.
 #
 # WHAT THIS RULE DOES, AND WHAT THE LINTERS DO. This rule only makes the scripts
 # RUNNABLE. Every ordinary Markdown file in the tree still arrives with carriage
@@ -60,9 +61,15 @@
 # `* text=auto eol=lf` would HIDE the defect rather than fix it (a workaround
 # under R4), and would impose a line-ending policy on every adopter's checkout,
 # which is not this kit's business.
-# 1 — executable text. Line feeds, everywhere, or it will not run.
-*.sh                          text eol=lf
-.githooks/*                   text eol=lf
+# 1 — executable text. Line feeds, or it will not run.
+#
+# ANCHORED to the two directories the kit owns. A bare `*.sh` carries no slash,
+# so git matches it against the BASENAME AT EVERY DEPTH: it governed every .sh
+# file in an adopter's repository, vendored trees included, and on contact it
+# marked their CRLF-committed scripts modified. Every executable this kit ships
+# is under docs/ or .githooks/, so nothing is lost by saying so.
+docs/**/*.sh                  text eol=lf
+.githooks/**                  text eol=lf
 
 # 2 — the two fixtures whose carriage returns ARE the test.
 docs/adr/tests/good-crlf/**   eol=crlf
