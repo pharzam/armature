@@ -91,8 +91,13 @@ case_run() {
 		if [ "$_st" -ne 0 ]; then _got=refuse; else _got=contradictory-printed-refusal-but-committed; fi
 	elif printf '%s\n' "$_out" | grep -q 'PROVENANCE-RAN'; then
 		if [ "$_st" -eq 0 ]; then _got=pass; else _got=contradictory-ran-but-commit-failed; fi
-	else
+	elif [ "$_st" -eq 0 ]; then
 		_got=no-hook-ran
+	else
+		# The commit failed and the hook said nothing recognisable. That is not the
+		# same as no hook running, and calling it that would misname the cause the
+		# way a refusal blaming an unset setting did.
+		_got=hook-failed-silently
 	fi
 	if [ "$_got" = "$2" ]; then
 		printf 'ok    %s (%s)\n' "$3" "$_got"
