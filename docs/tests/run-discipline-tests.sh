@@ -157,15 +157,36 @@ check_crlf() {
 '
 	# The paths .gitattributes pins, resolved: `dir/**` is the directory, and
 	# anything else is taken as a single file.
+	# A pin that resolves to nothing is reported INDIVIDUALLY. Dropping it from
+	# the list and reporting only when the whole list came back empty was the
+	# same silence this section exists to end: rename one fixture directory and
+	# its pin becomes decoration, with every other pin still holding the run
+	# green. The two lists are carried out of the subshell on tagged lines
+	# because a pipeline body cannot assign to its caller.
 	_pins=''
+	_dead=''
 	if [ -f .gitattributes ]; then
-		_pins=$(awk '$0 !~ /^#/ && $0 ~ /eol=crlf/ { print $1 }' .gitattributes \
+		_resolved=$(awk '$0 !~ /^#/ && $0 ~ /eol=crlf/ { print $1 }' .gitattributes \
 			| while IFS= read -r _p; do
-				case $_p in
-				(*/'**') _p=${_p%/'**'} ;;
+				[ -n "$_p" ] || continue
+				_t=$_p
+				case $_t in
+				(*/'**') _t=${_t%/'**'} ;;
 				esac
-				[ -e "$_p" ] && printf '%s\n' "$_p"
+				if [ -e "$_t" ]; then
+					printf 'OK %s\n' "$_t"
+				else
+					printf 'DEAD %s\n' "$_p"
+				fi
 			done)
+		_pins=$(printf '%s\n' "$_resolved" | sed -n 's/^OK //p')
+		_dead=$(printf '%s\n' "$_resolved" | sed -n 's/^DEAD //p')
+	fi
+	if [ -n "$_dead" ]; then
+		printf '%s\n' "$_dead" | while IFS= read -r _p; do
+			printf 'FAIL  crlf: .gitattributes pins %s eol=crlf and no such path exists — the rule is decoration; fix the pattern or drop the line\n' "$_p"
+		done
+		fail=$((fail + $(printf '%s\n' "$_dead" | awk 'END { print NR }')))
 	fi
 
 	# Every case that CLAIMS to be a CRLF fixture must also be pinned. Reported
@@ -186,10 +207,11 @@ check_crlf() {
 		printf 'FAIL  crlf: no fixture case named crlf was found — the line-ending coverage is gone, not passing\n'
 	fi
 
-	# A pin naming nothing is a defect in the pin, not an absence of work.
-	if [ -f .gitattributes ] && [ -z "$_pins" ]; then
+	# And a file with no eol=crlf line at all, which is the adopter who copied
+	# fixture directories and left the root file behind.
+	if [ -f .gitattributes ] && [ -z "$_pins" ] && [ -z "$_dead" ]; then
 		fail=$((fail + 1))
-		printf 'FAIL  crlf: .gitattributes names no eol=crlf path that exists — the CRLF fixtures are pinned by nothing\n'
+		printf 'FAIL  crlf: .gitattributes names no eol=crlf path — the CRLF fixtures are pinned by nothing. Copy the kit .gitattributes into your repository root\n'
 	fi
 
 	# The union: everything under a crlf-named case, and everything pinned.

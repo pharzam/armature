@@ -118,7 +118,7 @@ change excluded the repository root from the walk.
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
    ([#67](https://github.com/pharzam/armature/issues/67)) and the named function went
    with it. What survives there is the same rule written inline in the rule-anchor
-   derivation (`agents-lint.sh:521`). If one changes and the other does not, one
+   derivation (`agents-lint.sh:540`). If one changes and the other does not, one
    check resolves anchors the other rejects — **by hand, with no mechanism**. It also
    drops underscores, which GitHub keeps in an anchor: harmless while no heading in
    the tree uses one, and a defect the day one does.

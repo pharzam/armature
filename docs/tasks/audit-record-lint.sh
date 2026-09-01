@@ -92,10 +92,16 @@ record="$tasks_dir/T-3v9q.md"
 backlog="$tasks_dir/backlog.md"
 completed="$tasks_dir/completed.md"
 # A fixture case carries its own glossary; the real run uses the sibling one.
+# That is also how the run knows which it is, which block 2c below needs: a
+# fixture's citations are ILLUSTRATIVE -- `adr-lint.sh:75` in a fixture record
+# is there to exercise the citation SHAPE, and points into the real tree only
+# by accident of block 2b resolving against the repository root.
 if [ -f "$tasks_dir/glossary.md" ]; then
 	glossary="$tasks_dir/glossary.md"
+	is_fixture=1
 else
 	glossary=$(dirname "$tasks_dir")/glossary.md
+	is_fixture=0
 fi
 # The repository root, used to resolve the paths the record cites. For a fixture
 # case there is nothing to resolve against, so citation resolution is skipped.
@@ -479,6 +485,55 @@ if [ -n "$repo_root" ]; then
 		best=${_res##* }
 		[ "$ok" -eq 1 ] \
 			|| err "citation $c points past the end of every file it can name (longest has $best lines) (DoD 2)"
+
+		# 2c. AND the line must hold code, not a blank or a comment.
+		#
+		# Block 2b bounds-checks and nothing more, so a citation that has DRIFTED
+		# -- the file grew above it -- lands on some other line and stays green.
+		# That is not hypothetical: the citations into adr-lint.sh went stale
+		# three separate times on one branch, each time because a commit added
+		# lines above them, and each time the suite was green throughout.
+		#
+		# A drifted citation most often lands in the comment block that displaced
+		# it, so this catches the common case. It is PARTIAL and the measurement
+		# says how partial: of the eleven citations stale at the third
+		# recurrence, this rule catches five. The other six had slid onto a
+		# different line of real code, which no rule can distinguish from the
+		# right one without the record naming the construct it means.
+		#
+		# Blank and comment only, and only for a shell script: a Markdown or YAML
+		# citation legitimately points at prose. `#` at the start of a Markdown
+		# line is a heading, not a comment, which is why the suffix is checked.
+		case $p in
+		*.sh)
+			# Real record only. A fixture's citations are illustrative (see the
+			# note beside is_fixture), so holding them to the real tree's line
+			# numbers would make every fixture red the next time a linter grew a
+			# comment -- which is the very drift this rule exists to catch, aimed
+			# at the wrong file. The cost is that 2c has no fixture of its own;
+			# it was verified against the eight real citations that were stale
+			# when it was written.
+			[ "$is_fixture" -eq 1 ] && continue
+			# The verdict is printed out of the subshell, not assigned across
+			# it: a pipeline body runs in its own shell.
+			drift=$(printf '%s\n' "$cands" | while IFS= read -r f; do
+				[ -n "$f" ] || continue
+				[ -f "$repo_root/$f" ] || continue
+				cited=$(text "$repo_root/$f" | awk -v n="$ln" 'NR == n { print; exit }')
+				trimmed=$(printf '%s' "$cited" | sed 's/^[ 	]*//')
+				if [ -z "$trimmed" ]; then
+					printf 'a BLANK line\n'
+				else
+					case $trimmed in
+					('#'*) printf 'a COMMENT rather than the construct the row names\n' ;;
+					esac
+				fi
+				break
+			done)
+			[ -z "$drift" ] \
+				|| err "citation $c points at $drift -- it has DRIFTED; re-derive it from the construct, not by arithmetic (DoD 2)"
+			;;
+		esac
 	done
 	# A block that checks nothing must say so rather than pass.
 	[ "$n_cites" -gt 0 ] || err "no resolvable citation found in the Findings tables -- block 2b checked nothing (DoD 2)"

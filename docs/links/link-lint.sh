@@ -62,7 +62,8 @@
 # because stripping the em-dash leaves two spaces. The slug() below began as a copy
 # of agents-lint.sh's A19. That assertion was removed (#67), and the named function
 # went with it -- what survives there is the same rule written inline in the
-# rule-anchor derivation (`RULES=$(awk …`, agents-lint.sh:498). The two must be
+# rule-anchor derivation (`RULES=$(text "$workflow" | awk …`, the `gsub(/[^a-z0-9
+# -]/, "", s)` inside it at agents-lint.sh:540). The two must be
 # kept in step by hand: if one changes, the other resolves anchors the other
 # rejects. Nothing enforces that today. It also drops underscores,
 # which GitHub keeps — harmless while no heading in the tree uses one, and stated
