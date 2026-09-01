@@ -203,14 +203,32 @@ is_cross_linked() {
 	_docs=$(dirname "$adr_dir")
 	_root=$(dirname "$_docs")
 
-	# The file list is held as TEXT and piped, never expanded by the shell.
-	# `set -- $(find ...)` would word-split it -- and, because IFS does not
-	# disable pathname expansion and this script does not `set -f`, would also
-	# GLOB it: a linking file named [a-z].md vanished, and a sibling directory
-	# named ad[r] could expand back into the very ADR directory excluded below.
-	# Passing it as arguments also broke on a large tree, which is a regression
-	# against the grep -R this replaced: awk got ARG_MAX bytes of paths and
-	# reported every record as an orphan.
+	# Four things below are load-bearing, and each one is the fix for a defect
+	# that was measured. Do not simplify any of them without reading this.
+	#
+	# 1. The list is TEXT and is PIPED, never expanded by the shell.
+	#    `set -- $(find ...)` word-splits it, and -- because IFS does not
+	#    disable pathname expansion and this script never sets -f -- also GLOBS
+	#    it: a linking file named [a-z].md vanished from the list, and a sibling
+	#    directory named ad[r] could expand back into the very ADR directory
+	#    excluded below. Passing the list as ARGUMENTS also broke on a large
+	#    tree, a regression against the grep -R this replaced: past ARG_MAX awk
+	#    never ran and every record read as an orphan.
+	# 2. Both operator paths reach awk through the ENVIRONMENT, never `-v`.
+	#    `awk -v x=VALUE` runs ESCAPE PROCESSING on the value, so a checkout
+	#    under a directory holding a backslash arrives mangled: measured, that
+	#    SILENCED a genuine orphan in one tree and reported every record as an
+	#    orphan in another.
+	# 3. The fixture patterns are measured on `rel`, the path RELATIVE to the
+	#    documents root -- never the absolute path, which carries the operator
+	#    directory names. A checkout in a directory called good/ or bad-anything/
+	#    otherwise deleted the whole tree from the search space.
+	# 4. The ADR directory is excluded by a LITERAL prefix comparison, because a
+	#    directory argument is an operator path and can hold a regex
+	#    metacharacter: a checkout under x[y once excluded nothing. The
+	#    comparison is deliberately prefix-exact, so a trailing slash on the
+	#    argument still excludes nothing -- finding A1 of T-3v9q, open as T-6f3w,
+	#    which owns it and has its own tests. Do not fix that here.
 	_files=$(find "$_docs" -type f -name '*.md' 2>/dev/null \
 		| ADR_LINT_DOCS="$_docs/" ADR_LINT_SELF="$adr_dir/" awk '
 			BEGIN { docs = ENVIRON["ADR_LINT_DOCS"]; self = ENVIRON["ADR_LINT_SELF"] }
@@ -218,7 +236,13 @@ is_cross_linked() {
 				if (index($0, self) == 1) next
 				rel = $0
 				if (index(rel, docs) == 1) rel = substr(rel, length(docs) + 1)
+				# the good*/bad* globs the TEST RUNNER dispatches on -- it
+				# is the authority on what a fixture is called, and is wider
+				# than the good, good-*, bad-* link-lint happens to use, so a
+				# directory called goodX is a fixture here as it is there
 				if (rel ~ /(^|\/)(good|bad)[^\/]*\//) next
+				# the same naming for the other shape the runner drives: a case
+				# FILE under a tests/ directory
 				if (rel ~ /(^|\/)tests\/(.*\/)?(good|bad)[^\/]*\.md$/) next
 				print
 			}')
