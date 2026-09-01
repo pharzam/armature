@@ -54,7 +54,8 @@ note() { printf 'WARN  %s\n' "$*" >&2; }
 # path find never prints. All five are silent -- the check reports OK on a tree
 # full of orphans. -P resolves the symlink; a logical cd would keep it and leave
 # that fifth spelling broken.
-adr_dir_canon=$(CDPATH= cd -P -- "$adr_dir" && pwd -P)
+adr_dir_canon=$(CDPATH= cd -P -- "$adr_dir" 2>/dev/null && pwd -P)
+[ -n "$adr_dir_canon" ] || { printf 'FAIL  ADR directory cannot be entered: %s\n' "$adr_dir" >&2; exit 1; }
 [ -f "$readme" ]  || err "missing $readme (the ADR index)"
 
 nl='

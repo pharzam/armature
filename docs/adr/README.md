@@ -71,8 +71,8 @@ warning then goes quietest for a newly written record, which is the one most
 likely to be discussed before anyone links it.
 
 The check matches link syntax; it does not **resolve** it. Whether a link lands
-on a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job, recorded
-in the decision that gave it that job, and the two compose: this one proves a link to the record exists, that one proves
+on a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job, given to
+it by ADR-0007, and the two compose: this one proves a link to the record exists, that one proves
 it points at something. Neither, on its own, proves the link is the *right* one —
 that stays a review responsibility.
 
