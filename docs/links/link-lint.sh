@@ -107,6 +107,10 @@ is_placeholder() {
 }
 
 # anchors_of FILE — the GitHub slug of every heading, one per line, fences skipped.
+# No carriage return is stripped here and none needs to be: slug() keeps only
+# [a-z0-9 -], so a CRLF file's trailing carriage return is dropped with the rest
+# of the punctuation. Stated because it is true by CONSEQUENCE rather than by
+# intent — narrow that character class and this becomes wrong, silently.
 anchors_of() {
 	awk '
 		function slug(s,   x) {
@@ -142,6 +146,15 @@ lint_file() {
 	# also resolved) or USE (a reference label, checked against the definitions).
 	_links=$(awk '
 		function isfence(s) { return (s ~ /^[ ]{0,3}(```|~~~)/) }
+		# A CRLF file ends every line with a carriage return. Strip it FIRST, so
+		# every rule below reads a clean line and there is one behaviour rather
+		# than one per form. Only the reference definition was ever wrong -- the
+		# other three destinations are closed by a `)` or a `"` that separates the
+		# carriage return from the path -- but patching that one branch would
+		# leave the next form added here to find the defect again.
+		# adr-lint.sh:links_to_record() strips it the same way, and the two must
+		# agree about what a link is (links/README.md limit 6).
+		{ sub(/\r$/, "") }
 		isfence($0) { fence = !fence; next }
 		fence { next }
 		/<!--/ { incomment = 1 }

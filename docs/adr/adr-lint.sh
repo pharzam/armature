@@ -42,11 +42,14 @@ note() { printf 'WARN  %s\n' "$*" >&2; }
 [ -d "$adr_dir" ] || { printf 'FAIL  ADR directory not found: %s\n' "$adr_dir" >&2; exit 1; }
 
 # A canonical form of the directory, used ONLY where the path is compared as a
-# STRING. $adr_dir itself is left exactly as the caller spelled it, because the
-# record list further down is space-joined and looped unquoted (see the note at
-# section 1): forcing it absolute would push the operator checkout prefix through
-# that loop and break every run at a path containing a space, including the
-# fixture suite, which passes relative paths.
+# STRING. $adr_dir itself is still left exactly as the caller spelled it, and it
+# is now a free choice rather than a forced one: the reason used to be that the
+# record list at section 1 was space-joined and looped unquoted, so forcing this
+# absolute would have pushed the operator checkout prefix through that loop and
+# broken every run at a path containing a space. That list is positional
+# parameters now and carries any path safely, so nothing here depends on the
+# spelling any more. The caller's spelling is kept because the messages read
+# better with the path the operator typed.
 #
 # The comparison needs one spelling because $adr_dir is used both as a path --
 # handed to find and dirname -- and as a prefix matched against what find prints.
@@ -315,39 +318,45 @@ is_cross_linked() {
 }
 
 # --- 1. filenames; collect the valid ADR files -----------------------------
-# KNOWN DEFECT, older than the cross-link work and not fixed here: this list is
-# a SPACE-JOINED string that is then looped over unquoted, so a checkout at a
-# path containing a space breaks the run -- `FAIL duplicate ADR number: sp`, on
-# a repository that violates nothing. prd-lint.sh carries the identical
-# construct. It fails loud rather than silent, and no fixture can reach it: the
-# discipline runner hands the linters relative paths, which never carry the
-# spaced prefix, and this script keeps $adr_dir as spelled so that stays true.
-# The gate is NOT so lucky, and that is the half worth knowing: the no-argument
-# default is $script_dir, absolute by construction at the head of this file, so
-# the pre-commit hook and every CI job meet this on every run at such a checkout,
-# unconditionally rather than through an unlucky spelling. An absolute argument
-# is exposed the same way. Recorded in the tree because the issue that found it
-# is closed.
-adr_files=""
+# The record list is held in the POSITIONAL PARAMETERS, not in a string.
+#
+# It was a SPACE-JOINED string looped over unquoted, so one path containing a
+# space became two words: at a checkout under `…/sp ace/` the run reported
+# `FAIL duplicate ADR number: sp` and 137 more, on a repository that violates
+# nothing. The exposed invocations were the ones the gate itself uses -- the
+# no-argument default is $script_dir, absolute by construction at the head of
+# this file -- so the pre-commit hook and every CI job met it on every run.
+#
+# Positional parameters are the POSIX way to carry a list of paths. They need no
+# separator, so they close the whole class rather than the reported symptom:
+# a space, a tab, a newline and a glob character are all safe. The alternative
+# considered and rejected was a newline-joined string with IFS, which fixes the
+# space and leaves the glob -- IFS does not disable pathname expansion, and this
+# script never sets -f. collect_search_space() note 1 above is that same trap,
+# measured.
+#
+# $1 is read into $adr_dir at the head of this script and is not wanted again,
+# so overwriting the parameters here costs nothing.
+set --
 for path in "$adr_dir"/*.md; do
 	[ -e "$path" ] || continue
 	name=$(basename "$path")
 	[ "$name" = "README.md" ] && continue
 	[ "$name" = "template.md" ] && continue
 	if printf '%s' "$name" | grep -Eq '^[0-9]{4}-[a-z0-9][a-z0-9-]*\.md$'; then
-		adr_files="$adr_files $path"
+		set -- "$@" "$path"
 	else
 		err "$name: filename must be NNNN-kebab-case.md (four digits, zero-padded)"
 	fi
 done
 
-if [ -z "${adr_files# }" ]; then
+if [ "$#" -eq 0 ]; then
 	# No ADRs yet is a valid state for a fresh project.
 	[ "$fail" -eq 0 ] && exit 0 || exit 1
 fi
 
 # --- 2. sequential + unique numbering --------------------------------------
-numbers=$(for p in $adr_files; do basename "$p" | cut -c1-4; done | sort)
+numbers=$(for p in "$@"; do basename "$p" | cut -c1-4; done | sort)
 prev=""
 expected=1
 for n in $numbers; do
@@ -368,7 +377,7 @@ if [ "$cross_files_seen" -eq 0 ]; then
 fi
 
 # --- 3. per-file structure -------------------------------------------------
-for path in $adr_files; do
+for path do
 	name=$(basename "$path")
 	num=$(printf '%s' "$name" | cut -c1-4)
 	numval=$(printf '%s' "$num" | sed 's/^0*//'); [ -z "$numval" ] && numval=0
@@ -380,7 +389,23 @@ for path in $adr_files; do
 
 	# 3b. Date: a plain 'Date: YYYY-MM-DD' line — a real date or the unfilled
 	#     placeholder (the kit ships the placeholder so it self-lints green).
-	dateline=$(grep -E '^Date:' "$path" | head -n1)
+	#
+	#     `tr -d '\r'` is what makes this read a CRLF file. Both this check and
+	#     3c below compare the value as a WHOLE STRING, so a trailing carriage
+	#     return made every record in such a file fail -- and the report was
+	#     worse than the failure, because the character does not print:
+	#     `Date must be YYYY-MM-DD ...; got 'YYYY-MM-DD'`, a linter appearing to
+	#     reject the value it asks for. 3a, 3d and 3e were never affected: they
+	#     match a PREFIX or a substring, which a trailing character cannot reach.
+	#     links_to_record() above already stripped it, so one script disagreed
+	#     with itself about the same file.
+	#
+	#     `tr` rather than `sed 's/\r$//'`: tr's \r escape is POSIX-defined,
+	#     sed's is not (the seds tested here happen to accept it). Deleting every
+	#     carriage return rather than only a trailing one is safe here -- a date
+	#     may not contain one. 3c strips it a different way, inside awk, and the
+	#     note there says why the same pipe would not work.
+	dateline=$(grep -E '^Date:' "$path" | head -n1 | tr -d '\r')
 	if [ -z "$dateline" ]; then
 		err "$name: missing 'Date: YYYY-MM-DD' line"
 	else
@@ -398,7 +423,14 @@ for path in $adr_files; do
 	if ! grep -Eq '^## Status[[:space:]]*$' "$path"; then
 		err "$name: missing '## Status' section"
 	else
-		statusval=$(awk '/^## Status[[:space:]]*$/{f=1; next} f && NF {print; exit}' "$path")
+		# The strip runs INSIDE awk, and it has to. Piping the result through
+		# `tr` instead leaves the blank line after the heading holding a
+		# carriage return, and a carriage return is not a blank under the
+		# default FS -- so NF is 1, awk takes that line as the status value, and
+		# the check reports `Status '<empty>'`. Measured: it turned one wrong
+		# answer into a worse one. Stripping first makes the line genuinely
+		# empty, which is what `f && NF` was always reading it as.
+		statusval=$(awk '{ sub(/\r$/, "") } /^## Status[[:space:]]*$/{f=1; next} f && NF {print; exit}' "$path")
 		case "$statusval" in
 			Proposed|Accepted|Deprecated) : ;;
 			"Superseded by "*|"Accepted. Amended by "*) : ;;

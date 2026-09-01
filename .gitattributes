@@ -1,0 +1,23 @@
+# Line endings are CONTENT in two places in this tree, not formatting.
+#
+# docs/adr/tests/good-crlf/ and docs/links/tests/good-crlf/ are fixtures whose
+# files carry Windows line endings. They are tests only while they keep them.
+#
+# Git normalises a text file to line feeds in the blob and converts on checkout,
+# so under `core.autocrlf=input` -- a common setting, and the default on no
+# platform, which is what makes it easy to miss -- a clone rewrites these files
+# to plain line feeds. Both cases then pass while testing nothing: a green with
+# no assertion behind it, which is the class of defect the fixtures exist to
+# close. Measured on three throwaway repositories; `eol=crlf` is the only one of
+# the three arrangements that survives.
+#
+# `eol=crlf` keeps the blob as line feeds -- so the diff stays readable and the
+# files stay mergeable -- and forces carriage returns in the WORKING TREE on
+# every platform, whatever `core.autocrlf` is set to.
+#
+# Scoped to these two directories on purpose. A repository-wide
+# `* text=auto eol=lf` would HIDE the defect rather than fix it (a workaround
+# under R4), and would impose a line-ending policy on every adopter's checkout,
+# which is not this kit's business.
+docs/adr/tests/good-crlf/**   eol=crlf
+docs/links/tests/good-crlf/** eol=crlf

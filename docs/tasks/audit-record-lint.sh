@@ -397,13 +397,35 @@ if [ -n "$repo_root" ]; then
 		# A path that matches more than one file is not itself an error -- the
 		# record cites by the shortest readable path -- but the line must exist
 		# in one of them, which is what catches a number past the end.
-		ok=0
-		best=0
-		for f in $cands; do
-			total_lines=$(awk 'END { print NR }' "$repo_root/$f")
-			[ "$total_lines" -gt "$best" ] && best=$total_lines
-			if [ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ]; then ok=1; break; fi
-		done
+		# The candidate list is NEWLINE-separated and is read one line at a
+		# time. `for f in $cands` split it on every blank as well, so a
+		# candidate under a path containing a space became two half-paths:
+		# `awk: can't open file .../good-path` on stderr, and $total_lines
+		# empty, which then made both numeric tests error out. It was also
+		# glob-expanded, since IFS does not disable pathname expansion.
+		#
+		# The fixture that found it is docs/adr/tests/good-path with space/,
+		# added for adr-lint. Its README.md is a candidate for any `README.md:N`
+		# citation, so the defect surfaced the moment the fixture landed. Same
+		# class as the one that fixture exists to catch, in a third script.
+		#
+		# The counters are printed out of the subshell rather than assigned
+		# across it: a pipeline body runs in its own shell, so $ok and $best set
+		# inside it would be discarded. That also costs the early `break`, which
+		# was a saving on a list that holds one or two entries.
+		_res=$(printf '%s\n' "$cands" | (
+			ok=0
+			best=0
+			while IFS= read -r f; do
+				[ -n "$f" ] || continue
+				total_lines=$(awk 'END { print NR }' "$repo_root/$f")
+				[ "$total_lines" -gt "$best" ] && best=$total_lines
+				[ "$ln" -le "$total_lines" ] && [ "$ln" -gt 0 ] && ok=1
+			done
+			printf '%s %s' "$ok" "$best"
+		))
+		ok=${_res%% *}
+		best=${_res##* }
 		[ "$ok" -eq 1 ] \
 			|| err "citation $c points past the end of every file it can name (longest has $best lines) (DoD 2)"
 	done
