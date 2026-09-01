@@ -26,6 +26,11 @@
 #   L6  every reference-style use `[text][label]` has a matching `[label]: target`
 #       definition in the same file. Without one the forge renders the brackets as
 #       literal text, so the link is not broken — it is not a link at all.
+#   L7  no in-tree target is an absolute path. A forge resolves `/x.md` against the
+#       SITE root and a local viewer against the FILESYSTEM root, so it is wrong
+#       either way — and joining it onto the linking file's directory would let it
+#       resolve for any file at the repository root, which is where entry points
+#       live. Inherited from agents-lint's A19, which this check replaced.
 #
 # Four link forms are read, because a checker blind to a form is worse than no
 # checker: the reader trusts it. Inline `[x](t)`, NESTED `[![alt](i.png)](t)` —
@@ -53,8 +58,12 @@
 # The slug rule is the trap. GitHub lowercases, drops punctuation, and replaces
 # EACH space with a hyphen — it does not collapse runs. So `## R5 — Deterministic
 # over LLM-based` becomes `r5--deterministic-over-llm-based`, with TWO hyphens,
-# because stripping the em-dash leaves two spaces. The slug() below is copied from
-# agents-lint.sh's A19 so the two can never disagree; it also drops underscores,
+# because stripping the em-dash leaves two spaces. The slug() below began as a copy
+# of agents-lint.sh's A19. That assertion was removed (#67), and the named function
+# went with it -- what survives there is the same rule written inline in the
+# rule-anchor derivation (`RULES=$(awk …`, agents-lint.sh:498). The two must be
+# kept in step by hand: if one changes, the other resolves anchors the other
+# rejects. Nothing enforces that today. It also drops underscores,
 # which GitHub keeps — harmless while no heading in the tree uses one, and stated
 # here rather than left as a surprise.
 #
@@ -227,6 +236,19 @@ lint_file() {
 		http://*|https://*|mailto:*) IFS=$nl; continue ;;
 		esac
 		is_placeholder "$_target" && { IFS=$nl; continue; }
+
+		# L7 — an absolute target is a portability defect, not a path to resolve.
+		# A forge resolves `/x.md` against the SITE root, not the repository; a
+		# local viewer resolves it against the FILESYSTEM root. Wrong either way.
+		# It has to be rejected rather than resolved, because joining it onto the
+		# linking file's directory makes it resolve to the real file whenever that
+		# file sits at the repository root -- which is exactly where an entry point
+		# lives, so the common case is the one that would pass silently.
+		case $_target in
+		/*)	n_links=$((n_links + 1))
+			err L7 "$_rel:$_lineno links $_target, an absolute path; a link inside the tree must be relative to the file that carries it"
+			IFS=$nl; continue ;;
+		esac
 
 		_path=${_target%%#*}
 		case $_target in
