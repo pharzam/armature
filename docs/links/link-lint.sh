@@ -47,7 +47,8 @@
 #     AGENTS.md warns about.
 #   - Fenced code blocks and HTML comments, whose links are examples, not
 #     navigation.
-#   - Fixture CASE directories — any path with a `good*` or `bad-*` component,
+#   - Fixture CASE directories — any path with a `good`, `good-*` or `bad-*`
+#     component,
 #     the naming docs/tests/run-discipline-tests.sh already dispatches on. Their
 #     links are deliberately broken: `docs/agents/tests/bad-dead-link/` exists to
 #     make agents-lint reject a dead link, and linting it would report that

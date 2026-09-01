@@ -120,6 +120,11 @@ links_to_record() {
 		incomment { if ($0 ~ /-->/) incomment = 0; next }
 		{
 			line = $0
+			# a CRLF file ends every line with a carriage return, which would
+			# otherwise ride along on a reference definition target and stop it
+			# naming the record. An inline destination is unaffected -- the
+			# closing paren separates it -- so only this form ever saw it.
+			sub(/\r$/, "", line)
 			# an inline code span holds a citation, not navigation
 			gsub(/`[^`]*`/, "", line)
 
