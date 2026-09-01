@@ -79,8 +79,8 @@ an in-tree target.** `link-lint` skips `http`, `https` and `mailto` deliberately
 resolving them needs the network, which would cost the offline property every
 check here depends on — so a record whose only inbound link is an absolute forge
 URL reads as cross-linked and is resolved by nothing. That URL can name a file
-that does not exist and both checks stay green. Four narrower ones, all of them
-about matching rather than resolving, are listed in
+that does not exist and both checks stay green. Eight narrower ones — six more about what the
+matching reads, two about where the ADR directory sits — are listed in
 [`adr-lint.sh`](adr-lint.sh)'s header beside the code that carries them.
 
 One rule for writing in **this** file, which follows from a different check. The

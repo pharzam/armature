@@ -52,8 +52,9 @@ nl='
 # on a real file is link-lint's single job (ADR-0007), and the two compose: this
 # proves a link to the record exists, that one proves it points at something.
 #
-# FIVE LIMITS, stated rather than left to be found. This is the full list; the
-# README states only the one an adopter has to know.
+# NINE LIMITS, stated rather than left to be found. This is the full list; the
+# README states only the one an adopter has to know. Seven are about what the
+# MATCHING reads; the last two are about the SHAPE of the tree.
 #
 #   1. The two checks compose only for an IN-TREE target. link-lint skips http,
 #      https and mailto by design, because resolving them needs the network, so a
@@ -73,40 +74,32 @@ nl='
 #   5. A real link is MISSED on a line that also opens an HTML comment, even one
 #      that closes on the same line, because the whole line is skipped. This
 #      fails loud -- a spurious warning, not a silent pass -- and link-lint.sh
-#      carries the identical construct, so the two agree.
-#
-# Limits 4 and 5 are shared with link-lint by construction: the extractor is the
-# same reading of the same forms. If one is fixed, fix both (links/README.md
-# limit 6).
-#
-# Two more come from the SHAPE of the tree rather than from the matching, and
-# both predate the link-matching rewrite:
-#
-#   6. A SECOND COPY of the ADR directory anywhere under the documents root --
-#      a worktree, a vendored submodule, a build cache -- is not excluded: the
-#      exclusion is one literal path prefix. Its index README then links every
-#      record, and every record reads as cross-linked. This one is SILENT, which
-#      makes it the worst of the seven. An adopter who puts the per-task
-#      worktree directory under docs/ walks straight into it.
-#   7. The ADR directory is assumed to sit DIRECTLY under the documents root:
-#      the search space is its parent, and the extra file read is that parent
-#      directory of THAT. Move it to docs/architecture/adr/ and the space
-#      narrows to docs/architecture/, so every record warns. That failure is
-#      loud rather than silent, and no adopter has to keep the layout -- but
-#      nothing tells them, so it is written here.
-#   8. Stripping code spans REWRITES the line before any destination is read,
+#      carries the identical construct.
+#   6. Stripping code spans REWRITES the line before any destination is read,
 #      which cuts both ways: `[x]`foo`(../adr/0001-x.md)` is not a link and is
 #      counted as one, and a line carrying an odd backtick -- an apostrophe
 #      written as one, say -- can have a real link eaten and the record reported
-#      an orphan. Both are shared with link-lint, which strips the same way.
-#   9. Filenames are compared with ==, so on a case-insensitive filesystem a
+#      an orphan. link-lint strips the same way.
+#   7. Filenames are compared with ==, so on a case-insensitive filesystem a
 #      link written [x](0001-Thing.md) resolves for link-lint and does not count
 #      here. Loud, and the mirror of link-lint limit 3.
+#   8. A SECOND COPY of the ADR directory anywhere under the documents root --
+#      a worktree, a vendored submodule, a build cache -- is not excluded: the
+#      exclusion is one literal path prefix. Its index README then links every
+#      record, and every record reads as cross-linked. This one is SILENT, which
+#      makes it the worst of the nine. An adopter who puts the per-task worktree
+#      directory under docs/ walks straight into it.
+#   9. The ADR directory is assumed to sit DIRECTLY under the documents root:
+#      the search space is its parent, and the extra file read is that parent
+#      directory of THAT. Move it to docs/architecture/adr/ and the space
+#      narrows to docs/architecture/, so every record warns. Loud, and no
+#      adopter has to keep the layout -- but nothing tells them, so it is here.
 #
-# The two extractors are the same reading of the same forms, but the sharing is
-# by hand, not by construction: the fence and indent tests are unrolled here for
-# the awks that lack interval expressions, and link-lint still writes {0,3}. On
-# such an awk the two disagree about an indented fence.
+# Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
+# forms. The sharing is BY HAND, though, not by construction -- the fence and
+# indent tests are unrolled here for the awks that lack interval expressions
+# while link-lint still writes {0,3}, so on such an awk the two disagree about an
+# indented fence. If one is fixed, fix both (links/README.md limit 6).
 #
 # COST: one pass over the search space per record, so O(records x files). The
 # search space itself is built once. Measured on a 10,000-file tree with 40
@@ -151,6 +144,7 @@ links_to_record() {
 		# on standard input rather than as arguments, so a tree large enough to
 		# overflow ARG_MAX cannot turn this check into a wall of false orphans.
 		{
+			if ($0 == "") next
 			f = $0
 			fence = 0
 			incomment = 0
@@ -266,8 +260,17 @@ collect_search_space() {
 				print
 			}')
 
+	# Concatenating unconditionally would put an EMPTY FIRST ENTRY in the list
+	# when find matched nothing, and an empty filename is a FATAL awk error --
+	# so the one file that was found would never be read. That is the minimal
+	# adopter tree this script advertises for: a root README, an ADR directory,
+	# and nothing else under docs/ yet.
 	if [ -f "$_root/README.md" ]; then
-		_files=$_files$nl$_root/README.md
+		if [ -n "$_files" ]; then
+			_files=$_files$nl$_root/README.md
+		else
+			_files=$_root/README.md
+		fi
 	fi
 	printf '%s' "$_files"
 }
