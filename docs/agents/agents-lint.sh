@@ -229,7 +229,9 @@ words() { awk '{ n += NF } END { print n + 0 }'; }
 # core.autocrlf=true, git's default there -- they compared against a character
 # that does not print. A5 and A7 do something else: they COUNT. A carriage
 # return is not a field separator, so every blank line scored as one word, and
-# A7's budget read 1428 against the 1395 it reads on a line-feed tree. Under the
+# A7's budget reads 1447 against the 1414 it reads on a line-feed tree -- the gap
+# is one word per blank line, of which AGENTS.md has 33, so both numbers move
+# together as the file is edited and only the gap is stable. Under the
 # 1500 ceiling either way, so no verdict moved -- but it is the case where the
 # strip does more than fix a comparison, and a tighter budget would have made it
 # a false failure.

@@ -138,7 +138,8 @@ bare_files() {
 #                    and was wrong in the way that matters -- delete the line and
 #                    the check that would have complained goes with it. Measured:
 #                    with only the derived check, dropping a pin and stripping
-#                    the files scored `103 passed, 0 failed`.
+#                    the files scored a full green -- every case passing, the
+#                    stripped fixtures included.
 #   the PINS         every path .gitattributes names eol=crlf. Covers what no
 #                    naming convention can see, and covers a pin added later on
 #                    the day it is written.
