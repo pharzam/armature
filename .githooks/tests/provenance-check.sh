@@ -9,20 +9,22 @@
 # the thing under test is *which hook file git chose to run*, which depends on
 # `core.hooksPath` and on being inside a real worktree. There is no directory of
 # text that reproduces it. So this builds a repository, adds a worktree, and drives
-# real commits under three settings.
+# real commits under each setting worth distinguishing. It reports how many cases it
+# ran rather than carrying a count in this header, where the count goes stale the
+# first time a case is added -- which is exactly what happened to it once already.
 #
 # It creates its work in a fresh `mktemp -d` and removes it afterwards. It never
 # touches the repository it lives in, and it never reads or writes your git config.
 #
 # WHY IT IS NOT WIRED INTO THE GATE. It needs `git init`, a writable temp
-# directory and three real commits — far past the "reads only text, needs no
+# directory and real commits — far past the "reads only text, needs no
 # toolchain" bar every check in docs/tests/run-discipline-tests.sh meets. Running
 # it in the pre-commit hook would put a repository-creating test inside the commit
 # path. Run it by hand when block 0 changes, the way docs/links/tests/expect-check.sh
 # is run when that suite changes.
 #
 # Usage:  sh .githooks/tests/provenance-check.sh
-# Exit status: 0 = all three cases behaved, 1 = one or more did not.
+# Exit status: 0 = every case behaved, 1 = one or more did not.
 
 set -u
 
@@ -80,13 +82,22 @@ case_run() {
 	_f="probe-$3.txt"
 	echo probe > "$_f"
 	git add -A
-	_out=$(git commit -q -m "$3" 2>&1 || :)
+	# Capture the STATUS as well as the output. Classifying on text alone lets a
+	# hook that prints a refusal and then exits 0 read as "refused" while the commit
+	# actually succeeded -- the case would report ok having proved nothing. The
+	# status and the wording must agree, or the verdict is `contradictory`.
+	_out=$(git commit -q -m "$3" 2>&1) && _st=0 || _st=$?
 	if printf '%s\n' "$_out" | grep -q 'hook provenance'; then
-		_got=refuse
+		if [ "$_st" -ne 0 ]; then _got=refuse; else _got=contradictory-printed-refusal-but-committed; fi
 	elif printf '%s\n' "$_out" | grep -q 'PROVENANCE-RAN'; then
-		_got=pass
-	else
+		if [ "$_st" -eq 0 ]; then _got=pass; else _got=contradictory-ran-but-commit-failed; fi
+	elif [ "$_st" -eq 0 ]; then
 		_got=no-hook-ran
+	else
+		# The commit failed and the hook said nothing recognisable. That is not the
+		# same as no hook running, and calling it that would misname the cause the
+		# way a refusal blaming an unset setting did.
+		_got=hook-failed-silently
 	fi
 	if [ "$_got" = "$2" ]; then
 		printf 'ok    %s (%s)\n' "$3" "$_got"
@@ -105,6 +116,38 @@ case_run "$base/wt/.githooks"   pass   absolute-inside-this-worktree
 # claim is "hooks outside the working tree".
 case_run '../foreign'           refuse relative-escaping-worktree
 case_run '.githooks/../.githooks' pass relative-with-dotdot-staying-inside
+
+# The classic install -- a hook copied into .git/hooks, core.hooksPath never set --
+# is the SAME fault by another route: a linked worktree reaches .git/hooks through
+# the shared common git directory, so a check added on the branch does not run here
+# either. Block 0 must refuse it AND must not blame a setting the operator never set:
+# `git config core.hooksPath` prints nothing, so a message naming it sends them off to
+# read an empty value. This case asserts the WORDING, not only the refusal, because a
+# refusal that misnames its cause is the honest-reporting failure this check exists
+# to prevent.
+git config --unset core.hooksPath || :
+mkdir -p "$base/main/.git/hooks"
+cp "$base/main/.githooks/pre-commit" "$base/main/.git/hooks/pre-commit"
+chmod +x "$base/main/.git/hooks/pre-commit"
+echo probe > probe-hookspath-unset.txt
+git add -A
+_out=$(git commit -q -m hookspath-unset 2>&1) && _st=0 || _st=$?
+seen=$((seen + 1))
+if [ "$_st" -eq 0 ]; then
+	printf 'FAIL  hookspath-unset-in-worktree: the commit SUCCEEDED; whatever the hook printed, it did not refuse\n' >&2
+	bad=1
+elif printf '%s\n' "$_out" | grep -q 'core.hooksPath is unset'; then
+	printf 'ok    hookspath-unset-in-worktree (refuse, and names the real source)\n'
+elif printf '%s\n' "$_out" | grep -q 'hook provenance'; then
+	printf 'FAIL  hookspath-unset-in-worktree: refused, but blamed core.hooksPath, which is unset\n' >&2
+	bad=1
+elif printf '%s\n' "$_out" | grep -q 'PROVENANCE-RAN'; then
+	printf 'FAIL  hookspath-unset-in-worktree: wanted refuse, got pass\n' >&2
+	bad=1
+else
+	printf 'FAIL  hookspath-unset-in-worktree: wanted refuse, got no-hook-ran\n' >&2
+	bad=1
+fi
 
 # Block 0 must survive being run where git can tell it nothing. This runs the whole
 # hook outside any repository: `git rev-parse` fails, so `_hooks` is empty and block
