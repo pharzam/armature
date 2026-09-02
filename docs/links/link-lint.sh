@@ -31,12 +31,33 @@
 #       either way — and joining it onto the linking file's directory would let it
 #       resolve for any file at the repository root, which is where entry points
 #       live. Inherited from agents-lint's A19, which this check replaced.
+#   L8  a bare destination holding a space or a tab is not a link at all. CommonMark
+#       ends a bare destination at the first blank and lets only a quoted title
+#       follow, so the forge renders the text as written (spec example 488). The
+#       message names the two spellings that ARE links, `<a b.md>` and `a%20b.md`,
+#       and says so conditionally: the author may have meant prose. A reference
+#       definition of this shape defines nothing, so a `[text][label]` that uses
+#       it draws L6 beside this L8 -- two reports where there was one, both true.
 #
 # Four link forms are read, because a checker blind to a form is worse than no
 # checker: the reader trusts it. Inline `[x](t)`, NESTED `[![alt](i.png)](t)` —
 # found by scanning for each `](` opener rather than matching a whole link —
 # reference definitions `[label]: t`, and raw HTML `href="t"`. Inline code spans
 # are stripped first, so a link-shaped EXAMPLE in backticks is not resolved.
+#
+# HOW A DESTINATION IS READ, since #78. An angle destination `<a b.md>` runs to its
+# closing `>`, blanks and all, and that `>` ends it -- before, it was cut at the
+# first blank to `<a`, which read as an adopter marker and was skipped in SILENCE,
+# the one silent false green among the spaced forms. A bare destination is cut at
+# the first blank only when a title follows; otherwise it is L8. Blanks padding a
+# destination, `[x]( t.md )`, are trimmed, where the cut used to leave nothing and
+# the link vanished. A `%20` is decoded once, after the angle wrapper is stripped:
+# it is what a forge writes for a space and what a browser follows. Every other
+# percent-encoding is looked up as written and fails L1 loudly; a failure on a
+# decoded path shows both spellings. adr-lint.sh's links_to_record() reads the
+# angle form and the padding the same way (links/README.md limit 6) and does NOT
+# decode `%20`: it compares basenames only, and no record filename may hold a
+# space, so an encoded one can only sit in the directory part it drops.
 #
 # WHAT IT SKIPS, BY DESIGN
 #   - External links (http, https, mailto). Resolving them needs the network,
@@ -97,10 +118,12 @@ is_placeholder() {
 	case $1 in
 	*'‹'*|*'›'*) return 0 ;;
 	# A CommonMark angle destination wraps the WHOLE target — `<a path.md>` — and is
-	# a real link. An adopter marker only OPENS with `<`, as in `<id>.md`. Telling
-	# them apart on the closing `>` is what stops a real link being skipped silently.
+	# a real link. An adopter marker only OPENS with `<`, as in `<id>.md`, and closes
+	# it somewhere. Telling them apart on the closing `>` is what stops a real link
+	# being skipped silently. A target that opens `<` and never closes it is neither:
+	# it is an angle destination cut short, and it fails L1 with the cut text shown.
 	'<'*'>')     return 1 ;;
-	'<'*)        return 0 ;;
+	'<'*'>'*)    return 0 ;;
 	NNNN-*)      return 0 ;;
 	'...')       return 0 ;;
 	esac
@@ -183,8 +206,13 @@ lint_file() {
 			if (match(line, /^[ ]{0,3}\[[^]]+\][ \t]*:[ \t]*[^ \t]+/)) {
 				lbl = line; sub(/^[ ]{0,3}\[/, "", lbl); sub(/\].*$/, "", lbl)
 				tgt = line; sub(/^[ ]{0,3}\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
-				sub(/[ \t].*$/, "", tgt)
-				printf "%d\tDEF\t%s\t%s\n", FNR, tolower(lbl), tgt
+				sub(/[ \t]+$/, "", tgt)
+				# an angle destination runs to its closing `>`; a bare one ends at
+				# the first blank, after which only a title may follow (else L8)
+				if (tgt ~ /^<[^>]*>([ \t]|$)/) sub(/>.*$/, ">", tgt)
+				else if (tgt ~ /[ \t]/ && tgt !~ /^[^ \t]+[ \t]+[\042\047(]/) { printf "%d\tNOTLINK\t%s\n", FNR, tgt; tgt = "" }
+				else sub(/[ \t].*$/, "", tgt)
+				if (tgt != "") printf "%d\tDEF\t%s\t%s\n", FNR, tolower(lbl), tgt
 				# do NOT stop here: a definition line can carry a trailing link,
 				# and returning early would drop every link after it on the line.
 				line = substr(line, RSTART + RLENGTH)
@@ -199,7 +227,21 @@ lint_file() {
 				e = index(rest, ")")
 				if (e == 0) break
 				t = substr(rest, 1, e - 1)
-				sub(/[ \t].*$/, "", t)
+				# blanks may pad a destination; trimming them is what keeps
+				# `[x]( t.md )` from being cut to nothing and dropped in silence
+				sub(/^[ \t]+/, "", t); sub(/[ \t]+$/, "", t)
+				# a CommonMark angle destination runs to its closing `>`, blanks and
+				# all, and that `>` ends it: `<id>.md` is a marker, not this form.
+				# A bare one ends at the first blank, where only a title may follow
+				if (t ~ /^<[^>]*>([ \t]|$)/) sub(/>.*$/, ">", t)
+				else if (t ~ /[ \t]/ && t !~ /^[^ \t]+[ \t]+[\042\047(]/) {
+					# a blank in a bare destination with no title after it is not
+					# a link at all (L8): the forge renders the text as written
+					printf "%d\tNOTLINK\t%s\n", FNR, t
+					rest = substr(rest, e + 1)
+					continue
+				}
+				else sub(/[ \t].*$/, "", t)
 				if (t != "") printf "%d\tLINK\t%s\n", FNR, t
 				rest = substr(rest, e + 1)
 			}
@@ -253,6 +295,15 @@ lint_file() {
 			continue
 		fi
 
+		# L8 — a bare destination holding a blank is not a link at all. The
+		# placeholder test comes first: `‹adopter doc›.md` holds a blank too.
+		if [ "$_kind" = NOTLINK ]; then
+			is_placeholder "$_target" && { IFS=$nl; continue; }
+			n_links=$((n_links + 1))
+			err L8 "$_rel:$_lineno has a bare destination holding a space or a tab, $_target, which CommonMark does not read as a link, so the forge shows the text as written. If a link was meant, write it as <$_target> or percent-encode the blanks; if prose was meant, nothing needs to change"
+			IFS=$nl; continue
+		fi
+
 		# a DEF carries label<TAB>target; the target is what resolves
 		[ "$_kind" = DEF ] && _target=${_target#*	}
 
@@ -260,6 +311,18 @@ lint_file() {
 		case $_target in
 		'<'*'>') _target=${_target#<}; _target=${_target%>} ;;
 		esac
+
+		# a percent-encoded space is what a forge writes for a spaced path and
+		# what a browser decodes when it follows the link. Only `%20`: a general
+		# decode would turn a `%23` into the `#` the fragment split below reads,
+		# and decodes a byte above 127 differently on two awks. The written form
+		# is kept so a message can show both spellings when they differ.
+		_written=$_target
+		while case $_target in *%20*) ;; *) false ;; esac; do
+			_target="${_target%%"%20"*} ${_target#*"%20"}"
+		done
+		_shown=$_target
+		[ "$_target" = "$_written" ] || _shown="$_written, decoded to $_target"
 
 		case $_target in
 		http://*|https://*|mailto:*) IFS=$nl; continue ;;
@@ -347,13 +410,13 @@ lint_file() {
 		# L4 — the target must stay inside the root
 		case $_norm/ in
 		"$root"/*) : ;;
-		*) err L4 "$_rel:$_lineno links $_target, which escapes the repository root"
+		*) err L4 "$_rel:$_lineno links $_shown, which escapes the repository root"
 		   IFS=$nl; continue ;;
 		esac
 
 		# L1 — it must exist
 		if [ ! -e "$_norm" ]; then
-			err L1 "$_rel:$_lineno links $_target, but that path does not exist"
+			err L1 "$_rel:$_lineno links $_shown, but that path does not exist"
 			IFS=$nl
 			continue
 		fi
@@ -364,7 +427,7 @@ lint_file() {
 			*.md)
 				case $nl$(anchors_of "$_norm")$nl in
 				*"$nl$_frag$nl"*) : ;;
-				*) err L2 "$_rel:$_lineno links $_target, but that file has no heading with that anchor" ;;
+				*) err L2 "$_rel:$_lineno links $_shown, but that file has no heading with that anchor" ;;
 				esac
 				;;
 			esac
