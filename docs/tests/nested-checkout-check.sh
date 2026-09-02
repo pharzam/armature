@@ -38,6 +38,7 @@ base=$(mktemp -d) || { printf 'FAIL  mktemp -d failed\n' >&2; exit 1; }
 repo="$base/repo"
 bad=0
 seen=0
+skipped=0
 cleanup() { cd / || :; rm -rf "$base"; }
 trap cleanup EXIT
 # Git must never find a repository ABOVE the throwaway tree: the fallback cases
@@ -238,6 +239,9 @@ cite cited.sh:3
 if ln -s "../nested/docs/dead.md" "$repo/docs/linked.md" 2>/dev/null; then
 	check '8 symlink into the nested checkout is not read' 0 "$clean_links" "$L"
 	rm -f "$repo/docs/linked.md"
+else
+	skipped=$((skipped + 1))
+	printf 'skip  8 symlink into the nested checkout (this file system took no symlink)\n'
 fi
 # 9. a filename holding a quote and a backslash is still read. Without `-z` git
 #    prints such a name quoted, and a quoted name matches no file, so the document
@@ -247,6 +251,9 @@ odd='docs/od"d\\name.md'
 if printf '%s' "$dead" > "$repo/$odd" 2>/dev/null && [ -f "$repo/$odd" ]; then
 	check '9 a quoted filename is still read' 1 'L1: docs/od' "$L"
 	rm -f "$repo/$odd"
+else
+	skipped=$((skipped + 1))
+	printf 'skip  9 a quoted filename (this file system took no quote in a name)\n'
 fi
 # 10. the kit vendored where the outer ignore names something OTHER than the kit
 #     path. The list is non-empty and still not this repository's, which a guard
@@ -258,6 +265,34 @@ mkrepo "$outer2" || exit 1
 check '10 vendored, a partial outer ignore: audit-record-lint' 0 'audit-record-lint: OK' "$outer2/kit/docs/tasks/audit-record-lint.sh"
 check '10 vendored, a partial outer ignore: link-lint' 0 "$clean_links" "$outer2/kit/docs/links/link-lint.sh"
 
+# A. the audit side of the root guard: the outer ignore hides the CITED file's
+#    directory, so a list taken from the outer repository cannot resolve the
+#    citation; with the root test the walk stands in and it resolves.
+outer3="$base/outer3"
+mkdir -p "$outer3" && printf 'kit/docs/tools/\n' > "$outer3/.gitignore"
+cp -R "$repo" "$outer3/kit" && rm -rf "$outer3/kit/.git"
+mkrepo "$outer3" || exit 1
+check 'A vendored, outer ignore hides the cited file: audit-record-lint' 0 'audit-record-lint: OK' "$outer3/kit/docs/tasks/audit-record-lint.sh"
+
+# B. the audit side of the symlink refusal: a symlink pointing into the nested
+#    checkout must not resolve a citation.
+cite nested-only.sh:1
+if ln -s "../../nested/tools/nested-only.sh" "$repo/docs/tools/nested-only.sh" 2>/dev/null; then
+	check 'B symlink into the nested checkout does not resolve a citation' 1 'names no file in the tree' "$A"
+	rm -f "$repo/docs/tools/nested-only.sh"
+else
+	skipped=$((skipped + 1))
+	printf 'skip  B symlink into the nested checkout (this file system took no symlink)\n'
+fi
+cite cited.sh:3
+
 [ "$seen" -gt 0 ] || { printf 'FAIL  no case ran -- this proved nothing\n' >&2; exit 1; }
-[ "$bad" -eq 0 ] && { printf 'nested-checkout-check: OK  %d cases behaved\n' "$seen"; exit 0; }
+if [ "$bad" -eq 0 ]; then
+	if [ "$skipped" -gt 0 ]; then
+		printf 'nested-checkout-check: OK  %d cases behaved, %d skipped\n' "$seen" "$skipped"
+	else
+		printf 'nested-checkout-check: OK  %d cases behaved\n' "$seen"
+	fi
+	exit 0
+fi
 exit 1

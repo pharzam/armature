@@ -29,8 +29,8 @@ is not itself the repository root, and again on an empty list. Testing `rev-pars
 alone was wrong — a kit vendored inside a larger repository gets a successful
 `rev-parse`, and the first prototype left 83 `FAIL` lines there (plan review,
 finding 1). Testing for an empty list alone was also wrong, and only round 2
-measured why: an outer ignore of `tests/` leaves the list non-empty and 163
-documents unread, and one of `*.md` leaves every document unread. What decides is
+measured why: an outer ignore of `tests/` leaves the list non-empty and 370
+documents and 163 links unread, and one of `*.md` leaves every document unread. What decides is
 not which files are missing but whose ignore rules chose them, so the guard asks
 whether the kit owns the repository it is being listed from. The shape is copied into both linters, not shared;
 [`links/README.md`](../links/README.md) limit 9 records that cost.
@@ -76,15 +76,32 @@ it. The 14 false failures in the operator's checkout are gone and `link-lint` th
 drops from 43.5 s to 4.2 s as a side effect.
 
 Each of the three code fixes has an assertion that dies without it, verified by
-reverting the fixes one at a time: case 7 for the root guard, case 8 for the symlink
-refusal, case 9 for the NUL-delimited read. An earlier draft of this record said the
-last of those could not be asserted, because a filename holding a quote could not
-reach a fixture tree without git's own quoting entering the test. Round 3 built the
-case in six lines. Both times the reasoning was available and the measurement was
-not taken; the measurement is what settled it.
+reverting each fix, in each linter, one at a time:
+
+| Fix | `link-lint` side | `audit-record-lint` side |
+|---|---|---|
+| the root-identity guard | case 10 | case A |
+| `[ ! -L ]`, the symlink refusal | case 8 | case B |
+| `-z`, the NUL-delimited read | case 9 | **none — unreachable** |
+
+The last cell is a gap, with its reason: `has_citation()` accepts only
+`[A-Za-z0-9_./-]` inside a cited path, so no record can cite a name holding a quote
+or a backslash, and there is nothing for a case to assert. It costs what limit 9 of
+[`docs/links/README.md`](../links/README.md) already records — the two copies of this
+file list are kept in step by hand, with no mechanism, so this one is covered on one
+side only.
+
+Two claims about this table were wrong before it was measured. An earlier draft said
+case 7 covered the root guard; reverting that guard leaves case 7 printing `ok`, and
+case 10 is the one that dies. An earlier draft also said the NUL read could not be
+asserted at all, on the ground that git's own quoting would enter the test; a round
+built that case in six lines. Both times reasoning was offered where a mutation was
+available, which is how each of them survived into the tree.
 
 The **silent** direction — a nested copy hiding a real drift — is asserted, by case
-7, and an earlier draft of this record said it could not be. That draft reasoned
+7, and an earlier draft of this record said it could not be. (Case 7 asserts that
+direction; it is not what dies when the root guard is reverted, which is the
+distinction the table above draws.) That draft reasoned
 that the block reads the first candidate the walk returns and that no fixture can
 fix the file system's order. Round 2 measured the code instead of reasoning about
 it: block 2b accepts **any** candidate with enough lines rather than the first, and
