@@ -37,7 +37,7 @@ since the file was written.
 | `L5` | Coverage floor — a run that resolved **zero** links fails. |
 | `L6` | Every reference use `[text][label]` has a matching `[label]: target` definition. |
 | `L7` | No in-tree target is an absolute path. |
-| `L8` | A bare destination holding a space or a tab is not a link at all: the forge renders the text as written. A reference definition of that shape defines nothing, so a `[text][label]` that uses it draws `L6` beside the `L8` — two reports where there was one `L1`, both true. |
+| `L8` | A bare destination holding a space or a tab is not a link at all: the forge renders the text as written. A reference definition of that shape defines nothing, so a `[text][label]` that uses it draws `L6` beside the `L8` — two reports where there was one `L1`, both true. A definition whose target is an adopter marker holding a blank, `[runner]: ‹the test runner›/run.sh`, is neither: it is skipped like every marker, and its label stays defined. |
 
 ## What it proves, and what it does not
 
@@ -87,10 +87,11 @@ A CommonMark angle destination `[x](<a path.md>)` is a real link and is resolved
 which a destination may hold a space. An adopter marker only *opens* with `<`, as
 in `<id>.md`; they are told apart on the closing `>`, so a real link is never
 skipped as a placeholder — and a target that opens `<` and never closes it is an
-angle destination cut short, which fails `L1` with the cut text shown rather than
-passing as a marker. A `%20` is decoded once, so `[x](Design%20Notes/target.md)`,
-what a forge writes for a space, resolves; a failure to resolve a decoded path
-reports both spellings. Blanks padding a destination, `[x]( target.md )`, are
+angle destination cut short, kept whole, which fails `L1` with the whole cut text:
+never `L8`, and never the silent skip it used to be. A `%20` is decoded once, so
+`[x](Design%20Notes/target.md)`, what a forge writes for a space, resolves; a
+failure to resolve a decoded path reports both spellings. Blanks padding a
+destination, `[x]( target.md )`, are
 trimmed, where the old cut left nothing and the link vanished. A bare destination
 holding a space or a tab with no title after it is `L8`: not a link on the forge,
 so not one here. So if your repository has a `docs/Design Notes/` or an
@@ -168,8 +169,10 @@ change excluded the repository root from the walk.
    only, and `adr-lint`'s filename rule forbids a space in a record's name, so an
    encoded space can only sit in the directory part that comparison drops.
    Measured: `[x](dir%20with%20space/0001-x.md)` counted there before the change
-   and counts after. The angle form and a padded destination are read the same
-   way in both — kept in step by hand, as before.
+   and counts after. The angle form, a padded destination, and a bare destination
+   followed by anything but a title — not a link, so it names no record either;
+   `[x](adr/0001-x.md junk)` counted there until the first review round found the
+   two apart on it — are read the same way in both, kept in step by hand, as before.
 7. **An angle destination that holds a `)` is cut at that `)`.** CommonMark
    (example 492) reads `[a](<b)c>)` as a link to `b)c`; both extractors end a
    destination at the first `)`, so `[e](<Design (draft)/target.md>)` is read as
@@ -177,8 +180,9 @@ change excluded the repository root from the walk.
    spaced angle destination was cut that way, at its first blank, and the cut text
    passed as an adopter marker — the link vanished **in silence**, the one silent
    false green among the spaced forms and the defect that issue was opened for. The
-   cut now happens only on a `)`, and what it leaves fails `L1` with the cut text
-   shown; `adr-lint` reads it as no link, a loud false orphan. A full `)`-aware
+   cut now happens only on a `)`, and what it leaves is kept whole and fails `L1`
+   with the whole cut text — `links <Design (draft, but that path does not exist`;
+   `adr-lint` reads it as no link, a loud false orphan. A full `)`-aware
    parse was rejected there: about fourteen lines per branch, it must still exempt
    the `<id>.md` marker, and no link in the tree needs it.
 8. **Only `%20` is decoded.** Any other percent-encoding — `%2F`, `%C3%A9`, `%23` —
@@ -200,10 +204,14 @@ codes only**, so a bad case that started failing for a different reason would
 still look green there. [`tests/expect-check.sh`](tests/expect-check.sh) closes
 that for this suite, and fails if it finds no case to check.
 
-Of the five cases [#78](https://github.com/pharzam/armature/issues/78) added, the
-runner sees four: two `good*` cases that exited 1 before the fix and two `bad-*`
-cases that exited 0. It cannot see `bad-bare-spaced-destination`, which exited 1
-for `L1` before and exits 1 for `L8` after — only this script tells those apart.
+Of the ten cases [#78](https://github.com/pharzam/armature/issues/78) added, the
+runner sees eight: five `good*` cases that exited 1 before their fix and two
+`bad-*` cases that exited 0, plus `bad-angle-cut-destination`, which was never red
+on its own and goes red only when `is_placeholder()` is loosened — measured by
+mutation, as were the two angle-with-title cases, which are the only ones that
+reach the clause ending an angle destination at its `>`. It cannot see
+`bad-bare-spaced-destination` or `bad-bare-spaced-definition`, which exit 1 for
+`L1` without the fix and for `L8` with it — only this script tells those apart.
 That is the pitfall
 [`guardrails.md`](../guardrails.md#gate-pitfalls-kit-wide--keep-these) names, a
 harness that compares only exit codes, and why that issue's close-out pastes this
@@ -237,6 +245,11 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | `bad-angle-spaced-dead` | FAIL `L1`, exit 1 | a dead target behind an angle destination with a space — the case that tells a correct spaced link from a broken one, which nothing could before |
 | `bad-bare-spaced-destination` | FAIL `L8`, exit 1 | `[x](Design Notes/target.md)`, a bare destination with a space, which is not a link. The runner cannot see this case; see above |
 | `bad-padded-destination` | FAIL `L1`, exit 1 | `[x]( does-not-exist.md )`, blanks padding a dead destination, which the old cut reduced to nothing and dropped in silence |
+| `good-placeholder-spaced-definition` | `link-lint: OK`, exit 0 | `[runner]: ‹the test runner›/run.sh`, a definition whose target is an adopter marker holding a blank; the first review round found it drawing a false `L6`, because the `L8` rule had dropped the label before the placeholder test could speak |
+| `good-angle-spaced-title` | `link-lint: OK`, exit 0 | `[x](<Design Notes/target.md> "The target")`, the angle form with a title after it, the case's only link. The `>` is what lets the title follow; remove the inline branch's angle clause and the whole text is kept, skipped as a marker, and the case trips `L5` |
+| `good-angle-spaced-definition` | `link-lint: OK`, exit 0 | the same, reached through a reference definition; remove the definition branch's angle clause and it trips `L5` |
+| `bad-angle-cut-destination` | FAIL `L1`, exit 1 | `[x](<Design Notes/target.md)`, an angle destination with no closing `>`, kept whole and reported; loosen `is_placeholder()` back to "opens with `<`" and it passes in silence |
+| `bad-bare-spaced-definition` | FAIL `L8`, exit 1 | `[lbl]: Design Notes/target.md` and a use of `[lbl]`: `L8` on the line and `L6` on the use, both true. The runner cannot see this case; see above |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 
