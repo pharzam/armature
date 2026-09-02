@@ -113,8 +113,7 @@ first frozen head, and a branch has exactly one. A branch that has reached its
 cap has no new first freeze available, so continuing the work means a new issue
 and a new branch. **That successor starts its own count at `0`, and this is not a
 reset**: the cap binds a branch on an issue, and the successor is a different
-issue with a bound of its own. An earlier form said a split is "not a reset"
-while prescribing exactly the move that starts one; #89 is where that showed.
+issue with a bound of its own.
 
 The number two is fitted to one observation: #64, the only task with round
 records in this shape, needed exactly two cycles, rounds 1 and 2 material and
