@@ -219,9 +219,8 @@ protocol that bounds the rounds is
   the next round names it. So does the close-out bookkeeping — the task line
   arriving in the completed log, which gate step 8 requires of the landing pull
   request and which cannot exist before the rounds finish. The exception covers
-  that bookkeeping alone; where the same commit also corrects a claim, that
-  correction is a fix and is named as one. The close-out records which of the two
-  the commit carried, and that no round read it.
+  that bookkeeping alone; a claim the same commit corrects is a fix, named as one,
+  and the close-out records which of the two it carried.
 - **The last round carries the verdict.** The round that ends the work runs on a
   frozen head that no fix followed. Its verdict is `nothing material in scope`
   when nothing material in scope remains, and `not mergeable, findings recorded`
@@ -787,8 +786,8 @@ The **same PR that lands a task's work moves it from
 [`tasks/backlog.md`](tasks/backlog.md) to
 [`tasks/completed.md`](tasks/completed.md)** — delete its backlog line, where it
 has one, and add a dated entry to the completed log (most recent first). A task
-opened and finished between two landings never reaches the backlog; it is the
-arrival in the completed log that gate step 8 requires, not the move. This is
+opened and finished between two landings never reaches the backlog, so gate
+step 8 requires the arrival, not the move. This is
 not a separate
 follow-up. Doing the move in the landing PR keeps the two files from ever drifting
 (a task is never both "Now" and done at once), and the reviewer sees the backlog

@@ -61,18 +61,16 @@ that round, the integration merge below, or the **close-out bookkeeping** — an
 each produces a new frozen head that the next round names.
 
 Close-out bookkeeping is the task line **arriving in the completed log** — moved
-from the backlog where the task had a line there, and simply added where it did
-not, which is every task opened and finished between two landings. What
-[gate step 8](../engineering-discipline.md#completing-a-task) requires of the
-landing pull request is the arrival, not the move. It cannot be written before
+from the backlog where the task had a line there, and added where it did not.
+What [gate step 8](../engineering-discipline.md#completing-a-task) requires of
+the landing pull request is the arrival, not the move. It cannot be written before
 the rounds finish, because it is what finishing means, so a rule permitting only
 fixes after a frozen head forbids every landing.
 
 The exception covers the bookkeeping and nothing else. Where the same commit also
-corrects a claim — the close-out entry is prose, and a round can find it wrong —
-that correction is a fix to a finding, permitted on its own footing and named as
-one. What the close-out says plainly is which of the two the commit carried, and
-that no round read it.
+corrects a claim, that correction is a fix to a finding, permitted on its own
+footing and named as one. The close-out says which of the two the commit carried,
+and that no round read it.
 "What a round records" already fixed the commit within a round. The gap was
 between rounds, and this closes it. Rejected: reviewing the branch as it moves.
 A verdict on a moving target names no commit.
@@ -115,10 +113,8 @@ first frozen head, and a branch has exactly one. A branch that has reached its
 cap has no new first freeze available, so continuing the work means a new issue
 and a new branch. **That successor starts its own count at `0`, and this is not a
 reset**: the cap binds a branch on an issue, and the successor is a different
-issue with a bound of its own. An earlier form of this clause said a split is
-"not a reset of the count" while section 2 prescribed exactly the move that
-starts a new one — the successor issue is where the ambiguity showed, having run
-`Cycle` 0, 1 and 2 on work its predecessor had already spent two cycles on.
+issue with a bound of its own. An earlier form said a split is "not a reset"
+while prescribing exactly the move that starts one; #89 is where that showed.
 
 The number two is fitted to one observation: #64, the only task with round
 records in this shape, needed exactly two cycles, rounds 1 and 2 material and
@@ -206,31 +202,19 @@ file's length would have caught.
   The only approver is the operator, once, on the issue; the alternative is a
   child issue. **Once counts per issue, not per branch**, so a successor issue
   starts with an approval of its own. Nothing here prevents that, and this record
-  does not pretend otherwise: R11 does not bound it, because R11 is a test of
-  scale and not of novelty, and
+  does not pretend otherwise: R11 is a test of scale and not of novelty, and
   [section 2](#2-the-cycle-cap-and-the-non-merge-verdict) *prescribes* a successor
   when a cap is reached. What the record relies on instead is that a successor's
   plan review sets its maximum with the carried size already measured and on the
-  issue, so a bound set in ignorance of it is not available. That is a discipline
-  and not a mechanism, and it is written here as one rather than left to look like
-  a guard.
+  issue. That is a discipline and not a mechanism, and it is written as one rather
+  than left to look like a guard.
   **Whether an approval may name a ceiling is not decided here.** Three rounds
-  across [#81](https://github.com/pharzam/armature/issues/81) and
-  [#89](https://github.com/pharzam/armature/issues/89) produced three different
-  rules for it — optional, bounding the measured outturn, covering
-  findings-driven growth — and each was falsified by the next round. What is
-  undecided is exactly that: whether a ceiling may be named, and how far an
-  approval reaches past the figure it was given. It is
-  [#99](https://github.com/pharzam/armature/issues/99)'s, and until that lands
-  the rule is the one above and nothing more: one approval per issue, an
-  unapproved overrun blocking the merge, and the last round carrying it.
+  produced three rules and each was falsified by the next;
+  [#99](https://github.com/pharzam/armature/issues/99) carries all three and
+  owns the question. Until it lands the rule is the one above and nothing more.
   An overrun the operator has not approved **blocks the merge**: the last round
-  carries it as a finding and returns `not mergeable, findings recorded`. That
-  route into the verdict does not run through the cap.
-  [Section 2](#2-the-cycle-cap-and-the-non-merge-verdict) reaches the verdict when
-  a cap is reached with something material still in scope; this reaches it whether
-  or not a cap is near and whether or not anything else is open, because an
-  unapproved overrun blocks a merge on its own. #64 is the case
+  carries it as a finding and returns `not mergeable, findings recorded`, by the
+  route [section 6](#6-the-review-record) names. #64 is the case
   this is fitted to: its
   overrun was reported twice, judged earned by a reviewer, and merged with no
   operator approval at all — the approval step going unenforced on the one task

@@ -1,8 +1,7 @@
 # Completed
 
 Append-only log of finished tasks, most recent first. A task reaches this log
-whether or not it ever had a line in [backlog.md](backlog.md) — one opened and
-finished between two landings never does.
+whether or not it ever had a line in [backlog.md](backlog.md).
 
 ## How to keep this file readable
 
