@@ -180,30 +180,33 @@ file's length would have caught.
   confirmation.
 - **Overrun**: a finding reported on the issue, never a revision of the number.
   The only approver is the operator, once, on the issue; the alternative is a
-  child issue. **Once counts per issue, not per branch**, and
-  and a successor issue starts with its own. R11 does **not** bound that:
-  [R11](../issue-workflow.md#r11--single-goal-issues) is a test of scale, not of
-  novelty, and [section 2](#2-the-cycle-cap-and-the-non-merge-verdict) orders the
-  work onto a new issue and a new branch when a cap is reached — so a successor
-  is prescribed, never forbidden. What stops a split buying budget is that the
-  successor's maximum is set by its own plan review **from the measured size of
-  what it carries**, not from an estimate, and the split itself is the operator's
-  decision on the issue rather than the author's move. A successor whose bound is
-  set from a measurement cannot use its fresh approval to pay for growth that was
-  already measured.
+  child issue. **Once counts per issue, not per branch**, so a successor issue
+  starts with an approval of its own. Nothing here prevents that, and this record
+  does not pretend otherwise: R11 does not bound it, because R11 is a test of
+  scale and not of novelty, and
+  [section 2](#2-the-cycle-cap-and-the-non-merge-verdict) *prescribes* a successor
+  when a cap is reached. What the record relies on instead is that a successor's
+  plan review sets its maximum with the carried size already measured and on the
+  issue, so a bound set in ignorance of it is not available. That is a discipline
+  and not a mechanism, and it is written here as one rather than left to look like
+  a guard.
   **A ceiling** is a maximum the operator may name when approving: it is named in
   that approval comment, before the growth it bounds exists, and never after
   measuring the growth it would have to cover — a limit chosen once the result is
   known is a fitted parameter and not a rule
   ([guardrails, section 1](../guardrails.md#1-pre-registered-decisions--or-the-goalposts-move)).
-  An approval that names no ceiling is not unbounded: it bounds exactly the
-  outturn measured at the approval, and growth past that needs a decision of its
-  own. **A ceiling that is passed ends where a spent approval ends**: no further
-  approval is available on that issue, so the round that measures it carries the
-  overrun as a finding and its verdict is `not mergeable, findings recorded`, with
-  the issue split as the successor state under section 2. An overrun the operator has not approved **blocks the merge**: the
-  last round carries it as a finding and its verdict is
-  `not mergeable, findings recorded`. #64 is the case this is fitted to: its
+  An approval that names no ceiling approves the outturn measured at it, and
+  covers the growth that follows from fixing what a later round finds; growth from
+  work the findings did not ask for is new scope and needs its own decision.
+  Bounding such an approval at exactly the measured outturn would make any later
+  fix an overrun, which turns an approval into a refusal to merge.
+  **A ceiling that is passed ends where a spent approval ends**: no further
+  approval is available on that issue. The round that measures it records it, and
+  **the last round** carries it as a finding and returns
+  `not mergeable, findings recorded`, with the issue split as the successor state
+  under section 2 — the same carrier as every other overrun, so a passed ceiling
+  strands no cycle the cap allows. An overrun the operator has not approved
+  **blocks the merge** the same way. #64 is the case this is fitted to: its
   overrun was reported twice, judged earned by a reviewer, and merged with no
   operator approval at all — the approval step going unenforced on the one task
   that had a budget. That does not make the overrun material —

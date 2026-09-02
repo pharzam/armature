@@ -76,19 +76,26 @@ Three things the predecessor could not fit inside its ceiling.
   citing #81, an issue that closed unmerged. The entry now names this task and this
   issue. That correction produced this task's only red: the log's own header requires a
   detail link, so the link necessarily preceded this file.
-- **Section 5's "once" is now bounded, and not by R11.** It counts per issue, and a
-  successor issue starts with its own approval. R11 does not forbid the successor —
-  it is a test of scale, not of novelty, and section 2 *orders* the work onto a new
-  issue when a cap is reached. What stops a split buying budget is that the
-  successor's maximum is set from the **measured size of what it carries**, and that
-  the split is the operator's decision rather than the author's. This issue is the
-  worked example: same goal, new number, a fresh approval unspent, and a bound of 566
-  set from the 436 already on the branch.
+- **Section 5's "once" is stated, and not dressed as a guard.** It counts per issue,
+  so a successor issue starts with an approval of its own. R11 does not forbid the
+  successor — it is a test of scale, not of novelty, and section 2 *prescribes* one
+  when a cap is reached. An earlier draft claimed the successor's maximum being set
+  from the measured carried size stopped a split buying budget; a round showed that
+  it bounds only the carried half and contradicts the section's own Baseline and
+  Maximum. The record now says the plain thing: nothing prevents a successor's fresh
+  approval, and what the rule relies on is that its plan review sets a maximum with
+  the carried size already measured and on the issue. That is a discipline, not a
+  mechanism, and it is written as one. This issue is the instance: a bound of 566 set
+  as 436 measured plus 130 estimated.
 - **A ceiling now has a rule of its own.** It is named in the approval comment, before
-  the growth it bounds exists, never after measuring what it would have to cover, and
-  an approval naming none bounds the outturn measured at that moment. A ceiling that is
-  passed ends where a spent approval ends: the round that measures it carries the
-  overrun as a finding and returns `not mergeable, findings recorded`.
+  the growth it bounds exists, and never after measuring what it would have to cover.
+  An approval naming none approves the outturn measured at it and covers the growth
+  that follows from fixing what a later round finds — bounding it at exactly the
+  measured figure would make any later fix an overrun, turning an approval into a
+  refusal to merge. A ceiling that is passed ends where a spent approval ends: the
+  round that measures it records it, and the **last** round carries it, which is the
+  carrier every other overrun has, so a passed ceiling strands no cycle the cap
+  allows.
 
 ## What the evidence turned out to be
 
