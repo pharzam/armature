@@ -266,8 +266,9 @@ check '10 vendored, a partial outer ignore: audit-record-lint' 0 'audit-record-l
 check '10 vendored, a partial outer ignore: link-lint' 0 "$clean_links" "$outer2/kit/docs/links/link-lint.sh"
 
 # A. the audit side of the root guard: the outer ignore hides the CITED file's
-#    directory, so a list taken from the outer repository cannot resolve the
-#    citation; with the root test the walk stands in and it resolves.
+#    directory, so a list taken from the outer repository does not resolve the
+#    citation here; with the root test the walk stands in and it resolves. Measured
+#    both ways: this case dies under the root-identity revert.
 outer3="$base/outer3"
 mkdir -p "$outer3" && printf 'kit/docs/tools/\n' > "$outer3/.gitignore"
 cp -R "$repo" "$outer3/kit" && rm -rf "$outer3/kit/.git"

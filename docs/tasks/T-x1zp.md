@@ -30,7 +30,7 @@ alone was wrong — a kit vendored inside a larger repository gets a successful
 `rev-parse`, and the first prototype left 83 `FAIL` lines there (plan review,
 finding 1). Testing for an empty list alone was also wrong, and only round 2
 measured why: an outer ignore of `tests/` leaves the list non-empty and 370
-documents and 163 links unread, and one of `*.md` leaves every document unread. What decides is
+documents and 163 links unread, and one of `*.md` leaves the list with no document in it at all — measured as zero lines. What decides is
 not which files are missing but whose ignore rules chose them, so the guard asks
 whether the kit owns the repository it is being listed from. The shape is copied into both linters, not shared;
 [`links/README.md`](../links/README.md) limit 9 records that cost.
