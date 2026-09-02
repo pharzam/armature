@@ -1,11 +1,14 @@
 # Completed
 
-Append-only log of finished backlog tasks, most recent first.
+Append-only log of finished tasks, most recent first. A task reaches this log
+whether or not it ever had a line in [backlog.md](backlog.md) — one opened and
+finished between two landings never does.
 
 ## How to keep this file readable
 
 **One line per task — keep it that way.** When a task in [backlog.md](backlog.md)
-is done, move its line here unchanged except for a leading completion date:
+is done, move its line here unchanged except for a leading completion date; when
+a task never had a backlog line, write the entry in the same shape:
 `**YYYY-MM-DD** — **<ID>** — <summary> (<links>)`. Any detail worth keeping — the
 design, the bugs caught, the verification story — lives in `tasks/<id>.md`, linked
 as `[detail](<id>.md)`; it does **not** go inline here. This is a dated index, not

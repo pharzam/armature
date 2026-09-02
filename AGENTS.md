@@ -52,7 +52,7 @@ plan review is architecture and scope, never implementation approval.
 5. **Review until findings decay.** Freeze the head, then run independent blind rounds on it, a different lens each round. A fix re-freezes; at most two fix-and-review cycles follow the first freeze, and the last round ends `nothing material in scope` or `not mergeable, findings recorded` — [ADR-0008](docs/adr/0008-stop-the-gate-on-a-frozen-head.md). A defect the change *revealed*, off the path its Definition of Done names, opens an issue instead of entering the branch. A reviewer is a person or a fresh agent session — the requirement is [independence](docs/adr/0005-independent-review-may-be-an-agent.md), not reviewer type — and summarised text gets a clause-by-clause semantic pass.
 6. **Be honest, keep evidence.** Report a failure as a failure, and review the producing code before a costly action.
 7. **Keep the documentation current.** Every document the change leaves stale is fixed in the same pull request.
-8. **Close out in the same PR.** Tick the boxes, write the verdict, and move the task line from backlog to completed.
+8. **Close out in the same PR.** Tick the boxes, write the verdict, and record the task line in the completed log.
 
 ## The issue rules
 
@@ -113,7 +113,8 @@ or `Refs #N` when it does not close it.
 [`docs/tasks/backlog.md`](docs/tasks/backlog.md) holds one line per open task, and
 [`docs/tasks/completed.md`](docs/tasks/completed.md) the dated log of finished
 ones. Any detail belongs in that task's own file, never in either index. The same
-pull request that lands the work moves the line from one to the other.
+pull request that lands the work records the line in the completed log, moving it
+from the backlog where the task had one.
 
 ## Placeholders and adopter values
 

@@ -146,7 +146,7 @@ the plan, the tests, or another technical part of the task.
    [Keeping documentation current](#keeping-documentation-current).
 
 8. **Close out in the same PR.** Tick the acceptance boxes, write the verdict,
-   and move the ticket from backlog to completed — see
+   and record the ticket in the completed log — see
    [Completing a task](#completing-a-task). Then take the next logical task.
 
 ## Solution selection
@@ -785,8 +785,11 @@ by the evidence under `‹evidence store›`.
 
 The **same PR that lands a task's work moves it from
 [`tasks/backlog.md`](tasks/backlog.md) to
-[`tasks/completed.md`](tasks/completed.md)** — delete its backlog line and add a
-dated entry to the completed log (most recent first). This is not a separate
+[`tasks/completed.md`](tasks/completed.md)** — delete its backlog line, where it
+has one, and add a dated entry to the completed log (most recent first). A task
+opened and finished between two landings never reaches the backlog; it is the
+arrival in the completed log that gate step 8 requires, not the move. This is
+not a separate
 follow-up. Doing the move in the landing PR keeps the two files from ever drifting
 (a task is never both "Now" and done at once), and the reviewer sees the backlog
 bookkeeping alongside the change that earns it. The task's own detail file stays
