@@ -32,6 +32,7 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-q22n** — Mechanise the review record: a CI-only record check with chronology, a budget line in the DoD checklist, and required checks on `main` ([#82](https://github.com/pharzam/armature/issues/82))
+- **T-5k3q** — Ship the branch-protection command in `docs/ci/README.md` with removal guidance that names every droppable job ([#86](https://github.com/pharzam/armature/issues/86))
 
 ## Next
 
