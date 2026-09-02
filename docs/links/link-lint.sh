@@ -336,19 +336,22 @@ lint_file() {
 		# `<a b> "t"`. That split cost more than it bought: it truncated a path
 		# holding ` (`, advising `<Design Notes>` for `Design Notes (v2)/x.md`,
 		# which then resolved SILENTLY to a directory; and it turned a two-title
-		# string into a line CommonMark still does not read as a link. This shape
-		# is not always right either -- `<a b "t">` still fails when followed --
-		# and it is not always LOUD: a target shaped `PREFIX> REST`, such as
-		# `target.md> a/b.md`, is advised `<target.md> a/b.md>`, and the extractor
-		# ends an angle destination at its first `>` when a blank follows, so the
-		# advice reads back as `target.md` and RESOLVES. CommonMark reads that
-		# line as no link at all. Measured on six inputs of that shape, inline and
-		# through a reference definition, with a blank and with a tab. The hole is
-		# in the extractor rather than in the remedy -- `>` then junk -- and it is
-		# #97's; this comment names it so the next reader does not have to find it
-		# twice. Everything OUTSIDE that shape fails L1 loudly. A target that
-		# already opens `<` never arrives as either kind: the extractor keeps it
-		# whole and it fails L1 instead.
+		# string into a line CommonMark still does not read as a link. Two inputs,
+		# run at 56d4f06, say what the wrapping does. `[x](a b "t")`, with `a b` in
+		# the tree, is advised `<a b "t">`, and the followed line fails L1 -- links
+		# a b "t", but that path does not exist -- loud, on a path the author did
+		# not mean. `[x](target.md> a/b.md)`, with target.md in the tree, is advised
+		# `<target.md> a/b.md>`; the extractor ends an angle destination at its
+		# first `>` when a blank follows, so the advice reads back as target.md and
+		# RESOLVES, exit 0, on a line CommonMark shows as text. That hole is the
+		# extractor's rather than the remedy's, and it is #97's. The inputs measured
+		# on each of the three channels a target can carry -- a `<` in it, a `>` in
+		# it, a backslash escape -- are listed in docs/links/README.md limit 7, with
+		# truncation as the `>` sub-case where a blank follows. Two more from the
+		# same runs: `[x](<id>.md x)` draws neither L8 nor L1, because
+		# is_placeholder() skips it -- `OK  1 links resolved` beside one control
+		# link, exit 0; `[lbl]: <Design Notes/target.md` fails L1 with the whole cut
+		# text.
 		if [ "$_kind" = NOTLINK ] || [ "$_kind" = NOTDEF ]; then
 			[ "$_kind" = NOTDEF ] && _target=${_target#*	}
 			is_placeholder "$_target" && { IFS=$nl; continue; }

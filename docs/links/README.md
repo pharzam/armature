@@ -185,13 +185,24 @@ change excluded the repository root from the walk.
    with the whole cut text — `links <Design (draft, but that path does not exist`;
    `adr-lint` reads it as no link, a loud false orphan. The `L8` remedy wraps that
    whole text rather than trying to split a title out of it: a split truncated a
-   destination holding ` (`, and the truncation resolved **silently**. Outside one
-   shape, every input the simpler remedy gets wrong fails `L1` loudly, which limit 2
-   calls the right direction. The exception is a target shaped `PREFIX> REST`: the
-   advice `<PREFIX> REST>` is read back as `PREFIX` alone and resolves, on a line
-   CommonMark reads as no link. That is the extractor's `>`-then-junk hole rather
-   than the remedy's, measured on six inputs, and it belongs to
-   [#97](https://github.com/pharzam/armature/issues/97). A full `)`-aware
+   destination holding ` (`, and the truncation resolved **silently**. What the
+   simpler remedy does was then measured input by input at `56d4f06`: take the `L8`
+   advice, write it back into the file, run `link-lint` again, and render the
+   followed line with `pandoc 3.8.2.1 --from commonmark --to html`. The inputs below
+   are grouped by the character the target carries, which is a way to read the list
+   rather than a claim that the list is finished.
+
+   | The target carries | Inputs, inline and by reference definition | `link-lint` on the followed line | pandoc on the followed line |
+   |---|---|---|---|
+   | a `<`, and no `>` | `a <b.md`, `Design Notes/a<b.md`, `a b<` | `OK  2 links resolved`, exit 0 | the text as written, escaped |
+   | a `>` | `a>b c.md`, `a b>`; and the truncation sub-case, a blank or a tab after the `>`: `target.md> a/b.md`, `docs> adr/0001.md` | `OK  2 links resolved`, exit 0 — the truncation pair reads back as `target.md` and as the directory `docs` | the text as written, carrying a raw `<a>` or `<docs>` tag where the wrapped target reads as one |
+   | a backslash escape | `a\.b c.md` | `OK  2 links resolved`, exit 0, on the literal path | `<a href="a.b c.md">` — a link to a different path |
+
+   The second resolved link in each run is a control that exists, so the count reads 2
+   rather than 1. The `>` rows are the extractor's `>`-then-junk hole rather than the
+   remedy's, and they belong to
+   [#97](https://github.com/pharzam/armature/issues/97), whose body names all three
+   groups. A full `)`-aware
    parse was rejected there: about fourteen lines per branch, it must still exempt
    the `<id>.md` marker, and no link in the tree needs it.
 
