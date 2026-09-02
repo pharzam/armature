@@ -48,7 +48,7 @@ shows the collapse in a clean tree instead.
 | Clean clone of `6c3f5d0` | `OK  44 claims` → same; 1.6 s → 2.6 s | `OK  739 links resolved` → same; 4.4 s → 4.3 s |
 | Byte copy of the operator's checkout at `6c3f5d0`, **nine** worktrees under `.claude/worktrees/`, taken at 14:27 | exit 1, **14** `FAIL` lines, the first `FAIL  citation adr-lint.sh:315 points at a BLANK line -- it has DRIFTED; re-derive it from the construct, not by arithmetic (DoD 2)` → `OK  44 claims`; 3.1 s → 2.5 s | `OK  7395 links resolved` in 43.5 s → `OK  739 links resolved` in 4.2 s |
 | The operator's checkout itself, read-only, the fixed `link-lint` pointed at it | — | `OK  743 links resolved`, 4.4 s |
-| Worktree `T-x1zp` at the fix, after merging the default branch | `OK  44 claims` | `OK  766 links resolved`, measured at this head after the edits below |
+| Worktree `T-x1zp` at the fix, after merging the default branch | `OK  44 claims` | `OK  767 links resolved`, measured at this head after the edits below; 766 before the close-out line in `completed.md`, whose `[detail]` link is the one it adds |
 
 In the byte copy the fixed list holds **530** entries, every one a regular file.
 The self-test, `docs/tests/nested-checkout-check.sh`, runs **22** cases: 10 were red
