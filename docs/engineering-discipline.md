@@ -233,10 +233,13 @@ protocol that bounds the rounds is
   scoped to those files, and it consumes no cycle either.
 - **The cycles are capped.** After the first freeze, at most two fix-and-review
   cycles follow; the plan-review confirmation declares the cap, and two is both
-  the ceiling and the default where it is silent. On the cap, with something
+  the maximum and the default where it is silent. On the cap, with something
   material still in scope, the verdict is `not mergeable, findings recorded`.
-  That is a legitimate outcome, and its successor state is an issue split: each
-  open finding becomes a child issue and the branch does not run a third cycle.
+  That is a legitimate outcome, and its successor state is an issue split: one
+  successor issue carrying the branch's work as it stands, on a branch of its own
+  with a first freeze of its own, plus a child issue for each open finding the
+  successor does not take. Where it takes them all, it alone is the split. The
+  stopped branch does not run a further cycle.
 - **Material has a test.** A finding is material when it changes an exit code,
   an assertion, a behaviour on an adopter's tree, a claim in the tree, or a
   Definition-of-Done item. Wording, style and layout are not. A claim in the
@@ -262,15 +265,16 @@ protocol that bounds the rounds is
   never a revision; the growth becomes a child issue unless the operator approves
   it once, on the issue. An overrun the operator has not approved blocks the
   merge: the last round carries it as a finding and returns
-  `not mergeable, findings recorded`. **Once** counts per issue, so a successor
+  `not mergeable, findings recorded`. That route does not run through the cap —
+  an unapproved overrun blocks a merge whether or not anything else is open. **Once** counts per issue, so a successor
   issue starts with an approval of its own; nothing forbids that, and what the
   rule relies on is that the successor's plan review sets its maximum with the
-  carried size already measured — a discipline, not a mechanism. An approval may
-  name a **ceiling**, in the approval comment and before the growth it bounds
-  exists; one that names none approves the outturn measured at it and covers the
-  growth that follows from fixing what a later round finds. A ceiling that is
-  passed ends where a spent approval ends: the round that measures it records it,
-  and the last round carries it as a finding and returns the same verdict.
+  carried size already measured — a discipline, not a mechanism. Whether an approval may name a
+  **ceiling**, and how far one reaches past the figure it was given, is not
+  decided: three review rounds produced three rules for it and each was falsified
+  by the next, so it is
+  [#99](https://github.com/pharzam/armature/issues/99)'s. Until that lands, an
+  approval is one number on one issue.
 
 ### Who may review
 

@@ -60,12 +60,19 @@ Every round reviews one named commit. The last round reviews a commit that is
 that round, the integration merge below, or the **close-out bookkeeping** — and
 each produces a new frozen head that the next round names.
 
-Close-out bookkeeping is the task line moving from the backlog to the completed
-log, which [gate step 8](../engineering-discipline.md#completing-a-task) requires
-of the pull request that lands the work. It cannot be written before the rounds
-finish, because it is what finishing means, so a rule permitting only fixes after
-a frozen head forbids every landing. The commit that carries it changes no
-behaviour and no claim, and the close-out says plainly that no round read it.
+Close-out bookkeeping is the task line **arriving in the completed log** — moved
+from the backlog where the task had a line there, and simply added where it did
+not, which is every task opened and finished between two landings. What
+[gate step 8](../engineering-discipline.md#completing-a-task) requires of the
+landing pull request is the arrival, not the move. It cannot be written before
+the rounds finish, because it is what finishing means, so a rule permitting only
+fixes after a frozen head forbids every landing.
+
+The exception covers the bookkeeping and nothing else. Where the same commit also
+corrects a claim — the close-out entry is prose, and a round can find it wrong —
+that correction is a fix to a finding, permitted on its own footing and named as
+one. What the close-out says plainly is which of the two the commit carried, and
+that no round read it.
 "What a round records" already fixed the commit within a round. The gap was
 between rounds, and this closes it. Rejected: reviewing the branch as it moves.
 A verdict on a moving target names no commit.
@@ -87,7 +94,7 @@ that fix does consume one.
 ### 2. The cycle cap and the non-merge verdict
 
 After the first freeze, at most **two** fix-and-review cycles follow. Two is
-both the ceiling and the default: the plan-review confirmation declares the cap
+both the maximum and the default: the plan-review confirmation declares the cap
 in its `Cycle cap` field and may declare a lower one, and where that confirmation
 is missing or omits the field, the cap is two. Nothing raises it.
 
@@ -96,10 +103,12 @@ the verdict is `not mergeable, findings recorded`. That is a legitimate outcome.
 The model for it is #64's overrun: reported, not revised.
 
 The successor state is an **issue split**: one successor issue carrying the
-branch as it stands, plus a child issue for each finding still open that the
-successor is not taking. Where a stop leaves no finding open — an unapproved
-overrun, say — the successor alone is the split, and no child issue is owed.
-Both are opened before the branch is landed in part or abandoned.
+branch's work as it stands — on a branch of its own, cut from that commit and
+with a first freeze of its own — plus a child issue for each finding still open
+that the successor is not taking. Where the successor takes every open finding,
+it alone is the split and no child issue is owed. An unapproved overrun is always
+among the findings it takes, since the successor carries the very work whose size
+overran. All of them are opened before the branch is landed in part or abandoned.
 
 `Cycle` counts the frozen heads of **this branch for this issue**: `0` is its
 first frozen head, and a branch has exactly one. A branch that has reached its
@@ -215,7 +224,13 @@ file's length would have caught.
   [#99](https://github.com/pharzam/armature/issues/99)'s, and until that lands
   the rule is the one above and nothing more: one approval per issue, an
   unapproved overrun blocking the merge, and the last round carrying it.
-  An overrun the operator has not approved **blocks the merge**. #64 is the case
+  An overrun the operator has not approved **blocks the merge**: the last round
+  carries it as a finding and returns `not mergeable, findings recorded`. That
+  route into the verdict does not run through the cap.
+  [Section 2](#2-the-cycle-cap-and-the-non-merge-verdict) reaches the verdict when
+  a cap is reached with something material still in scope; this reaches it whether
+  or not a cap is near and whether or not anything else is open, because an
+  unapproved overrun blocks a merge on its own. #64 is the case
   this is fitted to: its
   overrun was reported twice, judged earned by a reviewer, and merged with no
   operator approval at all — the approval step going unenforced on the one task
@@ -261,7 +276,10 @@ The three round values are disjoint across the two positions, so the verdict
 itself says which position a record holds and no field has to mark it.
 `not mergeable, findings recorded` is also the last round's verdict where a
 finding's materiality or classification stands disputed or unresolved: a dispute
-is a finding still open, and it is recorded as one. A check counts the cap from
+is a finding still open, and it is recorded as one. And it is the verdict where
+[section 5](#5-the-budget-record)'s unapproved overrun stands, which is a finding
+open by the same reading. So three routes reach the verdict — a cap with material
+in scope, a dispute, an unapproved overrun — and only the first needs the cap. A check counts the cap from
 `Cycle` and matches the verdict as a string.
 
 That check's **input contract** — how it matches the heading, how it reads the

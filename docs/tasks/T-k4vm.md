@@ -90,15 +90,15 @@ Three things the predecessor could not fit inside its ceiling.
   the carried size already measured and on the issue. That is a discipline, not a
   mechanism, and it is written as one. This issue is the instance: a bound of 566 set
   as 436 measured plus 130 estimated.
-- **A ceiling now has a rule of its own.** It is named in the approval comment, before
-  the growth it bounds exists, and never after measuring what it would have to cover.
-  An approval naming none approves the outturn measured at it and covers the growth
-  that follows from fixing what a later round finds — bounding it at exactly the
-  measured figure would make any later fix an overrun, turning an approval into a
-  refusal to merge. A ceiling that is passed ends where a spent approval ends: the
-  round that measures it records it, and the **last** round carries it, which is the
-  carrier every other overrun has, so a passed ceiling strands no cycle the cap
-  allows.
+- **A ceiling got a rule of its own, and it did not hold.** This task wrote one: named
+  in the approval comment before the growth it bounds exists, an approval naming none
+  covering the growth a later round's findings drive, and a passed ceiling carried by
+  the last round. That was the third rule three rounds produced for the same clause,
+  and the successor's first round falsified it as its predecessors were falsified. The
+  clause is now deferred whole to [#99](https://github.com/pharzam/armature/issues/99),
+  which carries the three attempts as its evidence. What this task got right is the
+  measurement underneath: an approval is one number, on one issue, measured at a named
+  head against a named base.
 
 ## What the evidence turned out to be
 
