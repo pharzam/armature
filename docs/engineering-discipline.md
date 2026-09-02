@@ -207,7 +207,9 @@ fresh — it does not see your reasoning — and each round applies a different 
 
 Fix every real finding. Keep the rounds running until one round finds nothing
 material. One pass is never enough. Each round catches a different class of
-error.
+error. The protocol that bounds the rounds — a frozen head per round, a cycle
+cap and a closed verdict — is
+[ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head).
 
 ### Who may review
 

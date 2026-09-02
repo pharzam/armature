@@ -102,5 +102,6 @@ record by number here, and let the index table below do the linking.
 | [0005](0005-independent-review-may-be-an-agent.md) | Independent review may be an agent | Accepted |
 | [0006](0006-derive-expectations-from-prose.md) | Keep deriving expectations from the prose | Accepted |
 | [0007](0007-link-coverage-belongs-to-link-lint.md) | Link coverage belongs to link-lint | Accepted |
+| [0008](0008-stop-the-gate-on-a-frozen-head.md) | Stop the gate on a frozen head | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
