@@ -199,10 +199,17 @@ change excluded the repository root from the walk.
    | a backslash escape | `a\.b c.md` | `OK  2 links resolved`, exit 0, on the literal path | `<a href="a.b c.md">` — a link to a different path |
 
    The second resolved link in each run is a control that exists, so the count reads 2
-   rather than 1. The `>` rows are the extractor's `>`-then-junk hole rather than the
-   remedy's, and they belong to
+   rather than 1, and the truncation rows need `target.md` and a `docs/` directory in
+   the tree rather than the literal destination. Removing the target says which path
+   each `>` row resolved. `[x](<target.md> a/b.md>)` gives `FAIL L1: links target.md`
+   and `[lbl]: <docs> adr/0001.md>` gives `links docs`, shorter than the line names:
+   that is the `>`-then-junk read at `link-lint.sh:252`, and it belongs to
    [#97](https://github.com/pharzam/armature/issues/97), whose body names all three
-   groups. A full `)`-aware
+   groups. `[x](<a>b c.md>)` gives `links a>b c.md` and `[x](<a b>>)` gives `links a b>`,
+   the path as written, so that read did not run on them; what those two turn on is the
+   spelling the advice produces, measured in round 1 of
+   [#98](https://github.com/pharzam/armature/issues/98) and routed off this change's
+   path. A full `)`-aware
    parse was rejected there: about fourteen lines per branch, it must still exempt
    the `<id>.md` marker, and no link in the tree needs it.
 
