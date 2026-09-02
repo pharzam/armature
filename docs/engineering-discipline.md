@@ -123,12 +123,16 @@ the plan, the tests, or another technical part of the task.
    [Progress indicators for long-running operations](#progress-indicators-for-long-running-operations).
    Never leave the operator in the dark.
 
-5. **Review until findings decay.** After the code works, run rounds of
-   independent blind reviews — see
-   [Reviewing until findings decay](#reviewing-until-findings-decay). A reviewer
-   is a person **or** a fresh agent session; what the round must have is
-   [independence](#who-may-review), not a particular kind of reviewer. Text that
-   summarises another document gets a
+5. **Review until findings decay.** After the code works, freeze the head and
+   run rounds of independent blind reviews on it — see
+   [Reviewing until findings decay](#reviewing-until-findings-decay). A fix
+   re-freezes; at most two fix-and-review cycles follow the first freeze, and
+   the last round ends `nothing material in scope` or
+   `not mergeable, findings recorded`. A defect the change *revealed*, off the
+   path its Definition of Done names, opens an issue instead of entering the
+   branch. A reviewer is a person **or** a fresh agent session; what the round
+   must have is [independence](#who-may-review), not a particular kind of
+   reviewer. Text that summarises another document gets a
    [clause-by-clause semantic pass](#reviewing-for-semantic-agreement).
 
 6. **Be honest, keep evidence.** State outcomes plainly and commit run evidence
@@ -194,8 +198,10 @@ templates ship inert under [`templates/`](templates/).
 
 ## Reviewing until findings decay
 
-After the code works, run rounds of independent blind reviews. Each reviewer is
-fresh — it does not see your reasoning — and each round applies a different lens:
+After the code works, **freeze the head**: name the commit, and land nothing on
+the branch after it except a fix to a finding. Then run rounds of independent
+blind reviews on that commit. Each reviewer is fresh — it does not see your
+reasoning — and each round applies a different lens:
 
 - correctness and failure modes — `‹name the failure modes that hurt you most,
   for example data leakage, race conditions, off-by-one, unhandled errors›`,
@@ -205,11 +211,38 @@ fresh — it does not see your reasoning — and each round applies a different 
 - semantic agreement — does each changed sentence still mean what its source
   means? See [Reviewing for semantic agreement](#reviewing-for-semantic-agreement).
 
-Fix every real finding. Keep the rounds running until one round finds nothing
-material. One pass is never enough. Each round catches a different class of
-error. The protocol that bounds the rounds — a frozen head per round, a cycle
-cap and a closed verdict — is
-[ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head).
+One pass is never enough. Each round catches a different class of error. The
+protocol that bounds the rounds is
+[ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head):
+
+- **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
+  the next round names it. The last round runs on a frozen head that no fix
+  followed, and its verdict is `nothing material in scope`.
+- **The cycles are capped.** After the first freeze, at most two fix-and-review
+  cycles follow; the plan-review confirmation declares the cap. On the cap, with
+  something material still in scope, the verdict is
+  `not mergeable, findings recorded`. That is a legitimate outcome.
+- **Material has a test.** A finding is material when it changes an exit code,
+  an assertion, a behaviour on an adopter's tree, a claim in the tree, or a
+  Definition-of-Done item. Wording, style and layout are not. A claim in the
+  tree counts only when a reader could act on it and the change makes it false
+  or leaves it false; a sentence that changed and still holds is wording. Each
+  finding records its basis in one line.
+- **A finding is classified before it is fixed.** *In the change* — introduced
+  by this branch, or pre-existing on the path the Definition of Done names — is
+  fixed here inside the budget, else it becomes a child issue. *Revealed* —
+  pre-existing and off that path — opens a new issue, a blocker if it is a
+  silent false green and normal if it fails loudly; it blocks this merge only
+  if this branch made it reachable. The last round lists the accepted
+  out-of-scope findings with their issue numbers, which do not count against
+  `nothing material in scope`. The author opens each issue, with its
+  measurement, before the merge.
+- **The budget is R12's bound.** The plan states it and the plan review sets
+  the maximum — [R12](issue-workflow.md#r12--slice-and-prioritize) says so, and
+  [the ADR](adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record)
+  fixes the unit. An overrun is a finding reported on the issue, never a
+  revision; the growth becomes a child issue unless the operator approves it
+  once, on the issue.
 
 ### Who may review
 
@@ -263,20 +296,41 @@ mechanizable claim to judgement.
 
 ### What a round records
 
-A verdict that does not say what it read is not evidence. Each round comments on
-the issue with:
+A verdict that does not say what it read is not evidence. Each round is one
+comment on the issue, headed `## Review record — round N`, with these fields
+under these names
+([ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#6-the-review-record)):
 
-- the **commit** it reviewed — a fixed one; a moving target cannot be reviewed,
-- the **reviewer** — the model and version, or the person,
-- the **lens** and the input it was given,
-- its **raw findings**, before triage,
-- the **fixes** made, and its **verdict**.
+- `Commit reviewed` — the frozen head, by SHA; a moving target cannot be
+  reviewed,
+- `Reviewer` — the model and version, or the person,
+- `Lens`, `Briefed on`, `Barred from` — the question asked, what the reviewer
+  was handed, and what the brief excluded,
+- `Independence claimed` — the [levels](#who-may-review) held, and those not
+  reached,
+- `Cycle` — `0` on the first frozen head, `k` for the k-th fix-and-review cycle
+  after it; the cap is counted from this field,
+- `Raw findings` — before triage, each with its one-line basis and its
+  classification,
+- `Fixes` — what landed, and the new frozen head if one,
+- `Verdict` — from a closed set: an intermediate round is `material` or
+  `nothing material in scope`; the last round is `nothing material in scope`
+  or `not mergeable, findings recorded`.
+
+The plan-review confirmation carries `Verdict` — `approve`,
+`approve-with-conditions` or `reject` — with `Budget maximum` and `Cycle cap`.
+Two things no record proves: that a reviewer did not read a barred comment, and
+that the model named is the model used. The record makes each claim
+falsifiable; it does not verify it.
 
 ### When reviewers disagree
 
 Escalate by the task's risk: a second reviewer at a higher independence level,
 and a human operator at the top. Two reviewers who disagree do not average their
-verdicts, and the author does not break the tie.
+verdicts, and the author does not break the tie. A dispute over whether a
+finding is material, or over its classification as in the change or revealed,
+routes here the same way; the author does not move their own finding out of
+scope unopposed.
 
 Where an adopter has no second operator to escalate to, the disagreement is
 **recorded unresolved** and carried into the adopter's own decision process. An

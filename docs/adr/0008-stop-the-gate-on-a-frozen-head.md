@@ -170,8 +170,8 @@ not verify it.
 A task can stop honestly. `not mergeable, findings recorded` is a verdict a task
 can reach and a reader can act on; before this record the only exits were
 "nothing material" or another round. The two distinctions cut the branch: a
-wording finding is not fixed inside a frozen round, and a revealed defect leaves
-the branch for an issue with its measurement attached.
+wording finding does not buy a fix-and-review cycle on its own, and a revealed
+defect leaves the branch for an issue with its measurement attached.
 
 More writing per round. A record has ten named fields and a closed verdict, and
 each finding carries a basis and a classification. A non-merge is a real
