@@ -76,7 +76,8 @@ the two `‹…›` rows of the
 object. The body goes on standard input with `--input -`, because `gh api` flag
 syntax cannot express an array of objects. The `checks` below are the eight the
 kit's own repository requires — a context is the check's displayed name, the job's
-`name:` or its id when it has none, which is why the last is `conventional-title` —
+`name:` or its id when it has none, which is why `conventional-title` carries no
+parenthesis —
 each pinned to `"app_id": 15368`, GitHub Actions; a bare `contexts` list would let
 any app or token satisfy a name by posting a status under it. The array is this
 repository's set, not yours: before you paste it, check every context against
@@ -186,9 +187,12 @@ this from CI can undo it by hand but not from CI.
 **On another forge.** This subsection is GitHub-shaped, because the array it prunes is
 GitHub's. [`gitlab-ci.yml`](gitlab-ci.yml) ships `‹…›` jobs of its own, and its gate —
 "Pipelines must succeed" on a protected branch — is pipeline-wide: there is no list of
-contexts to prune, so nothing here has to be deleted, and a job you leave unfilled
-fails the whole pipeline rather than leaving one check pending. That is the same trap
-with a louder failure and no edit to get wrong. `‹the setting under which a failing
+contexts to prune, so this subsection's deletions have no counterpart there. What a
+GitLab adopter deletes instead is the **job**, in `gitlab-ci.yml` itself, for anything
+they did not install or will not fill: a job left unfilled fails the whole pipeline and
+blocks every merge, where GitHub would leave one check pending. That is the same trap
+with a louder failure, and the edit that avoids it is in the pipeline file rather than
+in a list of contexts. `‹the setting under which a failing
 pipeline blocks the merge›` is where an adopter on a third forge records what their
 own gate does.
 
