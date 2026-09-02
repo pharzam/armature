@@ -180,7 +180,19 @@ file's length would have caught.
   confirmation.
 - **Overrun**: a finding reported on the issue, never a revision of the number.
   The only approver is the operator, once, on the issue; the alternative is a
-  child issue. An overrun the operator has not approved **blocks the merge**: the
+  child issue. **Once counts per issue, not per branch**, and
+  [R11](../issue-workflow.md#r11--single-goal-issues) is what stops that being a
+  free reset: a child issue is legitimate only when it carries one actionable,
+  demoable goal of its own, so an author cannot buy a second approval by moving
+  the same work to a new number. **A ceiling** is a maximum the operator may name
+  when approving: it is named in that approval comment, before the growth it
+  bounds exists, and never after measuring the growth it would have to cover — a
+  limit chosen once the result is known is a fitted parameter and not a rule
+  ([guardrails, section 1](../guardrails.md#1-pre-registered-decisions--or-the-goalposts-move)).
+  **A ceiling that is passed ends where a spent approval ends**: no further
+  approval is available on that issue, so the verdict is
+  `not mergeable, findings recorded, issue split` and the work continues on a
+  child issue with a bound set from the measured size rather than an estimate. An overrun the operator has not approved **blocks the merge**: the
   last round carries it as a finding and its verdict is
   `not mergeable, findings recorded`. #64 is the case this is fitted to: its
   overrun was reported twice, judged earned by a reviewer, and merged with no
