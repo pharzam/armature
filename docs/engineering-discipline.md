@@ -216,8 +216,10 @@ protocol that bounds the rounds is
 [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head):
 
 - **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
-  the next round names it. The last round runs on a frozen head that no fix
-  followed, and its verdict is `nothing material in scope`.
+  the next round names it. The round that ends the work runs on a frozen head
+  that no fix followed. Its verdict is `nothing material in scope` when nothing
+  material in scope remains, and `not mergeable, findings recorded` when the cap
+  below is reached with something material still open.
 - **The cycles are capped.** After the first freeze, at most two fix-and-review
   cycles follow; the plan-review confirmation declares the cap. On the cap, with
   something material still in scope, the verdict is

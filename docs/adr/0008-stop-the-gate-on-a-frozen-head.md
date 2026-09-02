@@ -180,7 +180,8 @@ is more visible than a branch that kept growing.
 
 What stays open. Every mechanism is
 [#82](https://github.com/pharzam/armature/issues/82)'s, and until one lands this
-is a written rule, as the
-[enforcement table](../issue-workflow.md#what-is-enforced-where) says. The
+is a written rule. The
+[enforcement table](../issue-workflow.md#what-is-enforced-where) gains its row in
+this change and records it as one. The
 cap's evidence base is one task, #64; #81, which decided this record, is the
 first task that runs under it.
