@@ -156,15 +156,26 @@ anchors_of() {
 # operator's path is not the kit's business to survive by luck.
 #
 # What is listed is what git lists -- tracked, plus untracked and not ignored --
-# so a nested checkout is one directory entry and its Markdown is never read. When
-# git lists nothing (no checkout, or a kit vendored where the outer repository
-# ignores it, where rev-parse still succeeds) the find walk stands in, pruning any
-# directory that holds a `.git` ENTRY: a linked worktree's is a file. The same
-# shape as audit-record-lint.sh's, kept in step by hand (links/README.md limit 9).
-files=$(cd "$root" && git -c core.quotePath=false ls-files --cached --others --exclude-standard -- '*.md' 2>/dev/null \
-	| while IFS= read -r _f; do [ -f "$_f" ] && printf '%s\n' "$_f"; done | sort)
-[ -n "$files" ] || files=$(cd "$root" \
-	&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
+# so a nested checkout is one directory entry and its Markdown is never read. `-z`
+# is what makes the names safe: git quotes a name holding a quote, a backslash or a
+# control character whatever core.quotePath says, and a quoted name resolves to
+# nothing. NUL-delimited output is never quoted. `[ ! -L ]` refuses a symlink, as
+# the walk it replaced did: following one reads a file outside the repository.
+#
+# The walk stands in whenever the list is not this repository's file set. That is
+# no checkout, and a kit vendored where the outer repository ignores it -- but also
+# an outer .gitignore naming `docs/`, which leaves the list NON-empty and still
+# missing every document this check exists to read. A list with no Markdown under
+# `docs/` is as wrong as no list at all. The walk prunes any directory that holds a
+# `.git` ENTRY: a linked worktree's is a file. The same shape as
+# audit-record-lint.sh's, kept in step by hand (links/README.md limit 9).
+files=$(cd "$root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard -- '*.md' 2>/dev/null \
+	| tr '\0' '\n' \
+	| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done | sort)
+if [ -z "$files" ] || ! printf '%s\n' "$files" | grep -q '^docs/'; then
+	files=$(cd "$root" \
+		&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
+fi
 
 lint_file() {
 	_f=$1

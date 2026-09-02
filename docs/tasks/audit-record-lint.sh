@@ -399,7 +399,10 @@ done
 # has_citation() above proves a citation is PRESENT. It cannot prove one is TRUE:
 # `no-such-file.md:99999` matches the shape. This block resolves each cited
 # path:line against the tree and fails when the file is absent or the line is past
-# the end of it. Skipped for a fixture case, which has no tree to resolve against.
+# the end of it. It runs for a fixture case too: repo_root comes from this script's
+# own location, not from the case directory, so a fixture's citations resolve
+# against the real tree -- measured, a fixture row citing `adr-lint.sh:999999`
+# fails here.
 if [ -n "$repo_root" ]; then
 	# The three patterns below must stay in step with has_citation() above. A form
 	# that block 2 ACCEPTS but this block cannot EXTRACT is a hole: the citation
@@ -428,18 +431,31 @@ if [ -n "$repo_root" ]; then
 	# file staged in pre-commit is seen. A nested checkout is one directory or
 	# gitlink entry to git and its contents are never listed, so a stale copy of a
 	# cited file inside one can neither resolve a citation nor hide a drift.
-	# `core.quotePath=false`, or a non-ASCII name prints quoted and names no file;
-	# `[ -f ]` drops an index entry whose file is gone. The walk below stands in
-	# whenever the list is EMPTY, not only outside a checkout: a kit vendored in a
-	# larger repository whose vendor path is gitignored gets a successful rev-parse
-	# and zero lines, and testing rev-parse instead left every citation `names no
-	# file`, a dead gate on a tree that violates nothing. $repo_root/docs exists
-	# (checked above), so an empty list is always wrong. The walk prunes any
+	# `-z` is what makes the names safe: git quotes a name holding a quote, a
+	# backslash or a control character whatever core.quotePath says, and a quoted
+	# name matches no file. NUL-delimited output is never quoted, so `tr` gives
+	# back the literal names. A newline IN a filename still breaks this, and
+	# nothing here survives one. `[ -f ] && [ ! -L ]` drops an index entry whose
+	# file is gone and refuses a symlink, which the walk it replaced also refused:
+	# following one reads a file outside the repository, and a tracked symlink into
+	# a nested checkout would put back the very hiding this fix removes.
+	#
+	# The walk below stands in whenever the list is not this repository's file set.
+	# EMPTY is one such case -- a kit vendored in a larger repository whose vendor
+	# path is gitignored gets a successful rev-parse and zero lines, and testing
+	# rev-parse instead left every citation `names no file`, a dead gate on a tree
+	# that violates nothing. It is not the only case: an outer .gitignore naming
+	# `docs/` leaves the list NON-empty and still missing everything this check
+	# reads. $repo_root/docs exists (checked above), so a list with nothing under
+	# it is as wrong as no list at all, and both take the walk. It prunes any
 	# directory holding a `.git` ENTRY -- a linked worktree's is a file.
-	all_files=$(cd "$repo_root" && git -c core.quotePath=false ls-files --cached --others --exclude-standard 2>/dev/null \
-		| while IFS= read -r _f; do [ -f "$_f" ] && printf '%s\n' "$_f"; done)
-	[ -n "$all_files" ] || all_files=$(cd "$repo_root" \
-		&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -print | sed 's|^\./||')
+	all_files=$(cd "$repo_root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard 2>/dev/null \
+		| tr '\0' '\n' \
+		| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done)
+	if [ -z "$all_files" ] || ! printf '%s\n' "$all_files" | grep -q '^docs/'; then
+		all_files=$(cd "$repo_root" \
+			&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -print | sed 's|^\./||')
+	fi
 	n_cites=0
 	for c in $cites; do
 		p=${c%:*}

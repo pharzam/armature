@@ -42,8 +42,8 @@ shows the collapse in a clean tree instead.
 |---|---|---|
 | Clean clone of `6c3f5d0` | `OK  44 claims` → same; 1.6 s → 2.6 s | `OK  739 links resolved` → same; 4.4 s → 4.3 s |
 | Byte copy of the operator's checkout at `6c3f5d0`, **nine** worktrees under `.claude/worktrees/`, taken at 14:27 | exit 1, **14** `FAIL` lines, the first `FAIL  citation adr-lint.sh:315 points at a BLANK line -- it has DRIFTED; re-derive it from the construct, not by arithmetic (DoD 2)` → `OK  44 claims`; 3.1 s → 2.5 s | `OK  7395 links resolved` in 43.5 s → `OK  739 links resolved` in 4.2 s |
-| The operator's checkout itself, read-only, the fixed `link-lint` pointed at it | — | `OK  739 links resolved`, 4.4 s |
-| Worktree `T-x1zp` at the fix | `OK  44 claims` | `OK  746 links resolved`; seven links added by this task's documents |
+| The operator's checkout itself, read-only, the fixed `link-lint` pointed at it | — | `OK  743 links resolved`, 4.4 s |
+| Worktree `T-x1zp` at the fix | `OK  44 claims` | `OK  750 links resolved`; seven links added by this task's documents |
 
 In the byte copy the fixed list holds **530** entries, every one a regular file.
 The self-test, `docs/tests/nested-checkout-check.sh`, ran **13** cases: 6 red
@@ -68,6 +68,16 @@ Both linters now list this repository's files the way git does and fall back to 
 pruning walk when git lists nothing, so a nested checkout under the root is never
 read. The self-test drives both against a real nested checkout, a linked worktree,
 a plain directory, no checkout at all, and a vendored-and-ignored kit, and CI runs
-it. The 14 false failures in the operator's checkout are gone, the silent direction
-is asserted against, and `link-lint` there drops from 43.5 s to 4.2 s as a side
-effect.
+it. The 14 false failures in the operator's checkout are gone and `link-lint` there
+drops from 43.5 s to 4.2 s as a side effect.
+
+The **silent** direction — a nested copy hiding a real drift — is closed by the fix
+and is **not** asserted by any case. Both cases that look like they assert it pass
+against the unfixed linter too, measured: the block reads the first candidate the
+walk returns, and that order is the file system's, so no fixture can force the
+nested copy to be chosen. A nested directory sorts before `docs/` in the operator's
+checkout and after it in the self-test's tree. What the cases do cover, order
+independently, is the loud direction: a file inside a nested checkout must not
+resolve a citation, and its Markdown must not be read. The gap is recorded here
+rather than papered over, because a case that passes either way is the pitfall
+`docs/guardrails.md` names as a check that cannot fail.

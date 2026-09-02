@@ -149,17 +149,37 @@ clean_links=$(printf '%s\n' "$last_out" | grep '^link-lint: OK')
 mkdir -p "$repo/nested/tools" "$repo/nested/docs/tools"
 printf 'x=1\n' > "$repo/nested/tools/nested-only.sh"
 printf '%s' "$dead" > "$repo/nested/docs/dead.md"
-cp "$base/cited.clean" "$repo/nested/docs/tools/cited.sh"
+# The nested copy is LONGER than the real file on purpose. Block 2b picks the
+# first candidate with enough lines, so a citation past the real file's end
+# resolves through a longer nested copy and passes -- silently, and whatever
+# order the directories happen to come back in. A drift-and-blank-line case does
+# not test that: which candidate wins there depends on directory order, so it can
+# pass against the unfixed linter on some disks. Length is order-independent.
+awk 'BEGIN { for (i = 1; i <= 40; i++) print "x=" i }' > "$repo/nested/docs/tools/cited.sh"
 mkrepo "$repo/nested" || exit 1
 
 # 1. a citation that resolves only inside the nested checkout must fail
 cite nested-only.sh:1
 check '1 citation resolving only inside the nested checkout' 1 'citation nested-only.sh:1 names no file in the tree' "$A"
-# 2. a drift in the real file is reported although the nested copy holds the construct
+# 2. a citation past the real file's end fails, with a longer copy sitting inside
+#    the nested checkout.
+cite cited.sh:20
+check '2 line past the real file, longer nested copy' 1 'citation cited.sh:20 points at a BLANK line' "$A"
+# 2b. a drift in the real file is reported although the nested copy holds the
+#     construct.
 cite cited.sh:3
 awk 'NR == 3 { print "" } { print }' "$base/cited.clean" > "$repo/docs/tools/cited.sh"
-check '2 drift in the real file, undrifted nested copy' 1 'citation cited.sh:3 points at a BLANK line' "$A"
+check '2b drift in the real file, undrifted nested copy' 1 'citation cited.sh:3 points at a BLANK line' "$A"
 cp "$base/cited.clean" "$repo/docs/tools/cited.sh"
+#
+# NEITHER of those two proves the SILENT direction -- that a nested copy cannot
+# HIDE a real drift. Both pass against the unfixed linter as well, measured. The
+# reason is that the block reads the first candidate the walk returns, and the
+# walk's order is the file system's, which no fixture can fix: a nested directory
+# sorts before `docs/` on the operator's checkout and after it here. The loud
+# direction is covered, order-independently, by cases 1, 4, 4' and 5, where a file
+# inside the nested checkout must not resolve or be read at all. The silent
+# direction is stated as a limit rather than claimed as tested.
 # 3. a plain nested directory with no .git entry is still walked, both ways
 mkdir -p "$repo/plain/docs"
 printf '%s' "$dead" > "$repo/plain/docs/dead.md"
