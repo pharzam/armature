@@ -440,19 +440,26 @@ if [ -n "$repo_root" ]; then
 	# following one reads a file outside the repository, and a tracked symlink into
 	# a nested checkout would put back the very hiding this fix removes.
 	#
-	# The walk below stands in whenever the list is not this repository's file set.
-	# EMPTY is one such case -- a kit vendored in a larger repository whose vendor
-	# path is gitignored gets a successful rev-parse and zero lines, and testing
-	# rev-parse instead left every citation `names no file`, a dead gate on a tree
-	# that violates nothing. It is not the only case: an outer .gitignore naming
-	# `docs/` leaves the list NON-empty and still missing everything this check
-	# reads. $repo_root/docs exists (checked above), so a list with nothing under
-	# it is as wrong as no list at all, and both take the walk. It prunes any
-	# directory holding a `.git` ENTRY -- a linked worktree's is a file.
-	all_files=$(cd "$repo_root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard 2>/dev/null \
-		| tr '\0' '\n' \
-		| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done)
-	if [ -z "$all_files" ] || ! printf '%s\n' "$all_files" | grep -q '^docs/'; then
+	# git's list is trusted only when THIS directory is itself the repository
+	# root. Where it is not -- a kit vendored inside a larger repository -- the
+	# list is the OUTER repository's view of the kit, filtered by an ignore file
+	# the kit does not own, and it can be missing anything: a vendor path under
+	# `.gitignore` gives zero lines, `tests/` gives a list missing 163 documents,
+	# `*.md` gives one missing every document. An earlier form of this guard
+	# tested for `docs/` in the list and closed only the patterns that hit
+	# `docs/`; the root test closes the class, because the question is not which
+	# files are missing but whose ignore rules decided. The empty-list test stays
+	# as a second guard. Both take the walk, which prunes any directory holding a
+	# `.git` ENTRY -- a linked worktree's is a file.
+	_top=$(cd "$repo_root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
+	_here=$(cd "$repo_root" 2>/dev/null && pwd -P) || _here=
+	all_files=
+	if [ -n "$_top" ] && [ "$_top" = "$_here" ]; then
+		all_files=$(cd "$repo_root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard 2>/dev/null \
+			| tr '\0' '\n' \
+			| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done)
+	fi
+	if [ -z "$all_files" ]; then
 		all_files=$(cd "$repo_root" \
 			&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -print | sed 's|^\./||')
 	fi

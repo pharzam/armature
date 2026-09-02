@@ -220,6 +220,35 @@ fi
 check '6 vendored and gitignored: audit-record-lint' 0 'audit-record-lint: OK' "$outer/kit/docs/tasks/audit-record-lint.sh"
 check '6 vendored and gitignored: link-lint' 0 "$clean_links" "$outer/kit/docs/links/link-lint.sh"
 
+# 7. the SILENT direction, order-independently. Block 2b accepts ANY candidate
+#    with enough lines rather than the first, and block 2c -- the one that reads
+#    the first candidate -- runs only for a `*.sh` suffix. So a citation into a
+#    `.md` past the real file's end is resolved by a LONGER copy inside the
+#    nested checkout, whatever order the walk returns. An earlier draft of this
+#    script recorded the silent direction as unprovable; it is provable, and this
+#    is the construction.
+printf '# Doc\n\nshort\n' > "$repo/docs/short.md"
+awk 'BEGIN { print "# Doc"; for (i = 1; i <= 40; i++) print "line " i }' > "$repo/nested/docs/short.md"
+cite short.md:20
+check '7 silent: .md line past the real file, longer nested copy' 1 'citation short.md:20' "$A"
+rm -f "$repo/docs/short.md" "$repo/nested/docs/short.md"
+cite cited.sh:3
+# 8. a SYMLINK is not followed, so one pointing into the nested checkout cannot
+#    put back the hiding this fix removes.
+if ln -s "nested/docs/dead.md" "$repo/docs/linked.md" 2>/dev/null; then
+	check '8 symlink into the nested checkout is not read' 0 "$clean_links" "$L"
+	rm -f "$repo/docs/linked.md"
+fi
+# 10. the kit vendored where the outer ignore names something OTHER than the kit
+#     path. The list is non-empty and still not this repository's, which a guard
+#     testing only for `docs/` in the list did not catch.
+outer2="$base/outer2"
+mkdir -p "$outer2" && printf 'kit/docs/tasks/\n' > "$outer2/.gitignore"
+cp -R "$repo" "$outer2/kit" && rm -rf "$outer2/kit/.git"
+mkrepo "$outer2" || exit 1
+check '10 vendored, a partial outer ignore: audit-record-lint' 0 'audit-record-lint: OK' "$outer2/kit/docs/tasks/audit-record-lint.sh"
+check '10 vendored, a partial outer ignore: link-lint' 0 "$clean_links" "$outer2/kit/docs/links/link-lint.sh"
+
 [ "$seen" -gt 0 ] || { printf 'FAIL  no case ran -- this proved nothing\n' >&2; exit 1; }
 [ "$bad" -eq 0 ] && { printf 'nested-checkout-check: OK  %d cases behaved\n' "$seen"; exit 0; }
 exit 1

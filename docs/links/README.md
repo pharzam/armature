@@ -187,9 +187,11 @@ change excluded the repository root from the walk.
    branches and never measured the fourth.
 9. **The file list is the third thing written in two places and kept in step by
    hand.** This linter and `audit-record-lint.sh` (block 2b) list the repository's
-   files the same way — what git tracks plus what it does not ignore, so a nested
+   files the same way — what git tracks plus what it does not ignore, read
+   NUL-delimited so no name is quoted and with symlinks refused, so a nested
    checkout is one entry and never read, with a `find` walk that prunes any
-   directory holding a `.git` entry when git lists nothing
+   directory holding a `.git` entry whenever this directory is not itself the
+   repository root, or git lists nothing
    ([#80](https://github.com/pharzam/armature/issues/80)). The same shape as limits
    1 and 6, **by hand, with no mechanism**:
    [`nested-checkout-check.sh`](../tests/nested-checkout-check.sh) drives both

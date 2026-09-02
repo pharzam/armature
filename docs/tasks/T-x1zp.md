@@ -15,19 +15,24 @@ walks the tree, so this is one fix in two places, not three.
 ## Decision (R3)
 
 **Selected:** the file list is what git lists for this repository —
-`git ls-files --cached --others --exclude-standard`, with `core.quotePath=false` so
-a non-ASCII name is not printed quoted, and a `[ -f ]` filter so a
-deleted-but-indexed path is not a candidate — and a POSIX `find` that prunes any
-directory holding a `.git` entry stands in whenever that list is **empty**. Git's
+`git ls-files -z --cached --others --exclude-standard`, NUL-delimited so git never
+quotes a name holding a quote, a backslash or a control character, with
+`[ -f ] && [ ! -L ]` so a deleted-but-indexed path is not a candidate and a symlink
+is not followed — and a POSIX `find` that prunes any directory holding a `.git`
+entry stands in whenever that list cannot be trusted. Git's
 index is the deterministic definition of "this repository's files" (R5); a nested
 checkout is one entry to it and is never descended. The plan review confirmed it
 over `find`-only, a heuristic that misses a vendored copy with no metadata and
 forks a shell per directory on every run, and over pruning `.claude/` by name, the
-wrong class: a nested checkout at `vendor/D` still resolved. The fallback triggers
-on an empty list rather than on a failed `rev-parse` because a kit vendored inside
-a larger repository whose vendor path is gitignored gets a successful `rev-parse`
-and zero lines; the first prototype left 83 `FAIL` lines there (plan review,
-finding 1). The shape is copied into both linters, not shared;
+wrong class: a nested checkout at `vendor/D` still resolved. The fallback triggers when this directory
+is not itself the repository root, and again on an empty list. Testing `rev-parse`
+alone was wrong — a kit vendored inside a larger repository gets a successful
+`rev-parse`, and the first prototype left 83 `FAIL` lines there (plan review,
+finding 1). Testing for an empty list alone was also wrong, and only round 2
+measured why: an outer ignore of `tests/` leaves the list non-empty and 163
+documents unread, and one of `*.md` leaves every document unread. What decides is
+not which files are missing but whose ignore rules chose them, so the guard asks
+whether the kit owns the repository it is being listed from. The shape is copied into both linters, not shared;
 [`links/README.md`](../links/README.md) limit 9 records that cost.
 
 **Limit.** `--exclude-standard` reads `.git/info/exclude` and the global ignore
@@ -46,9 +51,9 @@ shows the collapse in a clean tree instead.
 | Worktree `T-x1zp` at the fix | `OK  44 claims` | `OK  750 links resolved`; seven links added by this task's documents |
 
 In the byte copy the fixed list holds **530** entries, every one a regular file.
-The self-test, `docs/tests/nested-checkout-check.sh`, ran **13** cases: 6 red
+The self-test, `docs/tests/nested-checkout-check.sh`, runs **18** cases: 6 were red
 against the linters at `6c3f5d0` — cases 1, 4, 4′, two of the three in 5, and the
-`link-lint` half of 6; the exact lines are on #80 — and all 13 green at the fix,
+`link-lint` half of 6; the exact lines are on #80 — and all 18 are green at the fix,
 on macOS with BSD `find`. CI runs it on GNU `find`. The other checks stayed green
 in the worktree throughout: `adr-lint`, `prd-lint`, `agents-lint`, and
 `run-discipline-tests` at 104 passed.
@@ -64,20 +69,20 @@ above; each grows with the worktree count, which is the defect itself.
 
 ## Verdict
 
-Both linters now list this repository's files the way git does and fall back to a
-pruning walk when git lists nothing, so a nested checkout under the root is never
-read. The self-test drives both against a real nested checkout, a linked worktree,
+Both linters now list this repository's files the way git does — but only when this
+directory is itself the repository root — and fall back to a pruning walk when it is
+not, or when git lists nothing, so a nested checkout under the root is never read. The self-test drives both against a real nested checkout, a linked worktree,
 a plain directory, no checkout at all, and a vendored-and-ignored kit, and CI runs
 it. The 14 false failures in the operator's checkout are gone and `link-lint` there
 drops from 43.5 s to 4.2 s as a side effect.
 
-The **silent** direction — a nested copy hiding a real drift — is closed by the fix
-and is **not** asserted by any case. Both cases that look like they assert it pass
-against the unfixed linter too, measured: the block reads the first candidate the
-walk returns, and that order is the file system's, so no fixture can force the
-nested copy to be chosen. A nested directory sorts before `docs/` in the operator's
-checkout and after it in the self-test's tree. What the cases do cover, order
-independently, is the loud direction: a file inside a nested checkout must not
-resolve a citation, and its Markdown must not be read. The gap is recorded here
-rather than papered over, because a case that passes either way is the pitfall
-`docs/guardrails.md` names as a check that cannot fail.
+The **silent** direction — a nested copy hiding a real drift — is asserted, by case
+7, and an earlier draft of this record said it could not be. That draft reasoned
+that the block reads the first candidate the walk returns and that no fixture can
+fix the file system's order. Round 2 measured the code instead of reasoning about
+it: block 2b accepts **any** candidate with enough lines rather than the first, and
+block 2c — the one that reads the first — runs only for a `*.sh` suffix. So a
+citation into a `.md` past the real file's end is resolved by a longer copy inside
+the nested checkout whatever the order, which is exit 0 before the fix and exit 1
+after. Recording a gap honestly was better than claiming a case that passes either
+way, and measuring the code was better still.

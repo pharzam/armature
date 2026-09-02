@@ -162,17 +162,26 @@ anchors_of() {
 # nothing. NUL-delimited output is never quoted. `[ ! -L ]` refuses a symlink, as
 # the walk it replaced did: following one reads a file outside the repository.
 #
-# The walk stands in whenever the list is not this repository's file set. That is
-# no checkout, and a kit vendored where the outer repository ignores it -- but also
-# an outer .gitignore naming `docs/`, which leaves the list NON-empty and still
-# missing every document this check exists to read. A list with no Markdown under
-# `docs/` is as wrong as no list at all. The walk prunes any directory that holds a
-# `.git` ENTRY: a linked worktree's is a file. The same shape as
-# audit-record-lint.sh's, kept in step by hand (links/README.md limit 9).
-files=$(cd "$root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard -- '*.md' 2>/dev/null \
-	| tr '\0' '\n' \
-	| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done | sort)
-if [ -z "$files" ] || ! printf '%s\n' "$files" | grep -q '^docs/'; then
+# git's list is trusted only when THIS directory is itself the repository root.
+# Where it is not -- a kit vendored inside a larger repository -- the list is the
+# OUTER repository's view, filtered by an ignore file the kit does not own, and it
+# can be missing anything: a vendor path under `.gitignore` gives nothing, `tests/`
+# leaves 163 documents unread, `*.md` leaves every one. An earlier form of this
+# guard tested for `docs/` in the list and closed only the patterns that reached
+# `docs/`; the root test closes the class, because the question is not which files
+# are missing but whose ignore rules decided. The empty-list test stays as a second
+# guard. The walk prunes any directory that holds a `.git` ENTRY: a linked
+# worktree's is a file. The same shape as audit-record-lint.sh's, kept in step by
+# hand (links/README.md limit 9).
+_top=$(cd "$root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
+_here=$(cd "$root" 2>/dev/null && pwd -P) || _here=
+files=
+if [ -n "$_top" ] && [ "$_top" = "$_here" ]; then
+	files=$(cd "$root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard -- '*.md' 2>/dev/null \
+		| tr '\0' '\n' \
+		| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done | sort)
+fi
+if [ -z "$files" ]; then
 	files=$(cd "$root" \
 		&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
 fi
