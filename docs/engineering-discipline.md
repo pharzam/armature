@@ -219,11 +219,21 @@ protocol that bounds the rounds is
   the next round names it. The round that ends the work runs on a frozen head
   that no fix followed. Its verdict is `nothing material in scope` when nothing
   material in scope remains, and `not mergeable, findings recorded` when the cap
-  below is reached with something material still open.
+  below is reached with something material still open, or when a finding's
+  materiality or classification stands disputed.
+- **A merge of `main` is the one other thing that may land.** A rebase would
+  rewrite the frozen head the verdict names, so a branch under a frozen-head
+  verdict integrates by merging `origin/main` into itself — see
+  [Integrating branches](#integrating-branches). That merge re-freezes the head,
+  consumes no cycle, and needs no new round while it is clean and changes no file
+  the branch touched; where it does touch one, a round runs on the new head,
+  scoped to those files, and it consumes no cycle either.
 - **The cycles are capped.** After the first freeze, at most two fix-and-review
-  cycles follow; the plan-review confirmation declares the cap. On the cap, with
-  something material still in scope, the verdict is
-  `not mergeable, findings recorded`. That is a legitimate outcome.
+  cycles follow; the plan-review confirmation declares the cap, and two is both
+  the ceiling and the default where it is silent. On the cap, with something
+  material still in scope, the verdict is `not mergeable, findings recorded`.
+  That is a legitimate outcome, and its successor state is an issue split: each
+  open finding becomes a child issue and the branch does not run a third cycle.
 - **Material has a test.** A finding is material when it changes an exit code,
   an assertion, a behaviour on an adopter's tree, a claim in the tree, or a
   Definition-of-Done item. Wording, style and layout are not. A claim in the
@@ -238,13 +248,18 @@ protocol that bounds the rounds is
   if this branch made it reachable. The last round lists the accepted
   out-of-scope findings with their issue numbers, which do not count against
   `nothing material in scope`. The author opens each issue, with its
-  measurement, before the merge.
+  measurement, before the merge. No finding leaves the scope on the author's
+  word alone: the reviewer that raised it agrees, or, for one the author raised,
+  an independent reviewer does; otherwise the classification is recorded
+  disputed and the branch does not merge.
 - **The budget is R12's bound.** The plan states it and the plan review sets
   the maximum — [R12](issue-workflow.md#r12--slice-and-prioritize) says so, and
   [the ADR](adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record)
-  fixes the unit. An overrun is a finding reported on the issue, never a
-  revision; the growth becomes a child issue unless the operator approves it
-  once, on the issue.
+  fixes the unit and its base. An overrun is a finding reported on the issue,
+  never a revision; the growth becomes a child issue unless the operator approves
+  it once, on the issue. An overrun the operator has not approved blocks the
+  merge: the last round carries it as a finding and returns
+  `not mergeable, findings recorded`.
 
 ### Who may review
 
@@ -310,19 +325,29 @@ under these names
   was handed, and what the brief excluded,
 - `Independence claimed` — the [levels](#who-may-review) held, and those not
   reached,
-- `Cycle` — `0` on the first frozen head, `k` for the k-th fix-and-review cycle
-  after it; the cap is counted from this field,
+- `Cycle` — `0` on this branch's first frozen head for this issue, `k` for the
+  k-th fix-and-review cycle after it; the cap is counted from this field,
 - `Raw findings` — before triage, each with its one-line basis and its
   classification,
-- `Fixes` — what landed, and the new frozen head if one,
-- `Verdict` — from a closed set: an intermediate round is `material` or
-  `nothing material in scope`; the last round is `nothing material in scope`
-  or `not mergeable, findings recorded`.
+- `Fixes` — what landed, and the new frozen head if one. This one field is the
+  **author's**, written as a reply under the round it answers, because the fixes
+  do not exist when the round ends; a record without it is complete until they
+  land,
+- `Verdict` — from a closed set: an intermediate round, one a fix follows, is
+  `material`; the last round, the one no fix follows, is
+  `nothing material in scope` or `not mergeable, findings recorded`. The values
+  do not overlap, so the verdict itself says which of the two positions a record
+  holds.
 
 The plan-review confirmation carries `Verdict` — `approve`,
 `approve-with-conditions` or `reject` — with `Budget maximum` and `Cycle cap`.
-Two things no record proves: that a reviewer did not read a barred comment, and
-that the model named is the model used. The record makes each claim
+The names are fixed here; the exact syntax a check would match — how a heading is
+matched, how the fields are rendered, what value `Cycle` takes — is fixed by that
+check, in [#82](https://github.com/pharzam/armature/issues/82). Until one lands,
+a record is read by a person. Three things no record proves: that a reviewer did not read a barred comment,
+that the model named is the model used, and that every round which ran was
+recorded — a round that ran and was not posted leaves no trace, so the stopping
+condition is only as sound as the author's posting. The record makes each claim
 falsifiable; it does not verify it.
 
 ### When reviewers disagree
@@ -331,13 +356,17 @@ Escalate by the task's risk: a second reviewer at a higher independence level,
 and a human operator at the top. Two reviewers who disagree do not average their
 verdicts, and the author does not break the tie. A dispute over whether a
 finding is material, or over its classification as in the change or revealed,
-routes here the same way; the author does not move their own finding out of
-scope unopposed.
+routes here the same way. No finding leaves the scope on the author's word
+alone: the reviewer that raised it agrees, or, where the author raised it, an
+independent reviewer does. Without that assent the classification is **recorded
+as disputed** on the issue.
 
 Where an adopter has no second operator to escalate to, the disagreement is
 **recorded unresolved** and carried into the adopter's own decision process. An
 unresolved disagreement written down is a known risk; one silently broken by the
-author is a false green.
+author is a false green. Either state is a finding still open: the last round on
+that branch returns `not mergeable, findings recorded`, and the issue a disputed
+finding might owe is not owed until the dispute resolves.
 
 ## Reviewing for semantic agreement
 
@@ -722,6 +751,12 @@ is deliberate, and a squash-merge discards it — it collapses a task's reviewab
 bisectable steps into a single opaque commit. Land branches so each commit is
 preserved on `main`: rebase onto the latest `origin/main` first, then do a
 plain merge (not a squash-merge).
+
+One exception, and it runs the other way: a branch already carrying a
+[frozen-head verdict](#reviewing-until-findings-decay) merges `origin/main` into
+itself instead of rebasing, because a rebase rewrites the frozen head the verdict
+names and leaves the review pointing at a commit that no longer exists
+([ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head)).
 
 ## Completing a task
 

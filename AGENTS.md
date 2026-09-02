@@ -103,7 +103,9 @@ Work in a per-task git worktree under `‹worktree dir›/<task>`, branched off
 `origin/main`, never in the operator's own checkout. Commit at each logical step,
 with a subject that follows Conventional Commits — `<type>: <ID> <description>`
 when it carries a task. Rebase onto the latest `origin/main` and land with a plain
-merge; **never squash**. The pull-request body links its issue with `Closes #N`,
+merge; **never squash** — but a branch already under a frozen-head verdict merges
+`origin/main` in instead, so the reviewed SHA survives. The pull-request body
+links its issue with `Closes #N`,
 or `Refs #N` when it does not close it.
 
 ## The task index
