@@ -94,9 +94,9 @@ gh api -X PUT repos/‹owner›/‹repo›/branches/‹default branch›/protect
       {"context": "discipline-tests (linter fixtures)",         "app_id": 15368},
       {"context": "audit-record-lint (T-3v9q record)",          "app_id": 15368},
       {"context": "agents-lint (root AGENTS.md and CLAUDE.md)", "app_id": 15368},
-      {"context": "link-lint (in-tree links and anchors)",      "app_id": 15368},
       {"context": "pr-link (PR body links an issue)",           "app_id": 15368},
-      {"context": "conventional-title",                         "app_id": 15368}
+      {"context": "conventional-title",                         "app_id": 15368},
+      {"context": "link-lint (in-tree links and anchors)",      "app_id": 15368}
     ]
   },
   "enforce_admins": true,
@@ -166,16 +166,39 @@ them anyway. Delete the line for each one you did not install:
 | `conventional-title` | You do not copy [`github-actions-pr-title.yml`](github-actions-pr-title.yml), which the Activate block marks optional. |
 | Any other context | You deleted its job under "Delete any job your project does not need". |
 
+`link-lint` is last in the array on purpose, and it is the one line here that names
+no droppable job: deleting any line above it leaves the JSON valid, while deleting a
+*last* line leaves the comma before it and the body no longer parses. The template
+says to keep that job whatever else you drop, so it is the safe anchor. If you do drop
+it too, delete the trailing comma on the line above.
+
 **What one wrong line costs.** A required context that no workflow reports never
 arrives, so the check stays pending and no pull request merges — the mechanism
 **Limits** above states for a renamed or removed job, met from the other end. The body
-sets `"enforce_admins": true`, so the owner has no bypass either. The recovery is a
-second `PUT` of the whole corrected body, and that `PUT` needs the
-administration-scoped token **Limits** names: `secrets.GITHUB_TOKEN` does not carry it,
-so an adopter who set this from CI cannot undo it from CI.
+sets `"enforce_admins": true`, so no pull request merges its way out. Recovery is not
+expensive, and it is worth knowing which route costs what: an administrator edits the
+protection in the repository's own settings, under Branches, at no token cost —
+`enforce_admins` binds merges, not the setting itself. The scripted route is a second
+`PUT` of the whole corrected body, and that one needs the administration-scoped token
+**Limits** names, which `secrets.GITHUB_TOKEN` does not carry. So an adopter who set
+this from CI can undo it by hand but not from CI.
+
+**On another forge.** This subsection is GitHub-shaped, because the array it prunes is
+GitHub's. [`gitlab-ci.yml`](gitlab-ci.yml) ships `‹…›` jobs of its own, and its gate —
+"Pipelines must succeed" on a protected branch — is pipeline-wide: there is no list of
+contexts to prune, so nothing here has to be deleted, and a job you leave unfilled
+fails the whole pipeline rather than leaving one check pending. That is the same trap
+with a louder failure and no edit to get wrong. `‹the setting under which a failing
+pipeline blocks the merge›` is where an adopter on a third forge records what their
+own gate does.
 
 **The same instruction, read the other way.**
-[`github-actions-ci.yml`](github-actions-ci.yml) ships `lint`, `tests` and `security`
-as `‹…›` jobs, and the array names none of the three. Fill them and they run green
-while blocking nothing, which is the trap this section exists to close. Add each one's
-context to the array as you fill its job.
+[`github-actions-ci.yml`](github-actions-ci.yml) ships three jobs the array names none
+of, and they run green while blocking nothing until you add them — the trap this
+section exists to close, met from the third side. Add each one **as you fill it**, and
+add its *context*, which is the job's `name:` and not its id:
+`lint (‹your linter/formatter›)`, `tests (unit → integration → e2e)` and
+`security (‹security scanner›)`. Two of those names still hold a `‹…›` marker, so
+replace the marker in the workflow first and copy the resulting name: a context that
+names a marker is a context nothing will ever report, which is this section's own
+failure by another route. Add none of them before the job has reported once.
