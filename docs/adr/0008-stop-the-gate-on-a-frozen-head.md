@@ -58,8 +58,7 @@ that would enforce them are not decided here; see [Consequences](#consequences).
 Every round reviews one named commit. The last round reviews a commit that is
 **frozen**: nothing lands on the branch after it except a fix to a finding of
 that round, the integration merge below, or the **close-out bookkeeping** — and
-each produces a new head. The first two are frozen heads a next round names; the
-close-out is named by none, because no round follows it.
+each produces a new head, named by a next round except after the close-out.
 
 Close-out bookkeeping is the task line **arriving in the completed log** — moved
 from the backlog where the task had a line there, and added where it did not.
@@ -191,9 +190,9 @@ file's length would have caught.
   A branch behind the default branch takes the integration merge of
   [section 1](#1-the-frozen-head) *first* and measures after it. Measuring against
   a tip the branch does not contain renders the default branch's own commits as
-  deletions of this branch: on the branch carrying this record, the same head read
-  638 against the tip it contained and 1236 over 19 files against the tip it did
-  not. Merging the default branch in never lowers the number, and where a fresh
+  deletions of this branch: this record's own branch at `76073a8` read 637 over 10
+  files against the tip it contained, and 1236 over 19 against the tip it did not.
+  Merging the default branch in never lowers the number, and where a fresh
   measurement comes out below the last recorded, the last stands. Rejected: "the
   merge-base", which moves every time the branch takes the default branch.
 - **Baseline**: the plan's estimate. **Maximum**: set in the plan-review
