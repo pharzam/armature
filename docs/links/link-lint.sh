@@ -345,13 +345,12 @@ lint_file() {
 		# first `>` when a blank follows, so the advice reads back as target.md and
 		# RESOLVES, exit 0, on a line CommonMark shows as text. That hole is the
 		# extractor's rather than the remedy's, and it is #97's. The inputs measured
-		# on each of the three channels a target can carry -- a `<` in it, a `>` in
-		# it, a backslash escape -- are listed in docs/links/README.md limit 7, with
-		# truncation as the `>` sub-case where a blank follows. Two more from the
-		# same runs: `[x](<id>.md x)` draws neither L8 nor L1, because
-		# is_placeholder() skips it -- `OK  1 links resolved` beside one control
-		# link, exit 0; `[lbl]: <Design Notes/target.md` fails L1 with the whole cut
-		# text.
+		# are listed in docs/links/README.md limit 7, grouped there by the character
+		# the target carries -- a `<`, a `>`, a backslash escape -- with truncation
+		# as the `>` sub-case where a blank follows. Two more from the same runs:
+		# `[x](<id>.md x)` draws neither L8 nor L1, because is_placeholder() skips
+		# it -- `OK  1 links resolved` beside one control link, exit 0; and
+		# `[lbl]: <Design Notes/target.md` fails L1 with the whole cut text.
 		if [ "$_kind" = NOTLINK ] || [ "$_kind" = NOTDEF ]; then
 			[ "$_kind" = NOTDEF ] && _target=${_target#*	}
 			is_placeholder "$_target" && { IFS=$nl; continue; }
