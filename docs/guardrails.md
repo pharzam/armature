@@ -80,6 +80,13 @@ success without having done its job.
   message, a fixture harness that compares only exit codes, a coverage floor that
   counts zero as success. The check: for every assertion, make it fail on purpose
   once and read the reason — a green nobody attacked is not evidence.
+- ❌ **A check that runs but does not block.** CI is green, the pull request
+  merges, and nothing connects the two: no check is required on the default
+  branch, so the green was a run result, not a merge control, and a red would
+  have merged the same way. It is silent because the run result looks identical
+  either way. The check:
+  [make the checks required](ci/README.md#make-the-checks-required) on the
+  default branch, and take the branch API read as the evidence — not the green run.
 
 ### Testing pitfalls (kit-wide — keep these)
 
