@@ -338,8 +338,15 @@ lint_file() {
 		# which then resolved SILENTLY to a directory; and it turned a two-title
 		# string into a line CommonMark still does not read as a link. This shape
 		# is not always right either -- `<a b "t">` still fails when followed --
-		# but every input it gets wrong fails L1 LOUDLY, which is the direction
-		# limit 2 of docs/links/README.md calls the right one. A target that
+		# and it is not always LOUD: a target shaped `PREFIX> REST`, such as
+		# `target.md> a/b.md`, is advised `<target.md> a/b.md>`, and the extractor
+		# ends an angle destination at its first `>` when a blank follows, so the
+		# advice reads back as `target.md` and RESOLVES. CommonMark reads that
+		# line as no link at all. Measured on six inputs of that shape, inline and
+		# through a reference definition, with a blank and with a tab. The hole is
+		# in the extractor rather than in the remedy -- `>` then junk -- and it is
+		# #97's; this comment names it so the next reader does not have to find it
+		# twice. Everything OUTSIDE that shape fails L1 loudly. A target that
 		# already opens `<` never arrives as either kind: the extractor keeps it
 		# whole and it fails L1 instead.
 		if [ "$_kind" = NOTLINK ] || [ "$_kind" = NOTDEF ]; then

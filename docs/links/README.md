@@ -183,9 +183,18 @@ change excluded the repository root from the walk.
    false green among the spaced forms and the defect that issue was opened for. The
    cut now happens only on a `)`, and what it leaves is kept whole and fails `L1`
    with the whole cut text — `links <Design (draft, but that path does not exist`;
-   `adr-lint` reads it as no link, a loud false orphan. The `L8` remedy wraps that whole text rather than trying to split a title out of it: a split truncated a destination holding ` (`, and the truncation resolved **silently**. Every input the simpler remedy still gets wrong fails `L1` loudly instead, which limit 2 calls the right direction. A full `)`-aware
+   `adr-lint` reads it as no link, a loud false orphan. The `L8` remedy wraps that
+   whole text rather than trying to split a title out of it: a split truncated a
+   destination holding ` (`, and the truncation resolved **silently**. Outside one
+   shape, every input the simpler remedy gets wrong fails `L1` loudly, which limit 2
+   calls the right direction. The exception is a target shaped `PREFIX> REST`: the
+   advice `<PREFIX> REST>` is read back as `PREFIX` alone and resolves, on a line
+   CommonMark reads as no link. That is the extractor's `>`-then-junk hole rather
+   than the remedy's, measured on six inputs, and it belongs to
+   [#97](https://github.com/pharzam/armature/issues/97). A full `)`-aware
    parse was rejected there: about fourteen lines per branch, it must still exempt
    the `<id>.md` marker, and no link in the tree needs it.
+
 8. **Only `%20` is decoded.** Any other percent-encoding — `%2F`, `%C3%A9`, `%23` —
    is looked up as written and fails `L1` loudly, quoting what the author wrote.
    General decoding was rejected on
