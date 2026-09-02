@@ -30,7 +30,7 @@ alone was wrong — a kit vendored inside a larger repository gets a successful
 `rev-parse`, and the first prototype left 83 `FAIL` lines there (plan review,
 finding 1). Testing for an empty list alone was also wrong, and only round 2
 measured why: an outer ignore of `tests/` leaves the list non-empty and 370
-documents and 163 links unread, and one of `*.md` leaves the list with no document in it at all — measured as zero lines. What decides is
+documents and 163 links unread, and one of `*.md` leaves `link-lint`'s list empty — measured as zero lines — while `audit-record-lint`'s, which lists every file rather than `*.md`, still returns 125 lines and none of the documents it reads. What decides is
 not which files are missing but whose ignore rules chose them, so the guard asks
 whether the kit owns the repository it is being listed from. The shape is copied into both linters, not shared;
 [`links/README.md`](../links/README.md) limit 9 records that cost.
@@ -48,11 +48,12 @@ shows the collapse in a clean tree instead.
 | Clean clone of `6c3f5d0` | `OK  44 claims` → same; 1.6 s → 2.6 s | `OK  739 links resolved` → same; 4.4 s → 4.3 s |
 | Byte copy of the operator's checkout at `6c3f5d0`, **nine** worktrees under `.claude/worktrees/`, taken at 14:27 | exit 1, **14** `FAIL` lines, the first `FAIL  citation adr-lint.sh:315 points at a BLANK line -- it has DRIFTED; re-derive it from the construct, not by arithmetic (DoD 2)` → `OK  44 claims`; 3.1 s → 2.5 s | `OK  7395 links resolved` in 43.5 s → `OK  739 links resolved` in 4.2 s |
 | The operator's checkout itself, read-only, the fixed `link-lint` pointed at it | — | `OK  743 links resolved`, 4.4 s |
-| Worktree `T-x1zp` at the fix | `OK  44 claims` | `OK  750 links resolved`; seven links added by this task's documents |
+| Worktree `T-x1zp` at the fix, after merging the default branch | `OK  44 claims` | `OK  766 links resolved`, measured at this head after the edits below |
 
 In the byte copy the fixed list holds **530** entries, every one a regular file.
-The self-test, `docs/tests/nested-checkout-check.sh`, runs **19** cases: 9 were red
-against the linters at `6c3f5d0`; the exact lines are on #80 — and all 19 are green at the fix,
+The self-test, `docs/tests/nested-checkout-check.sh`, runs **22** cases: 10 were red
+against the linters at `6c3f5d0` — counted by running the 22-case suite against that
+commit's two linters — and all 22 are green at the fix,
 on macOS with BSD `find`. CI runs it on GNU `find`. The other checks stayed green
 in the worktree throughout: `adr-lint`, `prd-lint`, `agents-lint`, and
 `run-discipline-tests` at 104 passed.
@@ -82,21 +83,23 @@ reverting each fix, in each linter, one at a time:
 |---|---|---|
 | the root-identity guard | case 10 | case A |
 | `[ ! -L ]`, the symlink refusal | case 8 | case B |
-| `-z`, the NUL-delimited read | case 9 | **none — unreachable** |
+| `-z`, the NUL-delimited read | case 9 | case C |
 
-The last cell is a gap, with its reason: `has_citation()` accepts only
-`[A-Za-z0-9_./-]` inside a cited path, so no record can cite a name holding a quote
-or a backslash, and there is nothing for a case to assert. It costs what limit 9 of
-[`docs/links/README.md`](../links/README.md) already records — the two copies of this
-file list are kept in step by hand, with no mechanism, so this one is covered on one
-side only.
+There is no gap. An earlier draft of this table said the last cell was unreachable,
+because `has_citation()` accepts only `[A-Za-z0-9_./-]` inside a cited path. That
+premise is true and the conclusion does not follow: block 2b resolves a citation by
+suffix match against the **listed** path, so the cited path stays plain and the quote
+sits in the directory holding the file. Case C does exactly that, and dies under the
+`-z` revert in `audit-record-lint` alone. The reasoning was about the cited string
+where the code compares it against a listed one.
 
-Two claims about this table were wrong before it was measured. An earlier draft said
-case 7 covered the root guard; reverting that guard leaves case 7 printing `ok`, and
-case 10 is the one that dies. An earlier draft also said the NUL read could not be
-asserted at all, on the ground that git's own quoting would enter the test; a round
-built that case in six lines. Both times reasoning was offered where a mutation was
-available, which is how each of them survived into the tree.
+Three claims about this table were wrong before it was measured. One draft said case 7
+covered the root guard; reverting that guard leaves case 7 printing `ok`, and case 10
+dies. One said the NUL read could not be asserted at all, because git's quoting would
+enter the test; a round built that case in six lines. The third said the same read
+could not be asserted on the audit side; a round built case C in ten. Each time
+reasoning was offered where a mutation was available, and each time the mutation
+settled it in minutes.
 
 The **silent** direction — a nested copy hiding a real drift — is asserted, by case
 7, and an earlier draft of this record said it could not be. (Case 7 asserts that
