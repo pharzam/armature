@@ -57,8 +57,15 @@ that would enforce them are not decided here; see [Consequences](#consequences).
 
 Every round reviews one named commit. The last round reviews a commit that is
 **frozen**: nothing lands on the branch after it except a fix to a finding of
-that round, or the integration merge below, and either one produces a new frozen
-head that the next round names.
+that round, the integration merge below, or the **close-out bookkeeping** — and
+each produces a new frozen head that the next round names.
+
+Close-out bookkeeping is the task line moving from the backlog to the completed
+log, which [gate step 8](../engineering-discipline.md#completing-a-task) requires
+of the pull request that lands the work. It cannot be written before the rounds
+finish, because it is what finishing means, so a rule permitting only fixes after
+a frozen head forbids every landing. The commit that carries it changes no
+behaviour and no claim, and the close-out says plainly that no round read it.
 "What a round records" already fixed the commit within a round. The gap was
 between rounds, and this closes it. Rejected: reviewing the branch as it moves.
 A verdict on a moving target names no commit.
@@ -88,13 +95,21 @@ When the cap is reached and the round still finds something material in scope,
 the verdict is `not mergeable, findings recorded`. That is a legitimate outcome.
 The model for it is #64's overrun: reported, not revised.
 
-The successor state is an **issue split**. Each finding still open becomes a
-child issue, with its measurement, opened before the branch is landed in part or
-abandoned; the branch does not stay open for a third cycle. `Cycle` counts the
-frozen heads of **this branch for this issue**: `0` is its first frozen head, and
-a branch has exactly one. A branch that has reached its cap has no new first
-freeze available, so continuing the work means a new issue and a new branch —
-which is the split, and not a reset of the count.
+The successor state is an **issue split**: one successor issue carrying the
+branch as it stands, plus a child issue for each finding still open that the
+successor is not taking. Where a stop leaves no finding open — an unapproved
+overrun, say — the successor alone is the split, and no child issue is owed.
+Both are opened before the branch is landed in part or abandoned.
+
+`Cycle` counts the frozen heads of **this branch for this issue**: `0` is its
+first frozen head, and a branch has exactly one. A branch that has reached its
+cap has no new first freeze available, so continuing the work means a new issue
+and a new branch. **That successor starts its own count at `0`, and this is not a
+reset**: the cap binds a branch on an issue, and the successor is a different
+issue with a bound of its own. An earlier form of this clause said a split is
+"not a reset of the count" while section 2 prescribed exactly the move that
+starts a new one — the successor issue is where the ambiguity showed, having run
+`Cycle` 0, 1 and 2 on work its predecessor had already spent two cycles on.
 
 The number two is fitted to one observation: #64, the only task with round
 records in this shape, needed exactly two cycles, rounds 1 and 2 material and
@@ -190,23 +205,18 @@ file's length would have caught.
   issue, so a bound set in ignorance of it is not available. That is a discipline
   and not a mechanism, and it is written here as one rather than left to look like
   a guard.
-  **A ceiling** is a maximum the operator may name when approving: it is named in
-  that approval comment, before the growth it bounds exists, and never after
-  measuring the growth it would have to cover — a limit chosen once the result is
-  known is a fitted parameter and not a rule
-  ([guardrails, section 1](../guardrails.md#1-pre-registered-decisions--or-the-goalposts-move)).
-  An approval that names no ceiling approves the outturn measured at it, and
-  covers the growth that follows from fixing what a later round finds; growth from
-  work the findings did not ask for is new scope and needs its own decision.
-  Bounding such an approval at exactly the measured outturn would make any later
-  fix an overrun, which turns an approval into a refusal to merge.
-  **A ceiling that is passed ends where a spent approval ends**: no further
-  approval is available on that issue. The round that measures it records it, and
-  **the last round** carries it as a finding and returns
-  `not mergeable, findings recorded`, with the issue split as the successor state
-  under section 2 — the same carrier as every other overrun, so a passed ceiling
-  strands no cycle the cap allows. An overrun the operator has not approved
-  **blocks the merge** the same way. #64 is the case this is fitted to: its
+  **Whether an approval may name a ceiling is not decided here.** Three rounds
+  across [#81](https://github.com/pharzam/armature/issues/81) and
+  [#89](https://github.com/pharzam/armature/issues/89) produced three different
+  rules for it — optional, bounding the measured outturn, covering
+  findings-driven growth — and each was falsified by the next round. What is
+  undecided is exactly that: whether a ceiling may be named, and how far an
+  approval reaches past the figure it was given. It is
+  [#99](https://github.com/pharzam/armature/issues/99)'s, and until that lands
+  the rule is the one above and nothing more: one approval per issue, an
+  unapproved overrun blocking the merge, and the last round carrying it.
+  An overrun the operator has not approved **blocks the merge**. #64 is the case
+  this is fitted to: its
   overrun was reported twice, judged earned by a reviewer, and merged with no
   operator approval at all — the approval step going unenforced on the one task
   that had a budget. That does not make the overrun material —

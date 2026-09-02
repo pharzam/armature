@@ -30,16 +30,19 @@ Six decisions, each with its rejected alternatives, in
    with the default branch takes the merge route, because a rebase rewrites the SHA a
    verdict names.
 2. **A cycle cap and a non-merge verdict.** At most two fix-and-review cycles after the
-   first freeze; on the cap the verdict is `not mergeable, findings recorded`, a
-   legitimate outcome rather than a failure, whose successor state is an issue split.
+   first freeze; on the cap **with something material still in scope** the verdict is
+   `not mergeable, findings recorded`, a legitimate outcome rather than a failure, whose
+   successor state is an issue split.
 3. **Materiality.** A finding is material when it changes an exit code, an assertion, a
    behaviour on an adopter's tree, a claim in the tree a reader could act on, or a
    Definition-of-Done item. Wording, style and layout are not.
 4. **Classification and routing.** A defect *in* the change is fixed inside the budget;
    one the change *revealed* off its path opens its own issue. No finding leaves the
    scope on the author's word alone.
-5. **The budget record.** R12's bound made operational: a unit, a named base, an
-   approval that is the operator's alone, and what an overrun and a passed ceiling do.
+5. **The budget record.** R12's bound made operational: a unit, a named base, and an
+   approval that is the operator's alone. What a ceiling is, and how far an approval
+   reaches, is **not** decided here — three rounds produced three rules for it and each
+   was falsified by the next, so it is deferred to its own issue and the record says so.
 6. **The review record.** Ten named fields under a fixed heading, with a closed verdict
    vocabulary, and a statement of what no record proves.
 

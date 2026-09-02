@@ -216,7 +216,10 @@ protocol that bounds the rounds is
 [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head):
 
 - **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
-  the next round names it. The round that ends the work runs on a frozen head
+  the next round names it. So does the close-out bookkeeping — the task line
+  moving between the two indexes, which gate step 8 requires of the landing pull
+  request and which cannot exist before the rounds finish. It changes no
+  behaviour and no claim, and the close-out records that no round read it. The round that ends the work runs on a frozen head
   that no fix followed. Its verdict is `nothing material in scope` when nothing
   material in scope remains, and `not mergeable, findings recorded` when the cap
   below is reached with something material still open, or when a finding's
