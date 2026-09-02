@@ -135,14 +135,17 @@ and the command that sets it›`.
 **Limits.** Writing or reading the setting needs an administration-scoped token,
 which `secrets.GITHUB_TOKEN` does not carry, so no text-only check in this kit
 proves it: the verification is the command above, run by an operator, and each
-close-out records its output. A renamed workflow or job blocks every merge until the
-setting follows it — the right direction of failure, loud and where the gate lives.
+close-out records its output. A renamed or removed **job** blocks every merge until
+the setting follows it — the check name is the job's `name:` or its id, never the
+workflow's name — which is the right direction of failure, loud and where the gate
+lives.
 `enforce_admins: true` binds the operator too. `strict: true` mechanises the house
 rule to rebase onto the latest `origin/main` before a merge, at a price: with a
 plain merge, every merge to the default branch invalidates the up-to-date status of
 every other open pull request, so a queue of pull requests serialises into rebase,
 re-run, merge. And a required check is only as trustworthy as the script it runs:
-every job checks out the pull request's own head and runs the linter from it, so a
-pull request that edits a check to `exit 0` passes its own required check. That is
-pre-existing, it needs write access to the repository, and it is tracked in
+seven of the eight jobs check out the pull request's own head and run a linter from
+it, so a pull request that edits a check to `exit 0` passes its own required check;
+only the PR-title check runs no in-tree script. That is pre-existing, it needs write
+access to the repository, and it is tracked in
 [#84](https://github.com/pharzam/armature/issues/84).
