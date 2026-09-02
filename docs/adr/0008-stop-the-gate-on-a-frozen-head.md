@@ -58,7 +58,8 @@ that would enforce them are not decided here; see [Consequences](#consequences).
 Every round reviews one named commit. The last round reviews a commit that is
 **frozen**: nothing lands on the branch after it except a fix to a finding of
 that round, the integration merge below, or the **close-out bookkeeping** — and
-each produces a new frozen head that the next round names.
+each produces a new head. The first two are frozen heads a next round names; the
+close-out is named by none, because no round follows it.
 
 Close-out bookkeeping is the task line **arriving in the completed log** — moved
 from the backlog where the task had a line there, and added where it did not.
@@ -184,17 +185,17 @@ file's length would have caught.
   touched, so splitting commits changes nothing. Documents, tests and fixtures
   count; they were the growth on #76. Rejected: a count by commit, or one that
   leaves documents out.
-- **Base**: the tip of the default branch at the moment of measurement, named by
-  SHA wherever the number is written — the plan-review comment for the maximum,
-  the round's `Raw findings` for an overrun — so a later reader reproduces the
-  same figure. Merging that branch in never lowers the number: what the merge
-  brought in is not this branch's work, and where a fresh measurement comes out
-  below the last one recorded, the last one stands. Rejected: "the merge-base",
-  which moves every time the branch takes the default branch and gives one branch
-  several lawful numbers. That is not a hypothetical: on the branch that carries
-  this record, measuring the head before it merged the default branch and the
-  head after it, against the *same* commit, gives two different figures, and only
-  the named base says which one the budget is read against.
+- **Base**: the tip of the default branch at the moment of measurement **that the
+  branch already contains**, named by SHA wherever the number is written — the
+  plan-review comment for the maximum, the round's `Raw findings` for an overrun.
+  A branch behind the default branch takes the integration merge of
+  [section 1](#1-the-frozen-head) *first* and measures after it. Measuring against
+  a tip the branch does not contain renders the default branch's own commits as
+  deletions of this branch: on the branch carrying this record, the same head read
+  638 against the tip it contained and 1236 over 19 files against the tip it did
+  not. Merging the default branch in never lowers the number, and where a fresh
+  measurement comes out below the last recorded, the last stands. Rejected: "the
+  merge-base", which moves every time the branch takes the default branch.
 - **Baseline**: the plan's estimate. **Maximum**: set in the plan-review
   confirmation.
 - **Overrun**: a finding reported on the issue, never a revision of the number.
@@ -305,6 +306,6 @@ What stays open. Every mechanism is
 [#82](https://github.com/pharzam/armature/issues/82)'s, and until one lands this
 is a written rule. The
 [enforcement table](../issue-workflow.md#what-is-enforced-where) gains its row in
-this change and records it as one. The
-cap's evidence base is one task, #64; #81, which decided this record, is the
-first task that runs under it.
+this change and records it as one. The cap's evidence base is one task, #64, and
+the three issues that wrote this record are the first to run under it -- two of
+them stopped at the cap.
