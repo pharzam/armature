@@ -287,6 +287,22 @@ else
 fi
 cite cited.sh:3
 
+# C. the audit side of the NUL-delimited read. The CITED PATH is plain
+#    (`cited.sh:3`), so has_citation() accepts it; what holds the quote is the
+#    DIRECTORY the cited file sits in. git quotes the whole path when any
+#    component needs it, and a quoted path no longer ends in "/cited.sh", so the
+#    suffix match in block 2b finds no candidate.
+oddir='docs/od"d'
+if mkdir -p "$repo/$oddir" 2>/dev/null && [ -d "$repo/$oddir" ]; then
+	mv "$repo/docs/tools/cited.sh" "$repo/$oddir/cited.sh"
+	check 'C cited file under a quoted directory still resolves' 0 'audit-record-lint: OK' "$A"
+	mv "$repo/$oddir/cited.sh" "$repo/docs/tools/cited.sh"
+	rmdir "$repo/$oddir"
+else
+	skipped=$((skipped + 1))
+	printf 'skip  C quoted directory name (this file system took no quote in a name)\n'
+fi
+
 [ "$seen" -gt 0 ] || { printf 'FAIL  no case ran -- this proved nothing\n' >&2; exit 1; }
 if [ "$bad" -eq 0 ]; then
 	if [ "$skipped" -gt 0 ]; then

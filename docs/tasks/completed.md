@@ -13,6 +13,7 @@ a changelog narrative. The git history and commit messages hold the blow-by-blow
 
 ## Log
 
+- **2026-09-02** — **T-5k3q** — Named every job an adopter may drop from the required set in `docs/ci/README.md`, after the shipped command required four contexts the same file authorises leaving out and the array's last line could not be deleted without breaking the body ([#86](https://github.com/pharzam/armature/issues/86))
 - **2026-09-02** — **T-x1zp** — Made `audit-record-lint` and `link-lint` list this repository's files the way git does, and only where the kit owns the repository being listed, so a nested checkout under the root — a per-task worktree, a vendored copy, a submodule — is never read and an outer repository's ignore rules cannot decide what the kit checks ([#80](https://github.com/pharzam/armature/issues/80); [detail](T-x1zp.md))
 - **2026-09-02** — **T-xj92** — Corrected the T-2p6k record: PR #77's third acceptance box is marked not met on #76, the two review rounds are recovered from a transcript, and the overlong index entry is replaced by a detail file ([#83](https://github.com/pharzam/armature/issues/83); [detail](T-2p6k.md))
 - **2026-09-01** — **T-2p6k** — Fixed the linters that broke on a checkout path with a space or on a file with CRLF line endings: positional parameters replace the space-joined file lists, the carriage return is stripped once at the reader, and a `.gitattributes` pin keeps the CRLF fixtures and the executables at their endings ([#76](https://github.com/pharzam/armature/issues/76); [detail](T-2p6k.md))
