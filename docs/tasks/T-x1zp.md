@@ -113,3 +113,12 @@ citation into a `.md` past the real file's end is resolved by a longer copy insi
 the nested checkout whatever the order, which is exit 0 before the fix and exit 1
 after. Recording a gap honestly was better than claiming a case that passes either
 way, and measuring the code was better still.
+
+**Where case C landed.** Its code is in the merge commit `df63a6a`, not in
+`6ac7a0e`, whose subject announces it.
+`git diff --numstat 411c8d7 df63a6a -- docs/tests/nested-checkout-check.sh` gives
+`16 0` — the ten lines counted above under a five-line comment — while
+`df63a6a 6ac7a0e` touches only this file. `df63a6a` carries git's default merge
+message and names neither the task nor the issue. Both commits were pushed before
+the mismatch was found, and the safety limits forbid rewriting published history,
+so the record is corrected here rather than by an amend.
