@@ -331,26 +331,22 @@ lint_file() {
 		# L8 — a bare destination holding a blank is not a link at all. The
 		# placeholder test comes first: `‹adopter doc›.md` holds a blank too. A
 		# NOTDEF carries label<TAB>target, and only the target is judged here.
-		# The remedy wraps the DESTINATION only. CommonMark puts the angle
-		# brackets round the destination and leaves a title outside them, so a
-		# trailing title is split off first: `<a b> "t"`, never `<a b "t">`,
-		# which the forge reads as a destination that still holds a blank and
-		# which fails L1 here. A target that already opens `<` never arrives as
-		# either kind: the extractor keeps it whole and it fails L1 instead.
+		# The remedy wraps the WHOLE target and echoes back no title. An earlier
+		# form split a trailing title off first, so that `a b "t"` was advised
+		# `<a b> "t"`. That split cost more than it bought: it truncated a path
+		# holding ` (`, advising `<Design Notes>` for `Design Notes (v2)/x.md`,
+		# which then resolved SILENTLY to a directory; and it turned a two-title
+		# string into a line CommonMark still does not read as a link. This shape
+		# is not always right either -- `<a b "t">` still fails when followed --
+		# but every input it gets wrong fails L1 LOUDLY, which is the direction
+		# limit 2 of docs/links/README.md calls the right one. A target that
+		# already opens `<` never arrives as either kind: the extractor keeps it
+		# whole and it fails L1 instead.
 		if [ "$_kind" = NOTLINK ] || [ "$_kind" = NOTDEF ]; then
 			[ "$_kind" = NOTDEF ] && _target=${_target#*	}
 			is_placeholder "$_target" && { IFS=$nl; continue; }
-			_dest=$_target
-			_title=
-			case $_target in
-			*'"') _dest=${_target%%' "'*}; _title=${_target#"$_dest"} ;;
-			*"'") _dest=${_target%%" '"*}; _title=${_target#"$_dest"} ;;
-			# a `(title)` is already truncated by limit 7's cut at the first `)`,
-			# so the destination is wrapped and no title is echoed back
-			*' ('*) _dest=${_target%%' ('*} ;;
-			esac
 			n_links=$((n_links + 1))
-			err L8 "$_rel:$_lineno has a bare destination holding a space or a tab, $_target, which CommonMark does not read as a link, so the forge shows the text as written. If a link was meant, write it as <$_dest>$_title or percent-encode the blanks; if prose was meant, nothing needs to change"
+			err L8 "$_rel:$_lineno has a bare destination holding a space or a tab, $_target, which CommonMark does not read as a link, so the forge shows the text as written. If a link was meant, write it as <$_target> or percent-encode the blanks; if prose was meant, nothing needs to change"
 			IFS=$nl; continue
 		fi
 

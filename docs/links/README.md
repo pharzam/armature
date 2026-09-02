@@ -183,7 +183,7 @@ change excluded the repository root from the walk.
    false green among the spaced forms and the defect that issue was opened for. The
    cut now happens only on a `)`, and what it leaves is kept whole and fails `L1`
    with the whole cut text — `links <Design (draft, but that path does not exist`;
-   `adr-lint` reads it as no link, a loud false orphan. A full `)`-aware
+   `adr-lint` reads it as no link, a loud false orphan. The `L8` remedy wraps that whole text rather than trying to split a title out of it: a split truncated a destination holding ` (`, and the truncation resolved **silently**. Every input the simpler remedy still gets wrong fails `L1` loudly instead, which limit 2 calls the right direction. A full `)`-aware
    parse was rejected there: about fourteen lines per branch, it must still exempt
    the `<id>.md` marker, and no link in the tree needs it.
 8. **Only `%20` is decoded.** Any other percent-encoding — `%2F`, `%C3%A9`, `%23` —
@@ -205,14 +205,15 @@ codes only**, so a bad case that started failing for a different reason would
 still look green there. [`tests/expect-check.sh`](tests/expect-check.sh) closes
 that for this suite, and fails if it finds no case to check.
 
-Of the ten cases [#78](https://github.com/pharzam/armature/issues/78) added, the
+Of the eleven cases [#78](https://github.com/pharzam/armature/issues/78) added, the
 runner sees eight: five `good*` cases that exited 1 before their fix and two
 `bad-*` cases that exited 0, plus `bad-angle-cut-destination`, which was never red
 on its own and goes red only when `is_placeholder()` is loosened — measured by
 mutation, as were the two angle-with-title cases, which are the only ones that
-reach the clause ending an angle destination at its `>`. It cannot see
-`bad-bare-spaced-destination` or `bad-bare-spaced-definition`, which exit 1 for
-`L1` without the fix and for `L8` with it — only this script tells those apart.
+reach the clause ending an angle destination at its `>`. It cannot see the other
+three: `bad-bare-spaced-destination` and `bad-bare-spaced-definition`, which exit 1
+for `L1` without the fix and for `L8` with it, and `bad-angle-cut-definition`, which
+exits 1 either way — only this script tells those apart.
 That is the pitfall
 [`guardrails.md`](../guardrails.md#gate-pitfalls-kit-wide--keep-these) names, a
 harness that compares only exit codes, and why that issue's close-out pastes this
@@ -251,6 +252,7 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | `good-angle-spaced-definition` | `link-lint: OK`, exit 0 | the same, reached through a reference definition; remove the definition branch's angle clause and it trips `L5` |
 | `bad-angle-cut-destination` | FAIL `L1`, exit 1 | `[x](<Design Notes/target.md)`, an angle destination with no closing `>`, kept whole and reported; loosen `is_placeholder()` back to "opens with `<`" and it passes in silence |
 | `bad-bare-spaced-definition` | FAIL `L8`, exit 1 | `[lbl]: Design Notes/target.md` and a use of `[lbl]`: `L8` on the line and `L6` on the use, both true. The runner cannot see this case; see above |
+| `bad-angle-cut-definition` | FAIL `L1`, exit 1 | `[lbl]: <Design Notes/target.md`, an angle destination in a reference definition with no closing `>`. The definition branch keeps it whole and fails `L1` with the whole text; without that clause the line is `L8` with a `<<…>` remedy and its use a false `L6`. The runner cannot see it — it exits 1 either way — so only `expect-check.sh` tells the two apart. |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 
