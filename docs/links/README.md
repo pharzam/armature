@@ -176,8 +176,9 @@ change excluded the repository root from the walk.
 7. **An angle destination that holds a `)` is cut at that `)`.** CommonMark
    (example 492) reads `[a](<b)c>)` as a link to `b)c`; both extractors end a
    destination at the first `)`, so `[e](<Design (draft)/target.md>)` is read as
-   `<Design`. Before [#78](https://github.com/pharzam/armature/issues/78) every
-   spaced angle destination was cut that way, at its first blank, and the cut text
+   `<Design (draft`. Before
+   [#78](https://github.com/pharzam/armature/issues/78) every spaced angle
+   destination was cut that way, at its first blank, and the cut text
    passed as an adopter marker — the link vanished **in silence**, the one silent
    false green among the spaced forms and the defect that issue was opened for. The
    cut now happens only on a `)`, and what it leaves is kept whole and fails `L1`

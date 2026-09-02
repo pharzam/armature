@@ -123,10 +123,13 @@ nl='
 #      adopter has to keep the layout -- but nothing tells them, so it is here.
 #  10. A destination containing a SPACE names the record only where CommonMark
 #      reads a link: the angle form `<dir with space/0001-x.md>`, read to its
-#      closing `>` since #78; the raw HTML form, whose quoted value was always
-#      captured whole; and a bare destination whose blank is followed by a
-#      title. Before #78 the `](` and definition branches cut the angle form at
-#      the first blank and the record drew a false orphan WARN; measured on five
+#      closing `>` since #78; and the raw HTML form, whose quoted value was
+#      always captured whole. A bare destination holding a space names no
+#      record, with or without a title: measured, `[x](adr/dir with
+#      space/0001-x.md "t")` is NOT counted, because the destination is cut at
+#      its first blank before any comparison. Before #78 the `](` and definition
+#      branches cut the angle form at the first blank and the record drew a
+#      false orphan WARN; measured on five
 #      ADR trees identical but for the link form, and re-measured after. A bare
 #      destination followed by anything else -- `[x](adr/0001-x.md junk)` -- is
 #      not a link on the forge; link-lint reports it as L8, and since #78's
