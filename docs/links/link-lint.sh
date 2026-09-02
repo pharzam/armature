@@ -166,9 +166,9 @@ anchors_of() {
 # Where it is not -- a kit vendored inside a larger repository -- the list is the
 # OUTER repository's view, filtered by an ignore file the kit does not own, and it
 # can be missing anything: a vendor path under `.gitignore` gives nothing, `tests/`
-# leaves 163 documents unread, `*.md` leaves every one. An earlier form of this
-# guard tested for `docs/` in the list and closed only the patterns that reached
-# `docs/`; the root test closes the class, because the question is not which files
+# leaves 370 documents and 163 links unread, `*.md` leaves every one. An earlier
+# form of this guard tested for `docs/` in the list and closed only the
+# patterns that reached `docs/`; the root test closes the class, because the question is not which files
 # are missing but whose ignore rules decided. The empty-list test stays as a second
 # guard. The walk prunes any directory that holds a `.git` ENTRY: a linked
 # worktree's is a file. The same shape as audit-record-lint.sh's, kept in step by

@@ -172,14 +172,14 @@ awk 'NR == 3 { print "" } { print }' "$base/cited.clean" > "$repo/docs/tools/cit
 check '2b drift in the real file, undrifted nested copy' 1 'citation cited.sh:3 points at a BLANK line' "$A"
 cp "$base/cited.clean" "$repo/docs/tools/cited.sh"
 #
-# NEITHER of those two proves the SILENT direction -- that a nested copy cannot
-# HIDE a real drift. Both pass against the unfixed linter as well, measured. The
-# reason is that the block reads the first candidate the walk returns, and the
-# walk's order is the file system's, which no fixture can fix: a nested directory
-# sorts before `docs/` on the operator's checkout and after it here. The loud
-# direction is covered, order-independently, by cases 1, 4, 4' and 5, where a file
-# inside the nested checkout must not resolve or be read at all. The silent
-# direction is stated as a limit rather than claimed as tested.
+# Neither of those two proves the SILENT direction -- that a nested copy cannot
+# HIDE a real drift -- because both pass against the unfixed linter as well. Case
+# 7 below does prove it: block 2b accepts ANY candidate with enough lines rather
+# than the first, and block 2c, the one that reads the first, runs only for a
+# `*.sh` suffix, so a `.md` citation past the real file's end is resolved by a
+# longer nested copy whatever order the walk returns. An earlier draft of this
+# comment argued no fixture could prove it; that was reasoning where measuring was
+# available, and case 7 is the measurement.
 # 3. a plain nested directory with no .git entry is still walked, both ways
 mkdir -p "$repo/plain/docs"
 printf '%s' "$dead" > "$repo/plain/docs/dead.md"
@@ -235,9 +235,18 @@ rm -f "$repo/docs/short.md" "$repo/nested/docs/short.md"
 cite cited.sh:3
 # 8. a SYMLINK is not followed, so one pointing into the nested checkout cannot
 #    put back the hiding this fix removes.
-if ln -s "nested/docs/dead.md" "$repo/docs/linked.md" 2>/dev/null; then
+if ln -s "../nested/docs/dead.md" "$repo/docs/linked.md" 2>/dev/null; then
 	check '8 symlink into the nested checkout is not read' 0 "$clean_links" "$L"
 	rm -f "$repo/docs/linked.md"
+fi
+# 9. a filename holding a quote and a backslash is still read. Without `-z` git
+#    prints such a name quoted, and a quoted name matches no file, so the document
+#    is silently skipped. An earlier draft of this script said no case could reach
+#    this; round 3 built one, and this is it.
+odd='docs/od"d\\name.md'
+if printf '%s' "$dead" > "$repo/$odd" 2>/dev/null && [ -f "$repo/$odd" ]; then
+	check '9 a quoted filename is still read' 1 'L1: docs/od' "$L"
+	rm -f "$repo/$odd"
 fi
 # 10. the kit vendored where the outer ignore names something OTHER than the kit
 #     path. The list is non-empty and still not this repository's, which a guard

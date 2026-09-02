@@ -51,9 +51,8 @@ shows the collapse in a clean tree instead.
 | Worktree `T-x1zp` at the fix | `OK  44 claims` | `OK  750 links resolved`; seven links added by this task's documents |
 
 In the byte copy the fixed list holds **530** entries, every one a regular file.
-The self-test, `docs/tests/nested-checkout-check.sh`, runs **18** cases: 6 were red
-against the linters at `6c3f5d0` — cases 1, 4, 4′, two of the three in 5, and the
-`link-lint` half of 6; the exact lines are on #80 — and all 18 are green at the fix,
+The self-test, `docs/tests/nested-checkout-check.sh`, runs **19** cases: 9 were red
+against the linters at `6c3f5d0`; the exact lines are on #80 — and all 19 are green at the fix,
 on macOS with BSD `find`. CI runs it on GNU `find`. The other checks stayed green
 in the worktree throughout: `adr-lint`, `prd-lint`, `agents-lint`, and
 `run-discipline-tests` at 104 passed.
@@ -75,6 +74,14 @@ not, or when git lists nothing, so a nested checkout under the root is never rea
 a plain directory, no checkout at all, and a vendored-and-ignored kit, and CI runs
 it. The 14 false failures in the operator's checkout are gone and `link-lint` there
 drops from 43.5 s to 4.2 s as a side effect.
+
+Each of the three code fixes has an assertion that dies without it, verified by
+reverting the fixes one at a time: case 7 for the root guard, case 8 for the symlink
+refusal, case 9 for the NUL-delimited read. An earlier draft of this record said the
+last of those could not be asserted, because a filename holding a quote could not
+reach a fixture tree without git's own quoting entering the test. Round 3 built the
+case in six lines. Both times the reasoning was available and the measurement was
+not taken; the measurement is what settled it.
 
 The **silent** direction — a nested copy hiding a real drift — is asserted, by case
 7, and an earlier draft of this record said it could not be. That draft reasoned

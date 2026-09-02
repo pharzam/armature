@@ -110,8 +110,10 @@ else
 	glossary=$(dirname "$tasks_dir")/glossary.md
 	is_fixture=0
 fi
-# The repository root, used to resolve the paths the record cites. For a fixture
-# case there is nothing to resolve against, so citation resolution is skipped.
+# The repository root, used to resolve the paths the record cites. It comes from
+# this script's own location, not from the case directory, so a fixture case
+# resolves its citations against the real tree like any other run -- the twin of
+# the sentence corrected at block 2b, which said the same thing wrongly.
 repo_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 [ -d "$repo_root/docs" ] || repo_root=""
 
@@ -444,13 +446,16 @@ if [ -n "$repo_root" ]; then
 	# root. Where it is not -- a kit vendored inside a larger repository -- the
 	# list is the OUTER repository's view of the kit, filtered by an ignore file
 	# the kit does not own, and it can be missing anything: a vendor path under
-	# `.gitignore` gives zero lines, `tests/` gives a list missing 163 documents,
+	# `.gitignore` gives zero lines, `tests/` gives a list missing 370 documents,
 	# `*.md` gives one missing every document. An earlier form of this guard
 	# tested for `docs/` in the list and closed only the patterns that hit
 	# `docs/`; the root test closes the class, because the question is not which
 	# files are missing but whose ignore rules decided. The empty-list test stays
 	# as a second guard. Both take the walk, which prunes any directory holding a
-	# `.git` ENTRY -- a linked worktree's is a file.
+	# `.git` ENTRY -- a linked worktree's is a file. The walk has two costs, not
+	# one: it is slower, and it does NOT read `.gitignore`, so a vendored kit's
+	# own ignored files are linted where the same kit in its own repository would
+	# skip them. Loud rather than silent, and the safer direction of the two.
 	_top=$(cd "$repo_root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
 	_here=$(cd "$repo_root" 2>/dev/null && pwd -P) || _here=
 	all_files=
