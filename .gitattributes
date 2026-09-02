@@ -184,3 +184,7 @@ docs/tests/run-discipline-tests.sh text eol=lf
 docs/*/tests/**/*.sh               text eol=lf
 .githooks/*                        text eol=lf
 .githooks/**/*.sh                  text eol=lf
+# The nested-checkout self-test sits beside the runner, where none of the forms
+# above reaches it, so it is named the way the runner is. It is a thirteenth
+# executable: the count of twelve above was measured before it existed.
+docs/tests/nested-checkout-check.sh text eol=lf

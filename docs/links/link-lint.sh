@@ -55,6 +55,11 @@
 #     suite's success as failure. The limit this leaves is real and named: a
 #     genuinely broken link in a fixture's own prose goes unseen. Fixture SUITE
 #     READMEs are NOT skipped — they are prose a reader follows.
+#   - A nested checkout under ROOT — a linked worktree, a clone, a submodule. The
+#     file list is what git lists for THIS repository, so a copy of the tree inside
+#     one is never read. Limit: `--exclude-standard` reads .git/info/exclude and
+#     the global ignore file, neither versioned, so two operators on one commit can
+#     get different lists. docs/tests/nested-checkout-check.sh proves it.
 #
 # The slug rule is the trap. GitHub lowercases, drops punctuation, and replaces
 # EACH space with a hyphen — it does not collapse runs. So `## R5 — Deterministic
@@ -149,7 +154,37 @@ anchors_of() {
 # root for exactly this reason. It does not make a newline in an IN-TREE
 # filename safe -- nothing here does, and no such file exists -- but the
 # operator's path is not the kit's business to survive by luck.
-files=$(cd "$root" && find . -name .git -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
+#
+# What is listed is what git lists -- tracked, plus untracked and not ignored --
+# so a nested checkout is one directory entry and its Markdown is never read. `-z`
+# is what makes the names safe: git quotes a name holding a quote, a backslash or a
+# control character whatever core.quotePath says, and a quoted name resolves to
+# nothing. NUL-delimited output is never quoted. `[ ! -L ]` refuses a symlink, as
+# the walk it replaced did: following one reads a file outside the repository.
+#
+# git's list is trusted only when THIS directory is itself the repository root.
+# Where it is not -- a kit vendored inside a larger repository -- the list is the
+# OUTER repository's view, filtered by an ignore file the kit does not own, and it
+# can be missing anything: a vendor path under `.gitignore` gives nothing, `tests/`
+# leaves 370 documents and 163 links unread, `*.md` leaves every one. An earlier
+# form of this guard tested for `docs/` in the list and closed only the
+# patterns that reached `docs/`; the root test closes the class, because the question is not which files
+# are missing but whose ignore rules decided. The empty-list test stays as a second
+# guard. The walk prunes any directory that holds a `.git` ENTRY: a linked
+# worktree's is a file. The same shape as audit-record-lint.sh's, kept in step by
+# hand (links/README.md limit 9).
+_top=$(cd "$root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
+_here=$(cd "$root" 2>/dev/null && pwd -P) || _here=
+files=
+if [ -n "$_top" ] && [ "$_top" = "$_here" ]; then
+	files=$(cd "$root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard -- '*.md' 2>/dev/null \
+		| tr '\0' '\n' \
+		| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done | sort)
+fi
+if [ -z "$files" ]; then
+	files=$(cd "$root" \
+		&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
+fi
 
 lint_file() {
 	_f=$1
