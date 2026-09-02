@@ -4,11 +4,13 @@ Tracks [issue #76](https://github.com/pharzam/armature/issues/76), landed by
 [PR #77](https://github.com/pharzam/armature/pull/77) at `6c3f5d0` on
 2026-09-01. This file was written on 2026-09-02 under
 [#83](https://github.com/pharzam/armature/issues/83) (`T-xj92`), from the landed
-record only: the #76 thread, the PR body and the commit history. Every number
-below is copied from one of those and its source is named beside it; nothing
-was re-measured for this file. Times are UTC on 2026-09-01 unless dated. The
-task had no backlog line: it was born from #76 and went straight to the
-completed log ([completed.md](completed.md)).
+record: the #76 thread, the PR #77 body and the commit history, plus, for the
+follow-ups only, the titles of issues #78 to #83 and the #79 thread, which
+names #81 and #82 as its children. Every number below is copied from one of
+those and its source is named beside it; nothing was re-measured for this
+file. Times are UTC on 2026-09-01 unless dated. The task had no backlog line:
+it was born from #76 and went straight to the completed log
+([completed.md](completed.md)).
 
 ## Why
 
@@ -62,23 +64,26 @@ Recorded before the first commit (#76, 13:29Z) and selected under R3.
 - **Not an ADR.** Two scripts change how they hold a list and two change where
   they cut a line; nothing here decides structure or ownership (#76, 13:29Z).
 
-## The three widenings, and the decision not to widen
+## The three widenings, and the two decisions not to widen
 
 The issue opened naming two defects in three scripts and landed touching five
-scripts and a new `.gitattributes` (#76, 20:44Z). Each step below was an
-operator decision on the thread, recorded at the time given.
+scripts and a new `.gitattributes` (#76, 20:44Z). Four of the five steps below
+are operator decisions recorded on the thread in the comment at the time
+given. The E2 row records what the thread holds for it, which is the outcome
+and not the choice.
 
-| recorded | decision | effect |
+| comment at | step | effect |
 | --- | --- | --- |
 | 13:37Z | **A** over B and C | fix the two named defects and the two more instances the fixtures exposed: `adr-lint`'s `Date:` and `Status` reads, and `audit-record-lint`'s candidate loop |
 | 14:13Z | **C1** | pin the executables to LF: on a `core.autocrlf=true` clone the scripts and hooks did not run at all, `main` included (finding C, 14:00Z) |
-| 14:38Z | **E2** | fix the residue C1 exposed in `agents-lint`, `audit-record-lint` and `expect-check`, rather than open a new issue for the three (finding E, 14:19Z) |
+| 14:38Z | **E2** | fix the residue C1 exposed in `agents-lint`, `audit-record-lint` and `expect-check`, rather than open a new issue for the three. The 14:19Z comment offered E1 (recommended) and E2 and asked for a decision; the next comment, at 14:38Z, reports "E2 done". No comment on the thread records the operator's choice between them |
 | 14:13Z | **D1** | record the two spaced-link limits in `docs/links/README.md` as limits 7 and 8; fix neither |
 | 20:36Z | **D1a** | after round 2 reopened D1 (17:42Z), leave both limits recorded; the code fix D1b goes to a new issue |
 
-The close-out counts "five operator decisions widening scope" and this file
-counts three widenings; both are true, because five decisions were taken and
-three of them (A, C1, E2) widened the change while two (D1, D1a) declined to.
+The close-out (#76, 20:44Z) counts "five operator decisions widening scope".
+That phrase counts decisions, not widenings: of the five steps in the table,
+three (A, C1, E2) widened the change and two (D1, D1a) declined to, and for E2
+the thread records the outcome rather than the choice.
 
 ## Verification
 
@@ -115,8 +120,9 @@ one.
    `b8d7643`'s five-loss table, row 1, claimed `104 passed, 1 failed` for a
    dropped `EXPECT` pin; measured at that commit it was `104 passed, 0 failed`,
    and `011aa1c` and `a73ba05` later made it true. `f36ccaa` said `sect()`
-   covers seven of `agents-lint`'s read sites; there are eight. Neither commit
-   was amended, because the thread cites those SHAs about a dozen times.
+   alone covers seven of `agents-lint`'s fifteen read sites; there are eight
+   `sect "` call sites, and the fifteen is exact. Neither commit was amended,
+   because the thread cites those SHAs about a dozen times.
 2. **Definition-of-Done item 4 removed with a reason** (#76, 19:22Z). A comment
    on #39 was put out of scope by decision, so the item was deleted from the
    issue body rather than left unticked or ticked falsely. The tradeoff is
@@ -132,7 +138,9 @@ one.
    transcripts and posted on #76 as six comments, dated as recovered, starting
    [here](https://github.com/pharzam/armature/issues/76#issuecomment-5507054627).
 
-## Follow-ups
+## Out of scope (follow-ups)
+
+Opened from this work. None of them is worked under #83.
 
 - [#78](https://github.com/pharzam/armature/issues/78) — `link-lint` is silent
   on a link whose destination contains a space, and cannot tell a good spaced
@@ -148,3 +156,13 @@ one.
 - [#83](https://github.com/pharzam/armature/issues/83) — this record.
 - No issue: `.gitattributes` is 186 lines for 10 rules, and a further trim was
   left undone because the branch was frozen (PR #77 lines 84-89).
+
+## Verdict
+
+The two defects #76 named are fixed, and so are the two more instances the
+fixtures exposed: the kit runs on a checkout whose path contains a space and
+on a `core.autocrlf=true` checkout (#76, 20:44Z; PR #77 lines 41-44). The
+review record behind that verdict was not honest until #83. PR #77's third
+acceptance box is not met, and the two rounds have a record only as recovered
+on 2026-09-02, which shows that no lens reviewed a frozen commit and that the
+reviewers ran the same model as the author (the recovered records on #76).
