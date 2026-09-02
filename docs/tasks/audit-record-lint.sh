@@ -60,6 +60,13 @@
 # Blocks 1, 4, 5, 7 and 8 fail when they find nothing to check, rather than
 # passing. A renamed heading is a defect, not an exemption.
 #
+# Block 2b resolves against what git lists for THIS repository, so a nested
+# checkout under the root -- a linked worktree, a clone, a submodule -- is never a
+# candidate; when git lists nothing a find walk that prunes any directory holding
+# a `.git` entry stands in. Limit: `--exclude-standard` reads .git/info/exclude
+# and the global ignore file, neither versioned, so two operators on one commit
+# can get different lists. docs/tests/nested-checkout-check.sh proves both paths.
+#
 # How to adapt: the checks mirror the record's own Definition of Done. The
 # claim count is READ from DoD item 1, not hardcoded, so the tables and the
 # sentence about them cannot drift apart. If you change the verdict vocabulary
@@ -417,7 +424,22 @@ if [ -n "$repo_root" ]; then
 	# Enumerate the tree once, then match each cited path as a suffix on a path
 	# component boundary. Guessing a directory order instead would resolve
 	# `README.md:54` to whichever README the guess happened to reach first.
-	all_files=$(cd "$repo_root" && find . -type f -not -path './.git/*' | sed 's|^\./||')
+	# The tree is what git lists -- tracked, plus untracked and not ignored, so a
+	# file staged in pre-commit is seen. A nested checkout is one directory or
+	# gitlink entry to git and its contents are never listed, so a stale copy of a
+	# cited file inside one can neither resolve a citation nor hide a drift.
+	# `core.quotePath=false`, or a non-ASCII name prints quoted and names no file;
+	# `[ -f ]` drops an index entry whose file is gone. The walk below stands in
+	# whenever the list is EMPTY, not only outside a checkout: a kit vendored in a
+	# larger repository whose vendor path is gitignored gets a successful rev-parse
+	# and zero lines, and testing rev-parse instead left every citation `names no
+	# file`, a dead gate on a tree that violates nothing. $repo_root/docs exists
+	# (checked above), so an empty list is always wrong. The walk prunes any
+	# directory holding a `.git` ENTRY -- a linked worktree's is a file.
+	all_files=$(cd "$repo_root" && git -c core.quotePath=false ls-files --cached --others --exclude-standard 2>/dev/null \
+		| while IFS= read -r _f; do [ -f "$_f" ] && printf '%s\n' "$_f"; done)
+	[ -n "$all_files" ] || all_files=$(cd "$repo_root" \
+		&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -print | sed 's|^\./||')
 	n_cites=0
 	for c in $cites; do
 		p=${c%:*}

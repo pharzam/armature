@@ -55,6 +55,11 @@
 #     suite's success as failure. The limit this leaves is real and named: a
 #     genuinely broken link in a fixture's own prose goes unseen. Fixture SUITE
 #     READMEs are NOT skipped — they are prose a reader follows.
+#   - A nested checkout under ROOT — a linked worktree, a clone, a submodule. The
+#     file list is what git lists for THIS repository, so a copy of the tree inside
+#     one is never read. Limit: `--exclude-standard` reads .git/info/exclude and
+#     the global ignore file, neither versioned, so two operators on one commit can
+#     get different lists. docs/tests/nested-checkout-check.sh proves it.
 #
 # The slug rule is the trap. GitHub lowercases, drops punctuation, and replaces
 # EACH space with a hyphen — it does not collapse runs. So `## R5 — Deterministic
@@ -149,7 +154,17 @@ anchors_of() {
 # root for exactly this reason. It does not make a newline in an IN-TREE
 # filename safe -- nothing here does, and no such file exists -- but the
 # operator's path is not the kit's business to survive by luck.
-files=$(cd "$root" && find . -name .git -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
+#
+# What is listed is what git lists -- tracked, plus untracked and not ignored --
+# so a nested checkout is one directory entry and its Markdown is never read. When
+# git lists nothing (no checkout, or a kit vendored where the outer repository
+# ignores it, where rev-parse still succeeds) the find walk stands in, pruning any
+# directory that holds a `.git` ENTRY: a linked worktree's is a file. The same
+# shape as audit-record-lint.sh's, kept in step by hand (links/README.md limit 9).
+files=$(cd "$root" && git -c core.quotePath=false ls-files --cached --others --exclude-standard -- '*.md' 2>/dev/null \
+	| while IFS= read -r _f; do [ -f "$_f" ] && printf '%s\n' "$_f"; done | sort)
+[ -n "$files" ] || files=$(cd "$root" \
+	&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -name '*.md' -print | sed 's|^\./||' | sort)
 
 lint_file() {
 	_f=$1
