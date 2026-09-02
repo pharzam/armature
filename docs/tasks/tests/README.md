@@ -39,9 +39,13 @@ review of [#56](https://github.com/pharzam/armature/pull/56) blocked on — a
 Definition of Done item mapped to "this file" rather than to a test — and the
 first version of this linter passed it.
 
-Two assertions of the real run are **not** exercised here, because a fixture
-directory has no repository to resolve against: block 2b, which resolves every
-cited path and line against the tree, and the parts of block 9 that read the real
-`completed.md`. They are covered by the real run in the pre-commit hook and in CI.
+Block 2b, which resolves every cited path and line against the tree, **is** reached
+by the `good` case: two line-count calls, for `adr-lint.sh:75` and `adr-lint.sh:93`,
+both resolved against the real tree, because the repository root comes from the
+linter's own location and not from the case directory. What no fixture here
+exercises is a block 2b *failure*, and the parts of block 9 that read the real
+`completed.md`. Those are covered by the real run in the pre-commit hook and in CI;
+a block 2b failure is also driven, against a throwaway tree, by
+[`nested-checkout-check.sh`](../../tests/nested-checkout-check.sh).
 
 Run one: `sh docs/tasks/audit-record-lint.sh docs/tasks/tests/good`
