@@ -217,13 +217,17 @@ protocol that bounds the rounds is
 
 - **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
   the next round names it. So does the close-out bookkeeping — the task line
-  moving between the two indexes, which gate step 8 requires of the landing pull
-  request and which cannot exist before the rounds finish. It changes no
-  behaviour and no claim, and the close-out records that no round read it. The round that ends the work runs on a frozen head
-  that no fix followed. Its verdict is `nothing material in scope` when nothing
-  material in scope remains, and `not mergeable, findings recorded` when the cap
-  below is reached with something material still open, or when a finding's
-  materiality or classification stands disputed.
+  arriving in the completed log, which gate step 8 requires of the landing pull
+  request and which cannot exist before the rounds finish. The exception covers
+  that bookkeeping alone; where the same commit also corrects a claim, that
+  correction is a fix and is named as one. The close-out records which of the two
+  the commit carried, and that no round read it.
+- **The last round carries the verdict.** The round that ends the work runs on a
+  frozen head that no fix followed. Its verdict is `nothing material in scope`
+  when nothing material in scope remains, and `not mergeable, findings recorded`
+  on any of three routes: the cap below is reached with something material still
+  open; a finding's materiality or classification stands disputed; or the budget
+  overran without the operator's approval. Only the first needs the cap.
 - **A merge of `main` is the one other thing that may land.** A rebase would
   rewrite the frozen head the verdict names, so a branch under a frozen-head
   verdict integrates by merging `origin/main` into itself — see
