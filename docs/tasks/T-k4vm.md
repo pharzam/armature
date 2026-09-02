@@ -1,8 +1,7 @@
 # T-k4vm — The gate's stopping protocol
 
 Tracks [issue #89](https://github.com/pharzam/armature/issues/89), the successor to
-[#81](https://github.com/pharzam/armature/issues/81). Backlog line:
-[backlog.md](backlog.md). The record it lands is
+[#81](https://github.com/pharzam/armature/issues/81). Index line: [completed.md](completed.md); this task never sat in the backlog. The record it lands is
 [ADR-0008](../adr/0008-stop-the-gate-on-a-frozen-head.md).
 
 Written on 2026-09-02 from the two threads and the branch history. Every number below
@@ -31,8 +30,8 @@ Six decisions, each with its rejected alternatives, in
    with the default branch takes the merge route, because a rebase rewrites the SHA a
    verdict names.
 2. **A cycle cap and a non-merge verdict.** At most two fix-and-review cycles after the
-   first freeze; on the cap the verdict is `not mergeable, findings recorded, issue
-   split`, which is a legitimate outcome rather than a failure.
+   first freeze; on the cap the verdict is `not mergeable, findings recorded`, a
+   legitimate outcome rather than a failure, whose successor state is an issue split.
 3. **Materiality.** A finding is material when it changes an exit code, an assertion, a
    behaviour on an adopter's tree, a claim in the tree a reader could act on, or a
    Definition-of-Done item. Wording, style and layout are not.
@@ -67,7 +66,7 @@ Four of round 2's twelve findings were structural, and each is a case where the 
 as first written could not be run: it contradicted the repository's own landing rule;
 its cap reset for free; it had no cap at all when a plan-review confirmation was missing,
 which its own evidence said was the common case; and a disputed finding had no verdict to
-stop on. All twelve are fixed on this branch, so no round here re-litigates them.
+stop on. Eleven are fixed on this branch. The twelfth, the record's exact syntax, was routed to [#82](https://github.com/pharzam/armature/issues/82) with the raising reviewer's agreement, because the issue that builds the parser is the one that can test the contract against the records already written. No round here re-litigates any of them.
 
 ## What this task added
 
@@ -77,14 +76,19 @@ Three things the predecessor could not fit inside its ceiling.
   citing #81, an issue that closed unmerged. The entry now names this task and this
   issue. That correction produced this task's only red: the log's own header requires a
   detail link, so the link necessarily preceded this file.
-- **Section 5's "once" is now bounded.** It counts per issue, not per branch, and
-  [R11](../issue-workflow.md#r11--single-goal-issues) is what stops that being a free
-  reset — a child issue is legitimate only when it carries one demoable goal of its own,
-  so an author cannot buy a second approval by moving the same work to a new number.
+- **Section 5's "once" is now bounded, and not by R11.** It counts per issue, and a
+  successor issue starts with its own approval. R11 does not forbid the successor —
+  it is a test of scale, not of novelty, and section 2 *orders* the work onto a new
+  issue when a cap is reached. What stops a split buying budget is that the
+  successor's maximum is set from the **measured size of what it carries**, and that
+  the split is the operator's decision rather than the author's. This issue is the
+  worked example: same goal, new number, a fresh approval unspent, and a bound of 566
+  set from the 436 already on the branch.
 - **A ceiling now has a rule of its own.** It is named in the approval comment, before
-  the growth it bounds exists, never after measuring what it would have to cover. A
-  ceiling that is passed ends where a spent approval ends: the verdict is
-  `not mergeable, findings recorded, issue split`.
+  the growth it bounds exists, never after measuring what it would have to cover, and
+  an approval naming none bounds the outturn measured at that moment. A ceiling that is
+  passed ends where a spent approval ends: the round that measures it carries the
+  overrun as a finding and returns `not mergeable, findings recorded`.
 
 ## What the evidence turned out to be
 
@@ -102,8 +106,9 @@ when it rests on one case is the defect this record exists to catch.
 ## Verdict
 
 Delivered the stopping protocol as ADR-0008, with `docs/engineering-discipline.md`,
-`docs/glossary.md` and `AGENTS.md` made to say the same thing, on a branch carrying every
-fix the predecessor's two review rounds produced.
+`docs/glossary.md` and `AGENTS.md` made to say the same thing, on a branch carrying
+eleven of the twelve fixes the predecessor's round 2 produced — the twelfth, the
+record's exact syntax, is #82's.
 
 The honest summary of the predecessor is that the gate worked and the task did not: a
 record with four structural defects would have landed as `Accepted`, and

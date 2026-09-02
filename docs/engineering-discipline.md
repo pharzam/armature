@@ -259,7 +259,14 @@ protocol that bounds the rounds is
   never a revision; the growth becomes a child issue unless the operator approves
   it once, on the issue. An overrun the operator has not approved blocks the
   merge: the last round carries it as a finding and returns
-  `not mergeable, findings recorded`.
+  `not mergeable, findings recorded`. **Once** counts per issue, and a successor
+  issue starts with its own approval — what stops a split buying budget is that
+  the successor's maximum is set from the measured size of what it carries, and
+  that the split is the operator's decision rather than the author's. An approval
+  may name a **ceiling**, in the approval comment and before the growth it bounds
+  exists; one that names none bounds the outturn measured at the approval. A
+  ceiling that is passed ends where a spent approval ends: the round that measures
+  it carries the overrun as a finding and returns the same verdict.
 
 ### Who may review
 
