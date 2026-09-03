@@ -38,6 +38,8 @@ since the file was written.
 | `L6` | Every reference use `[text][label]` has a matching `[label]: target` definition. |
 | `L7` | No in-tree target is an absolute path. |
 | `L8` | A bare destination holding a space or a tab is not a link at all: the forge renders the text as written. A reference definition of that shape defines nothing, so a `[text][label]` that uses it draws `L6` beside the `L8` — two reports where there was one `L1`, both true. A definition whose target is an adopter marker holding a blank, `[runner]: ‹the test runner›/run.sh`, is neither: it is skipped like every marker, and its label stays defined. |
+| `L9` | An angle destination followed by anything but a title is not a link: CommonMark ends the destination at its `>`, so `[x](<a b>junk)` and `[x](<a b> junk)` render as text. Reported rather than skipped as an adopter marker or truncated to the part before the `>`. |
+| `L10` | A link with an empty destination — `[a]()`, `[a](   )` — renders as `<a href="">` and goes nowhere. Reported rather than dropped. |
 
 ## What it proves, and what it does not
 
