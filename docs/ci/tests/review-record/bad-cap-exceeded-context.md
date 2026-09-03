@@ -1,0 +1,72 @@
+=== comment created=2026-09-01T10:00:00Z updated=2026-09-01T10:00:00Z ===
+## Plan (R12)
+
+Ordered slices, test slice first.
+=== comment created=2026-09-01T11:00:00Z updated=2026-09-01T11:00:00Z ===
+## Plan review
+
+# Verdict: `approve-with-conditions` — four conditions, all met
+
+### Budget maximum
+
+640 lines over 11 files, against base `957821e`.
+
+### Cycle cap
+
+`2`, no condition attached.
+=== comment created=2026-09-01T12:00:00Z updated=2026-09-01T12:00:00Z ===
+## Review record — round 1
+
+| | |
+|---|---|
+| **Commit reviewed** | `a1b2c3d` |
+| **Reviewer** | Opus 5, fresh session |
+| **Lens** | *did the claims survive measurement?* |
+| **Briefed on** | the issue and a read-only clone |
+| **Barred from** | the author's reasoning |
+| **Independence claimed** | fresh context |
+| **Cycle** | `0` |
+| **Raw findings** | none |
+| **Verdict** | `material` |
+=== comment created=2026-09-01T13:00:00Z updated=2026-09-01T13:00:00Z ===
+## Review record — round 2
+
+| | |
+|---|---|
+| **Commit reviewed** | `b2c3d4e` |
+| **Reviewer** | Opus 5, fresh session |
+| **Lens** | *did the claims survive measurement?* |
+| **Briefed on** | the issue and a read-only clone |
+| **Barred from** | the author's reasoning |
+| **Independence claimed** | fresh context |
+| **Cycle** | `1` |
+| **Raw findings** | none |
+| **Verdict** | `material` |
+=== comment created=2026-09-01T14:00:00Z updated=2026-09-01T14:00:00Z ===
+## Review record — round 3
+
+| | |
+|---|---|
+| **Commit reviewed** | `c3d4e5f` |
+| **Reviewer** | Opus 5, fresh session |
+| **Lens** | *did the claims survive measurement?* |
+| **Briefed on** | the issue and a read-only clone |
+| **Barred from** | the author's reasoning |
+| **Independence claimed** | fresh context |
+| **Cycle** | `2` |
+| **Raw findings** | none |
+| **Verdict** | `material` |
+=== comment created=2026-09-01T15:00:00Z updated=2026-09-01T15:00:00Z ===
+## Review record — round 4
+
+| | |
+|---|---|
+| **Commit reviewed** | `d4e5f60` |
+| **Reviewer** | Opus 5, fresh session |
+| **Lens** | *did the claims survive measurement?* |
+| **Briefed on** | the issue and a read-only clone |
+| **Barred from** | the author's reasoning |
+| **Independence claimed** | fresh context |
+| **Cycle** | `3` |
+| **Raw findings** | none |
+| **Verdict** | `nothing material in scope` |

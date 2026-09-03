@@ -38,7 +38,12 @@ jobs:
         run: |
           # The same keyword set as docs/ci/pr-link-lint.sh. Kept in step with it
           # by hand: if that pattern changes, change this one in the SAME change.
+          # Strip fenced blocks, code spans and HTML comments FIRST: a body that
+          # quotes `Closes #64` as an example, or shows one inside a fence, must
+          # not send this check at issue 64. pr-link-lint.sh strips comments for
+          # the same reason; this adds the two forms a PR body actually uses.
           n=$(printf '%s' "$PR_BODY" \
+            | sed -e '/^```/,/^```/d' -e 's/`[^`]*`//g' -e 's/<!--.*-->//g' \
             | grep -Eoi '(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed)|refs?|part of)[[:space:]]+#[0-9]+' \
             | head -1 | grep -Eo '[0-9]+' || true)
           if [ -z "$n" ]; then

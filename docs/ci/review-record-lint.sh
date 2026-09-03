@@ -216,8 +216,8 @@ END {
 	if (seen_planrev == 0) err("RR2", "no plan-review confirmation (R12): expected a comment whose heading starts `## Plan review`")
 	else {
 		if (pr_verdict == "") err("RR2", "the plan review carries no `Verdict`")
-		else if (pr_verdict != "approve" && pr_verdict != "approve-with-conditions" && pr_verdict != "reject")
-			err("RR8", "plan-review `Verdict` is `" pr_verdict "`; the closed set is approve, approve-with-conditions, reject")
+		else if (!has(pr_verdict, "approve") && !has(pr_verdict, "reject"))
+			err("RR8", "the plan review names no plan-review verdict (approve, approve-with-conditions, reject): " pr_verdict)
 		if (pr_budget == "") err("RR2", "the plan review carries no `Budget maximum`")
 		if (pr_cap == "")    err("RR2", "the plan review carries no `Cycle cap`")
 	}
@@ -225,13 +225,18 @@ END {
 	if (nrec == 0) { err("RR3", "no review record: expected a comment whose heading starts `## Review record`") }
 
 	cap = -1
-	if (pr_cap != "" && pr_cap ~ /^[0-9]+$/) cap = pr_cap + 0
+	if (pr_cap != "" && match(pr_cap, /[0-9]+/) > 0) cap = substr(pr_cap, RSTART, RLENGTH) + 0
+	else if (pr_cap != "") err("RR2", "the plan review-s `Cycle cap` holds no number: " pr_cap)
 
 	for (i = 1; i <= nrec; i++) {
 		for (f in want)
 			if (!have[i, f]) err("RR4", "round " rec_round[i] " carries no `" f "`")
 
 		s = rec_sha[i]
+		if (have[i, "Commit reviewed"] && s == "")
+			err("RR4", "round " rec_round[i] " names `Commit reviewed` but gives no value")
+		if (have[i, "Cycle"] && rec_cycle[i] == "")
+			err("RR4", "round " rec_round[i] " names `Cycle` but gives no value")
 		if (s != "" && match(s, /[0-9a-fA-F]{7,40}/) == 0)
 			err("RR5", "round " rec_round[i] " `Commit reviewed` holds no 7-to-40 character hexadecimal SHA: " s)
 
@@ -249,10 +254,15 @@ END {
 		if (cy ~ /^[0-9]+$/ && cap >= 0 && cy + 0 > cap)
 			err("RR7", "round " rec_round[i] " has `Cycle` " cy ", past the declared cap of " cap)
 
+		# RR9 — rounds in ascending time. Before the verdict work, so an absent
+		# verdict cannot skip it.
+		if (i > 1 && rec_created[i] < rec_created[i-1])
+			err("RR9", "round " rec_round[i] " was posted before round " rec_round[i-1])
+
 		# RR8 — verdict vocabulary, by position.
 		v = rec_verdict[i]
 		last = (i == nrec)
-		if (v == "") continue
+		if (v == "") { err("RR4", "round " rec_round[i] " names `Verdict` but gives no value"); continue }
 		if (last) {
 			if (!has(v, "nothing material in scope") && !has(v, "not mergeable, findings recorded"))
 				err("RR8", "the last round names no last-round verdict: " v)
@@ -260,13 +270,10 @@ END {
 			# "material" is a substring of "nothing material in scope", so an
 			# intermediate round is checked by excluding the two last-round
 			# values rather than by finding the word.
-			if (has(v, "nothing material in scope") || has(v, "not mergeable, findings recorded") || !has(v, "material"))
+			if (has(v, "nothing material in scope") || has(v, "not mergeable, findings recorded") || v !~ /(^|[^A-Za-z])material/)
 				err("RR8", "round " rec_round[i] " is followed by another round, so its verdict must be `material`: " v)
 		}
 
-		# RR9 — rounds in ascending time.
-		if (i > 1 && rec_created[i] < rec_created[i-1])
-			err("RR9", "round " rec_round[i] " was posted before round " rec_round[i-1])
 	}
 
 	# RR9 — plan, then its review, then the first round.
