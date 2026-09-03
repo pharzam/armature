@@ -219,9 +219,11 @@ protocol that bounds the rounds is
   the next round names it. The close-out bookkeeping lands as a head no round
   names — the task line arriving in the completed log, which gate step 8
   requires of the landing pull request and which cannot exist before the rounds
-  finish. The exception covers that bookkeeping alone; where the same commit
-  also corrects a claim, that correction is a fix and is named as one. The
-  close-out records which of the two it carried, and that no round read it.
+  finish. The exception covers that bookkeeping **alone**: the close-out commit
+  changes the task indexes and no other file. A correction that is needed lands
+  as an ordinary fix *before* it, where it re-freezes and a round reads it.
+  Saying no round read the close-out is only safe of a commit that carries
+  nothing to read.
 - **The last round carries the verdict.** The round that ends the work runs on a
   frozen head that no fix followed. Its verdict is `nothing material in scope`
   when nothing material in scope remains, and `not mergeable, findings recorded`
