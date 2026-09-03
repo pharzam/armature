@@ -16,4 +16,4 @@
 - [ ] Tests cover the change and fail against the old code (R8).
 - [ ] Independent review ran until findings decayed; evidence committed.
 - [ ] Docs and comments updated in this same merge request.
-- [ ] The task line moved from `tasks/backlog.md` to `tasks/completed.md`.
+- [ ] The task line is recorded in `tasks/completed.md`, moved from `tasks/backlog.md` where the task had a line there.
