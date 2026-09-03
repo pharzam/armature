@@ -67,10 +67,27 @@ the landing pull request is the arrival, not the move. It cannot be written befo
 the rounds finish, because it is what finishing means, so a rule permitting only
 fixes after a frozen head forbids every landing.
 
-The exception covers the bookkeeping and nothing else. Where the same commit also
-corrects a claim, that correction is a fix to a finding, permitted on its own
-footing and named as one. The close-out says which of the two the commit carried,
-and that no round read it.
+The exception covers the bookkeeping **and nothing else**: the close-out commit
+changes the task indexes and no other file. A correction that is needed lands as
+an ordinary fix **before** the close-out, where it re-freezes and a round reads
+it. The close-out says that no round read it, which is only safe to say of a
+commit that carries nothing to read.
+
+An earlier form let a claim correction ride along "on its own footing", and
+bounded it by nothing — not to a finding a round had accepted, not by size, not
+by subject — in the one commit this section exempts from review. Measured on the
+two landings that had a separate close-out: #101's carried
+`docs/tasks/completed.md` alone, and #96's carried `docs/tasks/T-x1zp.md` as
+well, so a corrected link count went in unread. One of two used the hole.
+
+Rejected: bounding the rider instead — "only a correction to a finding a round
+accepted". Accepted is a state the **author** asserts, and
+[section 4](#4-classification-and-routing) exists because no finding leaves the
+scope on the author's word alone; the bound would reintroduce that word in the
+commit nobody reads. Rejected: dropping the exemption and having a final scoped
+round read the close-out, as the integration merge gets. It works — but it adds a
+round to every landing to guard a commit that, bounded this way, has nothing in
+it to find.
 "What a round records" already fixed the commit within a round. The gap was
 between rounds, and this closes it. Rejected: reviewing the branch as it moves.
 A verdict on a moving target names no commit.
