@@ -145,9 +145,11 @@ its own.
   The standard states where to record the selected and rejected approaches.
 - **Review the plan once, then record it.** The ordered plan gets **one round of
   independent review and a reviewer's confirmation** before building begins. This
-  is a review of the *plan* — lighter than, and separate from, the uncapped
+  is a review of the *plan* — lighter than, and separate from, the
   [code review rounds](engineering-discipline.md#reviewing-until-findings-decay)
-  that come after the code works. **Comment the plan and the confirmation on the
+  that come after the code works and run inside the cycle cap
+  [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#2-the-cycle-cap-and-the-non-merge-verdict)
+  sets. **Comment the plan and the confirmation on the
   issue**, so the next context sees both the plan and that it was checked. The
   reviewer may be a person or a fresh agent session; see
   [Who may review](engineering-discipline.md#who-may-review).
@@ -183,7 +185,8 @@ kit already ships the green rows.
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step — the kit ships [the command](ci/README.md#make-the-checks-required) and runs it on its own repository |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |
-| Reviewer independence and the review record (commit, reviewer, lens, verdict) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md) | — | ‹check the issue carries a review record› | — | Written rule until wired |
+| Reviewer independence and the review record (ten named fields, the cycle among them) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md), [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | ‹check the issue carries a review record› | — | Written rule until wired |
+| The stopping protocol: a frozen head, the cycle cap and its non-merge verdict, materiality, and where a revealed defect goes | [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | — | — | Written rule until wired |
 | The agent entry points cover the gate and the numbered rules | [ADR-0004](adr/0004-ship-agent-entry-points.md) | [`pre-commit`](../.githooks/pre-commit) | [`agents-lint`](agents/agents-lint.sh) | — | Enforced |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
