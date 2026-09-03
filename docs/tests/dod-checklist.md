@@ -89,3 +89,8 @@ Run this at task close, before the change is called done:
   task's risk.
 - [ ] No deterministic check that *could* have settled a claim was left to that
   review instead (R5).
+- [ ] The budget declared in the plan-review confirmation was **held**, or the
+  overrun is reported on the issue and answered there — an operator's approval or
+  a child issue, per
+  [ADR-0008](../adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record).
+  A budget that was never declared is the plan review's gap, not this task's.

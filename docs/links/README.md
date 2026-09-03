@@ -65,6 +65,21 @@ not this script.
   link in a fixture's own prose goes unseen.** Fixture *suite* READMEs are not
   skipped — they are prose a reader follows, and that is exactly where the one
   real defect was found.
+- **A nested checkout under the root** — a linked worktree, a clone, a submodule.
+  The file list is what git lists for this repository, so a copy of the tree
+  inside one is never read. Limit 9 below carries the detail.
+- **Most links into a path containing a space** — worth knowing before you write
+  such a path, not after. Three of the four destination forms cut at the first
+  space: `[a](Design Notes/target.md)` is read as a link to `Design` and fails
+  `L1`; a `%20` is never decoded and fails too; and the CommonMark angle form
+  `[a](<Design Notes/target.md>)` is **skipped in silence**, because what
+  survives the cut is `<Design`, which reads as a `‹…›` adopter placeholder.
+  Measured: a *correct* spaced link and a *dead* one produce byte-identical
+  output, so the check cannot tell those two apart. **The raw HTML form is the
+  exception and the one that works** — `<a href="Design Notes/target.md">` is
+  captured between its quotes, spaces and all, and resolves. So if your
+  repository has a `docs/Design Notes/` or an `RFC 001/`, links into it are
+  checked only when written that way. Limits 7 and 8 below carry the detail.
 
 ## The forms it reads
 
@@ -116,7 +131,7 @@ what it does *not* prove: this check is **filename-agnostic**, so it does not kn
 `AGENTS.md` is special. The case locks the intent, and would go red if a future
 change excluded the repository root from the walk.
 
-## Eight limits, recorded rather than hidden
+## Nine limits, recorded rather than hidden
 
 1. **The slug rule exists in two places and nothing keeps them in step.** It began
    as a copy of `agents-lint.sh`'s A19; that assertion was removed
@@ -240,6 +255,19 @@ change excluded the repository root from the walk.
    When a decode did change the path, a failure to resolve it prints both
    spellings — `links Design%20Notes/x.md, decoded to Design Notes/x.md` — so the
    author sees the text they wrote and the path that was looked up.
+9. **The file list is the third thing written in two places and kept in step by
+   hand.** This linter and `audit-record-lint.sh` (block 2b) list the repository's
+   files the same way — what git tracks plus what it does not ignore, read
+   NUL-delimited so no name is quoted and with symlinks refused, so a nested
+   checkout is one entry and never read, with a `find` walk that prunes any
+   directory holding a `.git` entry whenever this directory is not itself the
+   repository root, or git lists nothing
+   ([#80](https://github.com/pharzam/armature/issues/80)). The same shape as limits
+   1 and 6, **by hand, with no mechanism**:
+   [`nested-checkout-check.sh`](../tests/nested-checkout-check.sh) drives both
+   copies but does not compare them. The shape's own limit: `--exclude-standard`
+   reads `.git/info/exclude` and the global ignore file, neither versioned, so two
+   operators on one commit can get different lists.
 
 ## The `EXPECT` convention
 

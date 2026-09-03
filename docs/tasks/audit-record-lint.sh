@@ -60,6 +60,13 @@
 # Blocks 1, 4, 5, 7 and 8 fail when they find nothing to check, rather than
 # passing. A renamed heading is a defect, not an exemption.
 #
+# Block 2b resolves against what git lists for THIS repository, so a nested
+# checkout under the root -- a linked worktree, a clone, a submodule -- is never a
+# candidate; when git lists nothing a find walk that prunes any directory holding
+# a `.git` entry stands in. Limit: `--exclude-standard` reads .git/info/exclude
+# and the global ignore file, neither versioned, so two operators on one commit
+# can get different lists. docs/tests/nested-checkout-check.sh proves both paths.
+#
 # How to adapt: the checks mirror the record's own Definition of Done. The
 # claim count is READ from DoD item 1, not hardcoded, so the tables and the
 # sentence about them cannot drift apart. If you change the verdict vocabulary
@@ -103,8 +110,10 @@ else
 	glossary=$(dirname "$tasks_dir")/glossary.md
 	is_fixture=0
 fi
-# The repository root, used to resolve the paths the record cites. For a fixture
-# case there is nothing to resolve against, so citation resolution is skipped.
+# The repository root, used to resolve the paths the record cites. It comes from
+# this script's own location, not from the case directory, so a fixture case
+# resolves its citations against the real tree like any other run -- the twin of
+# the sentence corrected at block 2b, which said the same thing wrongly.
 repo_root=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 [ -d "$repo_root/docs" ] || repo_root=""
 
@@ -392,7 +401,10 @@ done
 # has_citation() above proves a citation is PRESENT. It cannot prove one is TRUE:
 # `no-such-file.md:99999` matches the shape. This block resolves each cited
 # path:line against the tree and fails when the file is absent or the line is past
-# the end of it. Skipped for a fixture case, which has no tree to resolve against.
+# the end of it. It runs for a fixture case too: repo_root comes from this script's
+# own location, not from the case directory, so a fixture's citations resolve
+# against the real tree -- measured, a fixture row citing `adr-lint.sh:999999`
+# fails here.
 if [ -n "$repo_root" ]; then
 	# The three patterns below must stay in step with has_citation() above. A form
 	# that block 2 ACCEPTS but this block cannot EXTRACT is a hole: the citation
@@ -417,7 +429,45 @@ if [ -n "$repo_root" ]; then
 	# Enumerate the tree once, then match each cited path as a suffix on a path
 	# component boundary. Guessing a directory order instead would resolve
 	# `README.md:54` to whichever README the guess happened to reach first.
-	all_files=$(cd "$repo_root" && find . -type f -not -path './.git/*' | sed 's|^\./||')
+	# The tree is what git lists -- tracked, plus untracked and not ignored, so a
+	# file staged in pre-commit is seen. A nested checkout is one directory or
+	# gitlink entry to git and its contents are never listed, so a stale copy of a
+	# cited file inside one can neither resolve a citation nor hide a drift.
+	# `-z` is what makes the names safe: git quotes a name holding a quote, a
+	# backslash or a control character whatever core.quotePath says, and a quoted
+	# name matches no file. NUL-delimited output is never quoted, so `tr` gives
+	# back the literal names. A newline IN a filename still breaks this, and
+	# nothing here survives one. `[ -f ] && [ ! -L ]` drops an index entry whose
+	# file is gone and refuses a symlink, which the walk it replaced also refused:
+	# following one reads a file outside the repository, and a tracked symlink into
+	# a nested checkout would put back the very hiding this fix removes.
+	#
+	# git's list is trusted only when THIS directory is itself the repository
+	# root. Where it is not -- a kit vendored inside a larger repository -- the
+	# list is the OUTER repository's view of the kit, filtered by an ignore file
+	# the kit does not own, and it can be missing anything: a vendor path under
+	# `.gitignore` gives zero lines, `tests/` gives a list missing 370 documents,
+	# `*.md` gives one missing every document. An earlier form of this guard
+	# tested for `docs/` in the list and closed only the patterns that hit
+	# `docs/`; the root test closes the class, because the question is not which
+	# files are missing but whose ignore rules decided. The empty-list test stays
+	# as a second guard. Both take the walk, which prunes any directory holding a
+	# `.git` ENTRY -- a linked worktree's is a file. The walk has two costs, not
+	# one: it is slower, and it does NOT read `.gitignore`, so a vendored kit's
+	# own ignored files are linted where the same kit in its own repository would
+	# skip them. Loud rather than silent, and the safer direction of the two.
+	_top=$(cd "$repo_root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
+	_here=$(cd "$repo_root" 2>/dev/null && pwd -P) || _here=
+	all_files=
+	if [ -n "$_top" ] && [ "$_top" = "$_here" ]; then
+		all_files=$(cd "$repo_root" && git -c core.quotePath=false ls-files -z --cached --others --exclude-standard 2>/dev/null \
+			| tr '\0' '\n' \
+			| while IFS= read -r _f; do [ -f "$_f" ] && [ ! -L "$_f" ] && printf '%s\n' "$_f"; done)
+	fi
+	if [ -z "$all_files" ]; then
+		all_files=$(cd "$repo_root" \
+			&& find . -name .git -prune -o -type d ! -path . -exec sh -c 'test -e "$1/.git"' _ {} \; -prune -o -type f -print | sed 's|^\./||')
+	fi
 	n_cites=0
 	for c in $cites; do
 		p=${c%:*}

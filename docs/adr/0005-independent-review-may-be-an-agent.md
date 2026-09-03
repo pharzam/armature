@@ -4,7 +4,7 @@ Date: 2026-08-31
 
 ## Status
 
-Accepted. Amended by [ADR-0006](0006-derive-expectations-from-prose.md)
+Accepted. Amended by [ADR-0006](0006-derive-expectations-from-prose.md), [ADR-0008](0008-stop-the-gate-on-a-frozen-head.md)
 
 ## Context
 

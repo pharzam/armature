@@ -116,6 +116,23 @@ becomes a parent issue with child sub-issues, each independently completable. Th
 mirrors the kit's [commit-granularity](engineering-discipline.md#commit-granularity)
 rule, one level up: a task you cannot demo in one step is really several tasks.
 
+**The tripwire.** "Limited scale" is unenforceable while it is only an adjective,
+so the plan states the scale out loud and a reviewer checks that one sentence:
+
+- **The plan names the one demo** — what a reader will be shown when this issue is
+  done, in a single sentence, without an "and" joining two outcomes. A demo that
+  needs two sentences is two goals.
+- **The plan-review confirmation records it**, beside the `Budget maximum` and
+  `Cycle cap` [R12](#r12--slice-and-prioritize) already asks for. A plan whose demo
+  the reviewer cannot restate is not approved; it is split.
+- **A second goal arriving mid-task is a child issue**, not a wider demo. Widening
+  the demo to fit what the work became is how a task stops being demoable, and it
+  is the move this rule exists to catch.
+
+The tripwire bounds the **goal**, where R12's budget bounds the **size**. They fail
+differently and both are needed: #76 stayed one goal and grew without limit, while a
+task can hold to a size and still quietly acquire a second outcome.
+
 ## R12 — Slice and prioritize
 
 Before the first test, turn the issue into an **ordered plan**: the steps of work
@@ -145,9 +162,11 @@ its own.
   The standard states where to record the selected and rejected approaches.
 - **Review the plan once, then record it.** The ordered plan gets **one round of
   independent review and a reviewer's confirmation** before building begins. This
-  is a review of the *plan* — lighter than, and separate from, the uncapped
+  is a review of the *plan* — lighter than, and separate from, the
   [code review rounds](engineering-discipline.md#reviewing-until-findings-decay)
-  that come after the code works. **Comment the plan and the confirmation on the
+  that come after the code works and run inside the cycle cap
+  [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#2-the-cycle-cap-and-the-non-merge-verdict)
+  sets. **Comment the plan and the confirmation on the
   issue**, so the next context sees both the plan and that it was checked. The
   reviewer may be a person or a fresh agent session; see
   [Who may review](engineering-discipline.md#who-may-review).
@@ -162,6 +181,11 @@ its own.
   strength of the earlier confirmation. Where scale is a real risk, the plan says
   the bound out loud — and an approach whose size cannot be bounded in advance is
   itself a finding.
+- **State the budget in the confirmation.** The plan-review comment carries a
+  `Budget maximum` and a `Cycle cap` by those names, so a later reader — and
+  [`review-record-lint`](ci/review-record-lint.sh) — can find them without
+  reading the prose around them. The unit and the base are
+  [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record)'s.
 
 R12 makes [R8](#r8--test-driven-strict-red-then-green)'s "plan first" concrete: R8
 says a plan goes on the issue before the first test; R12 says what that plan is — an
@@ -176,14 +200,15 @@ kit already ships the green rows.
 
 | Concern | Written rule | Local hook | CI | Branch protection | Status |
 | ------- | ------------ | ---------- | -- | ----------------- | ------ |
-| Land only via a PR (never a direct push to the default branch) | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step |
+| Land only via a PR (never a direct push to the default branch) | R1 | [`pre-push`](../.githooks/pre-push) | — | ‹require a PR before merge› | Hook ships; branch protection is your step — the kit ships [the command](ci/README.md#make-the-checks-required) and runs it on its own repository |
 | Conventional Commits | [Commit messages](engineering-discipline.md#commit-messages) | [`commit-msg`](../.githooks/commit-msg) | [`pr-title`](ci/github-actions-pr-title.yml) | — | Enforced |
 | ADR + PRD discipline | R5, [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`adr-lint`, `prd-lint`](ci/) | — | Enforced |
 | The linters reject bad input (fixtures) | [Testing](engineering-discipline.md#testing) | [`pre-commit`](../.githooks/pre-commit) | [`discipline-tests`](tests/run-discipline-tests.sh) | — | Enforced |
-| A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step |
+| A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step — the kit ships [the command](ci/README.md#make-the-checks-required) and runs it on its own repository |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
-| Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | — | — | Written rule until wired |
-| Reviewer independence and the review record (commit, reviewer, lens, verdict) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md) | — | ‹check the issue carries a review record› | — | Written rule until wired |
+| Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The plan and its confirmation must exist and be in order; whether the slicing is *good* is the reviewer-s |
+| Reviewer independence and the review record (ten named fields, the cycle among them) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md), [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The record is parsed and its chronology checked; **independence is not** and no mechanism can — see the limits in that script |
+| The stopping protocol: a frozen head, the cycle cap and its non-merge verdict, materiality, and where a revealed defect goes | [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The cap is counted from `Cycle` and the verdict matched as a string; materiality and classification stay a reviewer-s judgement |
 | The agent entry points cover the gate and the numbered rules | [ADR-0004](adr/0004-ship-agent-entry-points.md) | [`pre-commit`](../.githooks/pre-commit) | [`agents-lint`](agents/agents-lint.sh) | — | Enforced |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:

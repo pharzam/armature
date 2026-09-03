@@ -49,10 +49,10 @@ plan review is architecture and scope, never implementation approval.
 2. **Honor the guardrails.** Before you write code, read the acceptance criteria, [`docs/guardrails.md`](docs/guardrails.md), and the [ADRs](docs/adr/) the ticket references.
 3. **Test first.** Write the failing test, watch it fail for the right reason, then write the code.
 4. **Make long tasks visible.** Anything that can run over ten seconds shows which step runs and that it lives.
-5. **Review until findings decay.** Independent blind rounds, a different lens each round, until one finds nothing material. A reviewer is a person or a fresh agent session — the requirement is [independence](docs/adr/0005-independent-review-may-be-an-agent.md), not reviewer type — and summarised text gets a clause-by-clause semantic pass.
+5. **Review until findings decay.** Freeze the head, then run independent blind rounds on it, a different lens each round. A fix re-freezes; at most two fix-and-review cycles follow the first freeze, and the last round ends `nothing material in scope` or `not mergeable, findings recorded` — [ADR-0008](docs/adr/0008-stop-the-gate-on-a-frozen-head.md). A defect the change *revealed*, off the path its Definition of Done names, opens an issue instead of entering the branch. A reviewer is a person or a fresh agent session — the requirement is [independence](docs/adr/0005-independent-review-may-be-an-agent.md), not reviewer type — and summarised text gets a clause-by-clause semantic pass.
 6. **Be honest, keep evidence.** Report a failure as a failure, and review the producing code before a costly action.
 7. **Keep the documentation current.** Every document the change leaves stale is fixed in the same pull request.
-8. **Close out in the same PR.** Tick the boxes, write the verdict, and move the task line from backlog to completed.
+8. **Close out in the same PR.** Tick the boxes, write the verdict, and record the task line in the completed log.
 
 ## The issue rules
 
@@ -73,7 +73,7 @@ file.
 - **R9** — [Test freeze after confirmation](docs/issue-workflow.md#r9--test-freeze-after-confirmation): once a fresh context confirms them, a later failure opens a bug sub-issue (written rule)
 - **R10** — [Sync with governance](docs/issue-workflow.md#r10--sync-with-governance): keep this file and the governance documents in step; a conflict stops work (written rule)
 - **R11** — [Single-goal issues](docs/issue-workflow.md#r11--single-goal-issues): one issue is one actionable, demoable goal at a limited scale (written rule)
-- **R12** — [Slice and prioritize](docs/issue-workflow.md#r12--slice-and-prioritize): an ordered, DoD-covering plan, the test slice first, reviewed once on the issue (written rule)
+- **R12** — [Slice and prioritize](docs/issue-workflow.md#r12--slice-and-prioritize): an ordered, DoD-covering plan, the test slice first, reviewed once on the issue
 
 ## Checks you can run
 
@@ -93,8 +93,9 @@ sh docs/tests/run-discipline-tests.sh
 git diff --check
 ```
 
-[`docs/ci/pr-link-lint.sh`](docs/ci/pr-link-lint.sh) reads a pull-request body, so
-it runs in CI only and has no local run. Armature has no product test suite and no
+[`docs/ci/pr-link-lint.sh`](docs/ci/pr-link-lint.sh) and
+[`docs/ci/review-record-lint.sh`](docs/ci/review-record-lint.sh) read forge
+artifacts, so they run in CI only and have no local run. Armature has no product test suite and no
 product toolchain: never invent a build, lint or test command for it.
 
 ## Branches, worktrees, commits, and pull requests
@@ -103,7 +104,9 @@ Work in a per-task git worktree under `‹worktree dir›/<task>`, branched off
 `origin/main`, never in the operator's own checkout. Commit at each logical step,
 with a subject that follows Conventional Commits — `<type>: <ID> <description>`
 when it carries a task. Rebase onto the latest `origin/main` and land with a plain
-merge; **never squash**. The pull-request body links its issue with `Closes #N`,
+merge; **never squash** — but a branch already under a frozen-head verdict merges
+`origin/main` in instead, so the reviewed SHA survives. The pull-request body
+links its issue with `Closes #N`,
 or `Refs #N` when it does not close it.
 
 ## The task index
@@ -111,7 +114,8 @@ or `Refs #N` when it does not close it.
 [`docs/tasks/backlog.md`](docs/tasks/backlog.md) holds one line per open task, and
 [`docs/tasks/completed.md`](docs/tasks/completed.md) the dated log of finished
 ones. Any detail belongs in that task's own file, never in either index. The same
-pull request that lands the work moves the line from one to the other.
+pull request that lands the work records the line in the completed log, moving it
+from the backlog where the task had one.
 
 ## Placeholders and adopter values
 

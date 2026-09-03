@@ -91,3 +91,16 @@ jobs:
       # run there, from docs/links/tests/. It needs no network: external links
       # are out of scope by design, which is what keeps it offline-runnable.
       - run: sh docs/links/link-lint.sh
+
+  nested-checkout-check:
+    name: nested-checkout-check (the linters skip a nested checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Builds a throwaway repository that holds a nested checkout, a linked
+      # worktree and a plain directory, and drives audit-record-lint and link-lint
+      # against each. Not a pre-commit step: it needs `git init` and real commits,
+      # past the reads-only-text bar every hook step meets. It runs here on GNU
+      # find, which is what exercises the two linters' fallback walk; a macOS
+      # checkout has BSD find only.
+      - run: sh docs/tests/nested-checkout-check.sh

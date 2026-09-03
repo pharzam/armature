@@ -303,6 +303,7 @@ run_file_suite() {
 run_dir_suite  docs/adr/adr-lint.sh    docs/adr/tests              adr-lint
 run_dir_suite  docs/prd/prd-lint.sh    docs/prd/tests              prd-lint
 run_file_suite docs/ci/pr-link-lint.sh docs/ci/tests/pr-link  .md  pr-link-lint
+run_file_suite docs/ci/review-record-lint.sh docs/ci/tests/review-record .md review-record-lint
 run_file_suite .githooks/commit-msg    .githooks/tests/commit-msg  .txt  commit-msg
 run_dir_suite  docs/tasks/audit-record-lint.sh docs/tasks/tests    audit-record-lint
 run_dir_suite  docs/agents/agents-lint.sh      docs/agents/tests   agents-lint

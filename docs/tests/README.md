@@ -6,13 +6,15 @@ test to the thing it proves. It is a domain-free scaffold: every document here i
 a template with `‹…›` placeholders, and no language, framework, or test runner is
 named. You adapt it to your stack, then grow it.
 
-This section is mostly *conventions*, plus one executable exception:
+This section is mostly *conventions*, plus two executable exceptions:
 [`run-discipline-tests.sh`](run-discipline-tests.sh), which runs the kit's own
 discipline linters against their fixtures (see
-[The discipline self-tests](#the-discipline-self-tests) below). The *product*
+[The discipline self-tests](#the-discipline-self-tests) below), and
+[`nested-checkout-check.sh`](nested-checkout-check.sh), which proves two of those
+linters read this repository's files and not a nested checkout's. The *product*
 tests themselves live in the root [`tests/`](../../tests/) directory (or your
 stack's own layout); Armature ships no product tests — only these patterns for an
-adopter to fill. The discipline self-tests are the exception because their subject
+adopter to fill. The discipline self-tests are the exceptions because their subject
 — the kit's linters — ships with the kit, so their tests can too.
 
 > **How to adapt this section.** Do three things, then delete this note.
@@ -33,8 +35,9 @@ adopter to fill. The discipline self-tests are the exception because their subje
 > This folder tells you how to test on this project: what the four kinds of test
 > are, how to write each one, what to check before you trust a test suite, and how
 > to prove that every requirement has a test behind it. It is mostly the rulebook
-> your real product tests follow; the one thing here that actually runs is
-> `run-discipline-tests.sh`, which tests the kit's own linters.
+> your real product tests follow; the two things here that actually run are
+> `run-discipline-tests.sh` and `nested-checkout-check.sh`, which test the kit's
+> own linters.
 
 ## What's here
 
@@ -50,7 +53,8 @@ adopter to fill. The discipline self-tests are the exception because their subje
 | [`dod-checklist.md`](dod-checklist.md) | How to verify every Definition of Done (DoD) item has test coverage. |
 | [`traceability-template.md`](traceability-template.md) | The format linking a test to a requirement, guardrail, or ADR. |
 | [`example-fact-to-test.md`](example-fact-to-test.md) | A worked path: fact → requirement → guardrail → test, in kit conventions. |
-| [`run-discipline-tests.sh`](run-discipline-tests.sh) | The one executable here: runs each discipline linter against its good/bad fixtures and asserts the outcome. |
+| [`run-discipline-tests.sh`](run-discipline-tests.sh) | One of the two executables here: runs each discipline linter against its good/bad fixtures and asserts the outcome. |
+| [`nested-checkout-check.sh`](nested-checkout-check.sh) | The other: builds a throwaway repository holding a nested checkout and proves `audit-record-lint` and `link-lint` never read it. Needs `git`, so CI runs it and the hook does not. |
 
 ## How the pieces fit
 

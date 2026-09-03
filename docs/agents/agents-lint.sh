@@ -29,7 +29,7 @@
 # a summary is a CORRECT summary, that the precedence text is right, that the
 # sources table maps each class of rule to the RIGHT document, that a command
 # does what its line claims, and that no ‹…› marker was filled with a plausible
-# guess, are all review responsibilities — the R12 plan review, the uncapped
+# guess, are all review responsibilities — the R12 plan review, the capped
 # blind review rounds (docs/engineering-discipline.md), and the fresh-context
 # confirmation that freezes the tests under R9.
 #

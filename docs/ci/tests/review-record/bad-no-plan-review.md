@@ -1,0 +1,18 @@
+=== comment created=2026-09-01T10:00:00Z updated=2026-09-01T10:00:00Z ===
+## Plan (R12)
+
+Ordered slices, test slice first.
+=== comment created=2026-09-01T12:00:00Z updated=2026-09-01T12:00:00Z ===
+## Review record - round 1
+
+| Field | Value |
+|---|---|
+| `Commit reviewed` | `a1b2c3d` |
+| `Reviewer` | Claude Opus 5 |
+| `Lens` | numbers, by running them |
+| `Briefed on` | the issue and the tree |
+| `Barred from` | the author reasoning |
+| `Independence claimed` | fresh context; no shared state |
+| `Cycle` | `0` |
+| `Raw findings` | none |
+| `Verdict` | `nothing material in scope` |
