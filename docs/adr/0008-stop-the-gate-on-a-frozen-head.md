@@ -209,10 +209,20 @@ file's length would have caught.
   plan review sets its maximum with the carried size already measured and on the
   issue. That is a discipline and not a mechanism, and it is written as one rather
   than left to look like a guard.
-  **Whether an approval may name a ceiling is not decided here.** Three rounds
-  produced three rules and each was falsified by the next;
-  [#99](https://github.com/pharzam/armature/issues/99) carries all three and
-  owns the question. Until it lands the rule is the one above and nothing more.
+  **No ceiling.** An approval is **one number, named once, and it is the figure at
+  landing** — the reviewed head plus the close-out line, which no round reads.
+  It reaches that figure and no further. There is no second approval on an issue,
+  and nothing an approval says extends it: a ceiling, a multiple, a kind of growth
+  it is meant to cover. Three rounds wrote three such extensions and a later round
+  falsified each; the fourth option, deciding that the extension does not exist,
+  is the one that survives all four histories in
+  [#99](https://github.com/pharzam/armature/issues/99).
+  **Where growth needs an approval that is spent**, the routes are the three the
+  record already has: absorb it inside the approved figure, route a *non-material*
+  in-change finding past the budget to a child issue
+  ([section 4](#4-classification-and-routing)), or reach the cap and split. A
+  material finding whose fix does not fit has no fourth route, and that is the
+  point rather than a gap.
   An overrun the operator has not approved **blocks the merge**: the last round
   carries it as a finding and returns `not mergeable, findings recorded`, by the
   route [section 6](#6-the-review-record) names. #64 is the case
