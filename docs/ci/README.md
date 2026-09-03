@@ -55,13 +55,19 @@ Then replace every `‹…›` marker with your stack's command, and
 | `security` | Secret, dependency, and static-analysis scans over full history, behind `‹security scanner›` (see [`security-checklist.md`](../tests/security-checklist.md)). | Fill `‹…›`. |
 | PR title | Conventional Commits on the PR title (GitHub only). | Ready as-is — but its workflow copy is optional; skip the copy and [drop `conventional-title` with it](#drop-what-you-did-not-install). |
 | PR link | The PR body links an issue (R1), via [`pr-link-lint.sh`](pr-link-lint.sh). Its own PR-event workflow (GitHub); an `mr-link` job (GitLab). | Ready as-is — but its workflow copy is optional; skip the copy and [drop `pr-link` with it](#drop-what-you-did-not-install). |
+| Review record | The linked issue carries a plan, a plan review with its budget and cycle cap, and a parseable review record per round whose chronology holds ([ADR-0008](../adr/0008-stop-the-gate-on-a-frozen-head.md#6-the-review-record)), via [`review-record-lint.sh`](review-record-lint.sh). Its own PR-event workflow ([`github-actions-review-record.yml`](github-actions-review-record.yml)). **Make this one required last** — it fails a pull request whose issue carries no record, so turning it on before your team writes records blocks every merge. |
 
 Delete any job your project does not need. If you add a discipline test that lints
 files in the repo — as the [PRD linter](../prd/prd-lint.sh) does — wire it into
 both a CI job and the [`pre-commit`](../../.githooks/pre-commit) hook, the way
 `adr-lint` and `prd-lint` are. A check whose input is a forge artifact, not a repo
-file — like [`pr-link-lint.sh`](pr-link-lint.sh), which reads the PR body — has no
-local hook to run in and lives in CI only.
+file has no local hook to run in and lives in CI only. Two do:
+[`pr-link-lint.sh`](pr-link-lint.sh) reads the PR body, which the event hands it;
+[`review-record-lint.sh`](review-record-lint.sh) reads the linked issue's
+comments, which the workflow fetches. In both the forge call is in the **workflow**
+and the parsing is in the **script** — which is what lets both be self-tested
+offline by [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh) with no
+network and no token.
 
 ## Make the checks required
 

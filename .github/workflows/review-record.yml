@@ -1,0 +1,65 @@
+# Review record — ADR-0008 section 6 (ACTIVE workflow for the Armature repo).
+#
+# The activated copy of docs/ci/github-actions-review-record.yml. It enforces the
+# record a task leaves on its issue: a plan, a plan review carrying its budget and
+# cycle cap, and a parseable review record per round whose chronology holds.
+#
+# It lives in its own workflow, not in ci.yml, because issue comments are a forge
+# artifact rather than a file in the checkout — the same reason pr-link.yml is
+# separate. The forge call is HERE and the parsing is in the script, which is what
+# lets the script be self-tested offline by docs/tests/run-discipline-tests.sh.
+#
+# The issue number comes from the PR body's R1 link, which pr-link.yml has already
+# proved is present. Where a PR links several issues, the FIRST is read: R1 asks
+# for the issue a pull request answers, and a `Refs` to a parent does not carry
+# the record.
+
+name: Review record (ADR-0008)
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  review-record:
+    name: review-record (the issue carries a parseable record)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find the issue this pull request answers
+        id: issue
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # The same keyword set as docs/ci/pr-link-lint.sh. Kept in step with it
+          # by hand: if that pattern changes, change this one in the SAME change.
+          # Strip fenced blocks, code spans and HTML comments FIRST: a body that
+          # quotes `Closes #64` as an example, or shows one inside a fence, must
+          # not send this check at issue 64. pr-link-lint.sh strips comments for
+          # the same reason; this adds the two forms a PR body actually uses.
+          n=$(printf '%s' "$PR_BODY" \
+            | sed -e '/^```/,/^```/d' -e 's/`[^`]*`//g' -e 's/<!--.*-->//g' \
+            | grep -Eoi '(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed)|refs?|part of)[[:space:]]+#[0-9]+' \
+            | head -1 | grep -Eo '[0-9]+' || true)
+          if [ -z "$n" ]; then
+            echo "FAIL  review-record: the PR body links no plain #N issue reference this step can read. A URL or owner/repo#N form satisfies R1 and pr-link.yml but is not read here." >&2
+            exit 1
+          fi
+          echo "number=$n" >> "$GITHUB_OUTPUT"
+
+      - name: Read the issue's comments and check the record
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ steps.issue.outputs.number }}
+        # --paginate so an issue past one page of comments is read whole; a
+        # truncated stream would drop the last round and read as a missing record.
+        run: |
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${ISSUE}/comments" \
+            --jq '.[] | "=== comment created=\(.created_at) updated=\(.updated_at) ===\n\(.body)"' \
+            > comments.txt
+          sh docs/ci/review-record-lint.sh comments.txt
