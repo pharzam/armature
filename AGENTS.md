@@ -90,6 +90,7 @@ sh docs/agents/agents-lint.sh
 sh docs/links/link-lint.sh
 sh docs/tasks/audit-record-lint.sh
 sh docs/tests/run-discipline-tests.sh
+sh docs/tests/nested-checkout-check.sh
 git diff --check
 ```
 
