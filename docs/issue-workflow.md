@@ -116,6 +116,23 @@ becomes a parent issue with child sub-issues, each independently completable. Th
 mirrors the kit's [commit-granularity](engineering-discipline.md#commit-granularity)
 rule, one level up: a task you cannot demo in one step is really several tasks.
 
+**The tripwire.** "Limited scale" is unenforceable while it is only an adjective,
+so the plan states the scale out loud and a reviewer checks that one sentence:
+
+- **The plan names the one demo** — what a reader will be shown when this issue is
+  done, in a single sentence, without an "and" joining two outcomes. A demo that
+  needs two sentences is two goals.
+- **The plan-review confirmation records it**, beside the `Budget maximum` and
+  `Cycle cap` [R12](#r12--slice-and-prioritize) already asks for. A plan whose demo
+  the reviewer cannot restate is not approved; it is split.
+- **A second goal arriving mid-task is a child issue**, not a wider demo. Widening
+  the demo to fit what the work became is how a task stops being demoable, and it
+  is the move this rule exists to catch.
+
+The tripwire bounds the **goal**, where R12's budget bounds the **size**. They fail
+differently and both are needed: #76 stayed one goal and grew without limit, while a
+task can hold to a size and still quietly acquire a second outcome.
+
 ## R12 — Slice and prioritize
 
 Before the first test, turn the issue into an **ordered plan**: the steps of work
