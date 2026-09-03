@@ -284,7 +284,23 @@ lint_file() {
 				# is kept WHOLE, so L1 shows the whole cut text rather than L8
 				# advising `<<...>`. A bare one ends at the first blank, where only
 				# a title may follow
-				if (t ~ /^<[^>]*>([ \t]|$)/) sub(/>.*$/, ">", t)
+				if (t ~ /^<[^>]*>/) {
+					# An angle destination ends at its `>`. CommonMark allows only
+					# whitespace and a title after it, so anything else means the
+					# line is NOT a link -- and reading the part before the `>` as
+					# a path is this linter disagreeing with the renderer in
+					# silence. Both shapes go out as ANGLEJUNK (L9): `<a b>junk`,
+					# which used to reach is_placeholder() and be skipped, and
+					# `<a b> junk`, which used to truncate to `a b` and resolve.
+					tail = t
+					sub(/^<[^>]*>[ \t]*/, "", tail)
+					if (tail != "" && tail !~ /^[\042\047(]/) {
+						printf "%d\tANGLEJUNK\t%s\n", FNR, t
+						rest = substr(rest, e + 1)
+						continue
+					}
+					sub(/>.*$/, ">", t)
+				}
 				else if (t ~ /^</) { }
 				else if (t ~ /[ \t]/ && t !~ /^[^ \t]+[ \t]+[\042\047(]/) {
 					# a blank in a bare destination with no title after it is not
@@ -294,7 +310,11 @@ lint_file() {
 					continue
 				}
 				else sub(/[ \t].*$/, "", t)
+				# An EMPTY destination is a link -- pandoc renders `[a]()` and
+				# `[a](   )` as `<a href="">`. Dropping it is the silence the
+				# trimming above exists to prevent, one step further on.
 				if (t != "") printf "%d\tLINK\t%s\n", FNR, t
+				else printf "%d\tEMPTYDEST\t%s\n", FNR, "-"
 				rest = substr(rest, e + 1)
 			}
 
@@ -388,6 +408,34 @@ lint_file() {
 		# because is_placeholder() skips it -- `OK  1 links resolved` beside one
 		# control link, exit 0; and `[lbl]: <Design Notes/target.md` fails L1 with
 		# the whole cut text.
+		if [ "$_kind" = ANGLEJUNK ]; then
+			# An adopter marker opens `<` and closes it somewhere -- `<id>.md` is
+			# a marker, not an angle destination followed by junk -- so the same
+			# guard the NOTLINK branch carries applies here. Omitting it made
+			# every `<id>.md` in the kit go red.
+			#
+			# But is_placeholder() reads ANY `<...>` with trailing text as a
+			# marker, and that is what made `<a b>junk` silent in the first place.
+			# A blank inside the angles is the tell: a marker's name has none, an
+			# angle destination holding a path may. So a blank there means this is
+			# a destination and the guard does not apply.
+			_inner=${_target#<}
+			_inner=${_inner%%>*}
+			case $_inner in
+			*' '*|*"$(printf '\t')"*) : ;;
+			*) is_placeholder "$_target" && { IFS=$nl; continue; } ;;
+			esac
+			n_links=$((n_links + 1))
+			err L9 "$_rel:$_lineno has an angle destination followed by something that is not a title, $_target, which CommonMark does not render as a link; write the destination alone as <path> with only a title after it, or drop the angle brackets"
+			IFS=$nl; continue
+		fi
+
+		if [ "$_kind" = EMPTYDEST ]; then
+			n_links=$((n_links + 1))
+			err L10 "$_rel:$_lineno has a link with an empty destination, which renders as <a href=\"\"> and goes nowhere; give it a target or make it plain text"
+			IFS=$nl; continue
+		fi
+
 		if [ "$_kind" = NOTLINK ] || [ "$_kind" = NOTDEF ]; then
 			[ "$_kind" = NOTDEF ] && _target=${_target#*	}
 			is_placeholder "$_target" && { IFS=$nl; continue; }
