@@ -473,7 +473,15 @@ if [ -n "$repo_root" ]; then
 	# one: it is slower, and it does NOT read `.gitignore`, so a vendored kit's
 	# own ignored files are linted where the same kit in its own repository would
 	# skip them. Loud rather than silent, and the safer direction of the two.
-	_top=$(cd "$repo_root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
+	# `[ -f ]` below is DEFENSIVE rather than load-bearing, and #113 measured why no
+# fixture kills it: neither listing path can emit a non-regular file. `git
+# ls-files --cached --others --exclude-standard` does not list a FIFO at all --
+# measured, a named pipe beside a tracked file simply does not appear -- and the
+# `find` fallback selects `-type f`. Nothing the loop receives can fail it. It is
+# kept because it is one test and it holds if either path is ever widened.
+# `[ ! -L ]` is different: git DOES list a symlink, so that half is reachable, and
+# nested-checkout-check.sh asserts it.
+_top=$(cd "$repo_root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
 	_here=$(cd "$repo_root" 2>/dev/null && pwd -P) || _here=
 	all_files=
 	if [ -n "$_top" ] && [ "$_top" = "$_here" ]; then

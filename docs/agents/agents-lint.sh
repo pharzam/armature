@@ -798,7 +798,15 @@ CSEC=$(sect "$agents" '## Checks you can run')
 SHIPPED=''
 n_shipped=0
 set +f
-for m in "$root"/docs/*/*-lint.sh "$root"/docs/*/run-*-tests.sh; do
+# #113 measured this glob rather than trusting it: of 50 shell scripts under
+# docs/, it saw 6. Forty of the misses are fixture stubs two levels down, which
+# it is right to skip. Of the four that were not, two are docs/ci/* and excluded
+# on purpose (AGENTS.md names them anyway), one is docs/links/tests/expect-check.sh
+# -- a harness helper, not a check an operator runs -- and one was a real,
+# ready-to-run check this assertion could not see: docs/tests/nested-checkout-check.sh.
+# `*-check.sh` is added for it. The glob stays ONE level deep, which is what
+# keeps the forty stubs out.
+for m in "$root"/docs/*/*-lint.sh "$root"/docs/*/run-*-tests.sh "$root"/docs/*/*-check.sh; do
 	[ -e "$m" ] || continue
 	rel=${m#"$root"/}
 	case $rel in
