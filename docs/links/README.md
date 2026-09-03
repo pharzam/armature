@@ -37,6 +37,7 @@ since the file was written.
 | `L5` | Coverage floor — a run that resolved **zero** links fails. |
 | `L6` | Every reference use `[text][label]` has a matching `[label]: target` definition. |
 | `L7` | No in-tree target is an absolute path. |
+| `L8` | A bare destination holding a space or a tab is not a link at all: the forge renders the text as written. A reference definition of that shape defines nothing, so a `[text][label]` that uses it draws `L6` beside the `L8` — two reports where there was one `L1`, both true. A definition whose target is an adopter marker holding a blank, `[runner]: ‹the test runner›/run.sh`, is neither: it is skipped like every marker, and its label stays defined. |
 
 ## What it proves, and what it does not
 
@@ -96,9 +97,22 @@ Nested links are found by scanning for **each `](` opener** rather than matching
 whole `[…](…)`: a whole-link match consumes the inner link and advances past the
 outer destination, which is a silent false green on the badge idiom.
 
-A CommonMark angle destination `[x](<a path.md>)` is a real link and is resolved.
-An adopter marker only *opens* with `<`, as in `<id>.md`; they are told apart on
-the closing `>`, so a real link is never skipped as a placeholder.
+A CommonMark angle destination `[x](<a path.md>)` is a real link and is resolved,
+**spaces and all**: it is read to its closing `>`, the one Markdown spelling in
+which a destination may hold a space. An adopter marker only *opens* with `<`, as
+in `<id>.md`; they are told apart on the closing `>`, so a real link is never
+skipped as a placeholder — and a target that opens `<` and never closes it is an
+angle destination cut short, kept whole, which fails `L1` with the whole cut text:
+never `L8`, and never the silent skip it used to be. A `%20` is decoded once, so
+`[x](Design%20Notes/target.md)`, what a forge writes for a space, resolves; a
+failure to resolve a decoded path reports both spellings. Blanks padding a
+destination, `[x]( target.md )`, are
+trimmed, where the old cut left nothing and the link vanished. A bare destination
+holding a space or a tab with no title after it is `L8`: not a link on the forge,
+so not one here. So if your repository has a `docs/Design Notes/` or an
+`RFC 001/`, every link into it that the forge follows is checked. All of this is
+[#78](https://github.com/pharzam/armature/issues/78); limits 7 and 8 below are
+what it left.
 
 ## Why A19 was removed, and what replaced it
 
@@ -141,12 +155,15 @@ change excluded the repository root from the walk.
    unchanged from `agents-lint`'s A19, which matched `/*` the same way, so this is
    a limit carried over rather than introduced — recorded here because it was
    never written down there.
-5. **A line beginning `[word]: text` is read as a reference definition**, and its
-   first word is resolved as a target. So a description-list line such as
-   `[TODO]: revisit this later` reports a broken link to `revisit`. That is what
-   CommonMark does with the same line, so the linter is not wrong — but it is
-   surprising, and the direction is safe: it fails loudly rather than passing
-   silently.
+5. **A line beginning `[word]: text` is read as a reference definition.** When one
+   word follows the colon it is resolved as a target, so `[TODO]: fixme` reports a
+   broken link to `fixme`. When more than one follows, as in
+   `[TODO]: revisit this later`, the line reports `L8` — not a link — with the
+   remedy made conditional, because the author may well have meant prose. An
+   earlier form of this entry said CommonMark reads that line as a definition. It
+   does not: the spec (§4.7, example 209) allows nothing after the destination and
+   its optional title, so the line is a paragraph on the forge, which is what `L8`
+   says. Loud either way, and the direction is safe.
 6. **The link extractor now exists in two places and nothing keeps them in step.**
    `adr-lint.sh`'s `links_to_record()` reads the same three destination forms this
    file does, the same way, to decide whether a record has an inbound link
@@ -160,31 +177,84 @@ change excluded the repository root from the walk.
    broken here and resolved there
    ([#76](https://github.com/pharzam/armature/issues/76)). Both are fixed, both
    **by hand, with no mechanism** — the same shape as limit 1, and the reason
-   ADR-0007 recorded that one rather than leaving it to be found.
-7. **Three of the four destination forms drop a link to a path containing a
-   space, and the CommonMark angle form does it *silently*.** The `](…)`,
-   reference-definition and angle branches cut a destination at the first space
-   or tab, so `[a](<dir with space/target.md>)` — a legal link — is cut to
-   `<dir`, which `is_placeholder()` then reads as an adopter `<…>` marker and
-   skips. The **raw HTML** branch is the exception: `href="[^"]*"` captures the
-   whole quoted value, so `<a href="dir with space/target.md">` resolves
-   correctly. Measured, not assumed. No error, nothing resolved, and the reader is not told — the direction a
-   bug should never point. Limit 3 is the only other silent one, and it is silent
-   *locally*: CI is a case-sensitive filesystem and rejects there. This one is
-   silent everywhere.
-   An unbracketed `[c](dir with space/target.md)` fails `L1` on `dir`, which is
-   *correct* — CommonMark stops at the space too. Reachable since
-   [#76](https://github.com/pharzam/armature/issues/76) put two spaced fixture
-   directories in the tree; no document links into one today, so nothing is
-   currently missed. Recorded rather than fixed, by decision on that issue.
-8. **A percent-encoded space is not decoded, so a correct link reports as broken.**
-   `[b](dir%20with%20space/target.md)` is what a forge writes and what GitHub
-   resolves; this linter looks for a file literally named `dir%20with%20space`,
-   does not find one, and fails `L1`. Loud rather than silent, and the mirror of
-   limit 7. Between them, exactly **one** spelling of a spaced path both resolves
-   here and works on the forge: the raw HTML anchor. An earlier draft of this
-   entry said none did, which was wrong — it reasoned from the three Markdown
-   branches and never measured the fourth.
+   ADR-0007 recorded that one rather than leaving it to be found. One divergence
+   is **deliberate, and written on both sides**
+   ([#78](https://github.com/pharzam/armature/issues/78)): this linter decodes
+   `%20` and `adr-lint` does not. `links_to_record()` compares **basenames**
+   only, and `adr-lint`'s filename rule forbids a space in a record's name, so an
+   encoded space can only sit in the directory part that comparison drops.
+   Measured: `[x](dir%20with%20space/0001-x.md)` counted there before the change
+   and counts after. The angle form, a padded destination, and a bare destination
+   followed by anything but a title — not a link, so it names no record either;
+   `[x](adr/0001-x.md junk)` counted there until the first review round found the
+   two apart on it — are read the same way in both, kept in step by hand, as before.
+7. **An angle destination that holds a `)` is cut at that `)`.** CommonMark
+   (example 492) reads `[a](<b)c>)` as a link to `b)c`; both extractors end a
+   destination at the first `)`, so `[e](<Design (draft)/target.md>)` is read as
+   `<Design (draft`. Before
+   [#78](https://github.com/pharzam/armature/issues/78) every spaced angle
+   destination was cut that way, at its first blank, and the cut text
+   passed as an adopter marker — the link vanished **in silence**, the one silent
+   false green among the spaced forms and the defect that issue was opened for. The
+   cut now happens only on a `)`, and what it leaves is kept whole and fails `L1`
+   with the whole cut text — `links <Design (draft, but that path does not exist`;
+   `adr-lint` reads it as no link, a loud false orphan. The `L8` remedy wraps that
+   whole text rather than trying to split a title out of it: a split truncated a
+   destination holding ` (`, and the truncation resolved **silently**. What the
+   simpler remedy does was then measured input by input at `56d4f06`: take the `L8`
+   advice, write it back into the file, run `link-lint` again, and render the
+   followed line with `pandoc 3.8.2.1 --from commonmark --to html`. The inputs below
+   are grouped by the character the target carries, which is a way to read the list
+   rather than a claim that the list is finished.
+
+   | The target carries | Inputs | `link-lint` on the followed line | pandoc on the followed line |
+   |---|---|---|---|
+   | a `<`, and no `>` | `a <b.md`, `Design Notes/a<b.md`, `a b<` | `OK  2 links resolved`, exit 0 | the text as written, escaped |
+   | a `>` | `a>b c.md`, `a b>`; and the truncation sub-case, a blank or a tab after the `>`: `target.md> a/b.md`, `docs> adr/0001.md` | `OK  2 links resolved`, exit 0 — the truncation pair reads back as `target.md` and as the directory `docs` | the text as written, carrying a raw `<a>` or `<docs>` tag where the wrapped target reads as one |
+   | a backslash escape | `a\.b c.md`, inline | `OK  2 links resolved`, exit 0, on the literal path | `<a href="a.b c.md">` — a link to a different path |
+   | a backslash escape | `a\.b c.md`, by reference definition | `OK  2 links resolved`, exit 0, on the literal path | nothing — see below |
+
+   **The two forms are listed apart because the backslash row is where they part.**
+   Every other row was run both ways and gave the same result; that one does not.
+   Written inline, `[x](<a\.b c.md>)` renders `<p><a href="a.b c.md">x</a></p>` — a
+   link to a path the author did not write. Written as `[lbl]: <a\.b c.md>` it
+   renders **no element at all**: the advice makes it a *valid* link reference
+   definition, and a definition nothing references renders nothing. Measured at
+   `a74e2ef` with a control link present, the inline output is 63 bytes and the
+   reference-definition output is 31 — the control alone. Neither form is a link to
+   the path as written, and they fail differently, which is why one cell cannot
+   hold both.
+
+   The second resolved link in each run is a control that exists, so the count reads 2
+   rather than 1, and the truncation rows need `target.md` and a `docs/` directory in
+   the tree rather than the literal destination. Removing the target says which path
+   each `>` row resolved. `[x](<target.md> a/b.md>)` gives
+   `FAIL  L1: <file>:<line> links target.md, but that path does not exist` — two
+   spaces after `FAIL`, and the file and line the run prints, which the earlier
+   quote dropped — and
+   `[lbl]: <docs> adr/0001.md>` names `docs`, shorter than the line names:
+   that is the `>`-then-junk read at `link-lint.sh:252`, and it belongs to
+   [#97](https://github.com/pharzam/armature/issues/97), whose body names all three
+   groups. `[x](<a>b c.md>)` gives `links a>b c.md` and `[x](<a b>>)` gives `links a b>`,
+   the path as written, so that read did not run on them; what those two turn on is the
+   spelling the advice produces — `L8` echoes the target back unescaped, and
+   CommonMark forbids an unescaped `>` inside an angle destination. Measured in
+   [#98](https://github.com/pharzam/armature/issues/98) round 1, routed off this
+   change's path, and owned by
+   [#97](https://github.com/pharzam/armature/issues/97) as its seventh gap. A full `)`-aware
+   parse was rejected there: about fourteen lines per branch, it must still exempt
+   the `<id>.md` marker, and no link in the tree needs it.
+
+8. **Only `%20` is decoded.** Any other percent-encoding — `%2F`, `%C3%A9`, `%23` —
+   is looked up as written and fails `L1` loudly, quoting what the author wrote.
+   General decoding was rejected on
+   [#78](https://github.com/pharzam/armature/issues/78): a decoded `%23` becomes
+   the `#` the fragment split reads and cuts a filename in half, and a byte above
+   127 decodes to one byte on this awk and to a multibyte character on a UTF-8
+   `gawk`, so a non-ASCII filename would resolve on one machine and not another.
+   When a decode did change the path, a failure to resolve it prints both
+   spellings — `links Design%20Notes/x.md, decoded to Design Notes/x.md` — so the
+   author sees the text they wrote and the path that was looked up.
 9. **The file list is the third thing written in two places and kept in step by
    hand.** This linter and `audit-record-lint.sh` (block 2b) list the repository's
    files the same way — what git tracks plus what it does not ignore, read
@@ -206,6 +276,20 @@ The [discipline-test runner](../tests/run-discipline-tests.sh) compares **exit
 codes only**, so a bad case that started failing for a different reason would
 still look green there. [`tests/expect-check.sh`](tests/expect-check.sh) closes
 that for this suite, and fails if it finds no case to check.
+
+Of the eleven cases [#78](https://github.com/pharzam/armature/issues/78) added, the
+runner sees eight: five `good*` cases that exited 1 before their fix and two
+`bad-*` cases that exited 0, plus `bad-angle-cut-destination`, which was never red
+on its own and goes red only when `is_placeholder()` is loosened — measured by
+mutation, as were the two angle-with-title cases, which are the only ones that
+reach the clause ending an angle destination at its `>`. It cannot see the other
+three: `bad-bare-spaced-destination` and `bad-bare-spaced-definition`, which exit 1
+for `L1` without the fix and for `L8` with it, and `bad-angle-cut-definition`, which
+exits 1 either way — only this script tells those apart.
+That is the pitfall
+[`guardrails.md`](../guardrails.md#gate-pitfalls-kit-wide--keep-these) names, a
+harness that compares only exit codes, and why that issue's close-out pastes this
+script's output beside the runner's.
 
 It is a script rather than a copy-paste loop, but it is **not yet a gate** — it is
 not wired into the runner. Backlog task `T-9c5t` ([#37](https://github.com/pharzam/armature/issues/37))
@@ -229,7 +313,18 @@ owns generalizing `EXPECT` across every suite; this suite is ready for it.
 | `bad-absolute-target` | FAIL `L7`, exit 1 | an absolute target, which resolves for any file at the repository root and so passes silently |
 | `bad-entry-point-dead-link` | FAIL `L1`, exit 1 | the **redundancy test** — a dead link in a root `AGENTS.md`, locking the coverage that `agents-lint`'s A19 used to provide |
 | `bad-collapsed-reference` | FAIL `L6`, exit 1 | the collapsed `[x][]` form, whose empty second bracket makes a naive reader drop it |
-| `bad-definition-trailing-link` | FAIL `L1`, exit 1 | a broken link *after* a reference definition on the same line |
+| `bad-definition-trailing-link` | FAIL `L1`, exit 1 | a broken link *after* a reference definition on the same line. Since [#78](https://github.com/pharzam/armature/issues/78) the same line also draws `L8`: `[note]: target.md and see also …` is not a definition, because CommonMark allows nothing after the destination and its title, so the label defines nothing. Its `EXPECT` stays `L1`, which the trailing link still reports |
+| `good-angle-spaced-destination` | `link-lint: OK`, exit 0 | the CommonMark angle form into a directory whose name holds a space, `[x](<Design Notes/target.md>)` — the spelling that was skipped in silence |
+| `good-percent-encoded-space` | `link-lint: OK`, exit 0 | the same path written `Design%20Notes/target.md`, decoded once before it is resolved |
+| `bad-angle-spaced-dead` | FAIL `L1`, exit 1 | a dead target behind an angle destination with a space — the case that tells a correct spaced link from a broken one, which nothing could before |
+| `bad-bare-spaced-destination` | FAIL `L8`, exit 1 | `[x](Design Notes/target.md)`, a bare destination with a space, which is not a link. The runner cannot see this case; see above |
+| `bad-padded-destination` | FAIL `L1`, exit 1 | `[x]( does-not-exist.md )`, blanks padding a dead destination, which the old cut reduced to nothing and dropped in silence |
+| `good-placeholder-spaced-definition` | `link-lint: OK`, exit 0 | `[runner]: ‹the test runner›/run.sh`, a definition whose target is an adopter marker holding a blank; the first review round found it drawing a false `L6`, because the `L8` rule had dropped the label before the placeholder test could speak |
+| `good-angle-spaced-title` | `link-lint: OK`, exit 0 | `[x](<Design Notes/target.md> "The target")`, the angle form with a title after it, the case's only link. The `>` is what lets the title follow; remove the inline branch's angle clause and the whole text is kept, skipped as a marker, and the case trips `L5` |
+| `good-angle-spaced-definition` | `link-lint: OK`, exit 0 | the same, reached through a reference definition; remove the definition branch's angle clause and it trips `L5` |
+| `bad-angle-cut-destination` | FAIL `L1`, exit 1 | `[x](<Design Notes/target.md)`, an angle destination with no closing `>`, kept whole and reported; loosen `is_placeholder()` back to "opens with `<`" and it passes in silence |
+| `bad-bare-spaced-definition` | FAIL `L8`, exit 1 | `[lbl]: Design Notes/target.md` and a use of `[lbl]`: `L8` on the line and `L6` on the use, both true. The runner cannot see this case; see above |
+| `bad-angle-cut-definition` | FAIL `L1`, exit 1 | `[lbl]: <Design Notes/target.md`, an angle destination in a reference definition with no closing `>`. The definition branch keeps it whole and fails `L1` with the whole text; without that clause the line is `L8` with a `<<…>` remedy and its use a false `L6`. The runner cannot see it — it exits 1 either way — so only `expect-check.sh` tells the two apart. |
 
 Each `bad-*` case is otherwise valid, so it fails for its own single reason.
 

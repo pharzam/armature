@@ -121,24 +121,31 @@ nl='
 #      directory of THAT. Move it to docs/architecture/adr/ and the space
 #      narrows to docs/architecture/, so every record warns. Loud, and no
 #      adopter has to keep the layout -- but nothing tells them, so it is here.
-#  10. A destination containing a SPACE is not read as naming the record --
-#      EXCEPT in the raw HTML form. The reference-definition and `](` branches
-#      cut at the first space or tab, so a link into one of this tree's spaced
-#      fixture directories, or any spaced path an adopter has, reads as no link
-#      and the record draws a false orphan WARN. `href="[^"]*"` captures the
-#      whole quoted value, so a raw HTML anchor into a spaced directory DOES
-#      count as an inbound link. Measured on three ADR trees identical but for
-#      the link form: inline gives a false orphan, raw HTML gives none, and no
-#      link at all gives the same WARN as inline.
-#
-#      This is links/README.md's limit 7, and it reaches this function for the
-#      same reason limits 4, 5 and 6 do: the same reading of the same forms.
-#      Listed because limit 6 in that file exists precisely to stop these two
-#      extractors drifting, and a limit recorded on one side only IS the drift.
-#      An earlier draft of both entries said "both extractors cut at the first
-#      space" without qualification -- recorded wrongly on BOTH sides, which is
-#      the failure limit 6 describes, arrived at by reasoning rather than
-#      measuring.
+#  10. A destination containing a SPACE names the record only where CommonMark
+#      reads a link: the angle form `<dir with space/0001-x.md>`, read to its
+#      closing `>` since #78; and the raw HTML form, whose quoted value was
+#      always captured whole. A bare destination holding a space names no
+#      record, with or without a title: measured, `[x](adr/dir with
+#      space/0001-x.md "t")` is NOT counted, because the destination is cut at
+#      its first blank before any comparison. Before #78 the `](` and definition
+#      branches cut the angle form at the first blank and the record drew a
+#      false orphan WARN; measured on five
+#      ADR trees identical but for the link form, and re-measured after. A bare
+#      destination followed by anything else -- `[x](adr/0001-x.md junk)` -- is
+#      not a link on the forge; link-lint reports it as L8, and since #78's
+#      first review round it names nothing here either, where before it counted.
+#      A `%20` is NOT decoded here, deliberately: names() compares BASENAMES,
+#      and the filename check below forbids a space in a record's name, so an
+#      encoded space can only sit in the directory part the comparison drops.
+#      Measured: `[x](dir%20with%20space/0001-x.md)` counted before #78 and
+#      counts after. link-lint decodes it because it resolves the whole path.
+#      That is a reasoned asymmetry between the two extractors, written on both
+#      sides (links/README.md limit 6), because a limit recorded on one side
+#      only IS the drift that entry describes. An earlier draft of both entries
+#      said "both extractors cut at the first space" without qualification --
+#      wrong on BOTH sides, arrived at by reasoning rather than measuring. What
+#      remains: an angle destination holding a `)` is cut at that `)` in both
+#      scripts (links/README.md limit 7), and here reads as no link.
 #
 # Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
 # forms. The sharing is BY HAND, though, not by construction -- the fence and
@@ -201,7 +208,7 @@ links_to_record() {
 				#
 				# NO FIXTURE COVERS THIS ONE, and it is not for want of trying.
 				# Delete this line and the whole suite still reports
-				# `104 passed, 0 failed`. Two things compound to make it
+				# `114 passed, 0 failed`. Two things compound to make it
 				# unreachable:
 				#
 				#   1. What it serves is the no-orphan WARNING, which is
@@ -234,7 +241,10 @@ links_to_record() {
 				if (match(line, /^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*[^ \t]+/)) {
 					tgt = line
 					sub(/^[ ]?[ ]?[ ]?\[[^]]+\][ \t]*:[ \t]*/, "", tgt)
-					sub(/[ \t].*$/, "", tgt)
+					sub(/[ \t]+$/, "", tgt)
+					if (tgt ~ /^<[^>]*>([ \t]|$)/) sub(/>.*$/, ">", tgt)
+					else if (tgt ~ /[ \t]/ && tgt !~ /^[^ \t]+[ \t]+[\042\047(]/) tgt = ""
+					else sub(/[ \t].*$/, "", tgt)
 					if (names(tgt)) { found = 1; close(f); exit }
 					# a definition line can carry a trailing link
 					line = substr(line, RSTART + RLENGTH)
@@ -249,7 +259,17 @@ links_to_record() {
 					e = index(rest, ")")
 					if (e == 0) break
 					t = substr(rest, 1, e - 1)
-					sub(/[ \t].*$/, "", t)
+					# a CommonMark angle destination runs to its closing `>`, blanks
+					# and all, and that `>` ends it: `<id>.md` is a marker, not this
+					# form. A bare one ends at the first blank, where a title may
+					# follow; followed by anything else it is not a link on the
+					# forge (link-lint L8) and names nothing here. It used to count:
+					# `[x](adr/0001-x.md junk)` was the drift #78 round 1 found.
+					# Padding blanks are trimmed first, as link-lint does.
+					sub(/^[ \t]+/, "", t); sub(/[ \t]+$/, "", t)
+					if (t ~ /^<[^>]*>([ \t]|$)/) sub(/>.*$/, ">", t)
+					else if (t ~ /[ \t]/ && t !~ /^[^ \t]+[ \t]+[\042\047(]/) { rest = substr(rest, e + 1); continue }
+					else sub(/[ \t].*$/, "", t)
 					if (names(t)) { found = 1; close(f); exit }
 					rest = substr(rest, e + 1)
 				}
