@@ -273,12 +273,14 @@ protocol that bounds the rounds is
   an unapproved overrun blocks a merge whether or not anything else is open. **Once** counts per issue, so a successor
   issue starts with an approval of its own; nothing forbids that, and what the
   rule relies on is that the successor's plan review sets its maximum with the
-  carried size already measured — a discipline, not a mechanism. Whether an approval may name a
-  **ceiling**, and how far one reaches past the figure it was given, is not
-  decided: three review rounds produced three rules for it and each was falsified
-  by the next, so it is
-  [#99](https://github.com/pharzam/armature/issues/99)'s. Until that lands, an
-  approval is one number on one issue.
+  carried size already measured — a discipline, not a mechanism. An approval is **one number, named once,
+  and it is the figure at landing** — the reviewed head plus the close-out line.
+  It reaches that figure and no further: there is no **ceiling**, no multiple and
+  no kind of growth an approval covers in advance. Three review rounds wrote three
+  such reaches and a later round falsified each, so
+  [#99](https://github.com/pharzam/armature/issues/99) decided the reach does not
+  exist. Growth past the figure is absorbed, routed to a child issue where the
+  finding is non-material, or ends at the cap in a split.
 
 ### Who may review
 
