@@ -264,7 +264,10 @@ lint_file() {
 				# goes out as NOTDEF with its label, because a target that is an
 				# adopter marker holding a blank still defines it, and that is
 				# decided in the shell, where is_placeholder() lives
-				if (tgt ~ /^<[^>]*>([ \t]|$)/) sub(/>.*$/, ">", tgt)
+				if (match(tgt, /^<([^\\>]|\\.)*>([ \t]|$)/)) {
+					match(tgt, /^<([^\\>]|\\.)*>/)
+					tgt = substr(tgt, 1, RLENGTH)
+				}
 				else if (tgt ~ /^</) { }
 				else if (tgt ~ /[ \t]/ && tgt !~ /^[^ \t]+[ \t]+[\042\047(]/) { printf "%d\tNOTDEF\t%s\t%s\n", FNR, tolower(lbl), tgt; tgt = "" }
 				else sub(/[ \t].*$/, "", tgt)
@@ -292,7 +295,7 @@ lint_file() {
 				# is kept WHOLE, so L1 shows the whole cut text rather than L8
 				# advising `<<...>`. A bare one ends at the first blank, where only
 				# a title may follow
-				if (t ~ /^<[^>]*>/) {
+				if (t ~ /^<([^\\>]|\\.)*>/) {
 					# An angle destination ends at its `>`. CommonMark allows only
 					# whitespace and a title after it, so anything else means the
 					# line is NOT a link -- and reading the part before the `>` as
@@ -301,13 +304,18 @@ lint_file() {
 					# which used to reach is_placeholder() and be skipped, and
 					# `<a b> junk`, which used to truncate to `a b` and resolve.
 					tail = t
-					sub(/^<[^>]*>[ \t]*/, "", tail)
+					sub(/^<([^\\>]|\\.)*>[ \t]*/, "", tail)
 					if (tail != "" && tail !~ /^[\042\047(]/) {
 						printf "%d\tANGLEJUNK\t%s\n", FNR, t
 						rest = substr(rest, e + 1)
 						continue
 					}
-					sub(/>.*$/, ">", t)
+					# keep the destination up to its first UNESCAPED `>`. Cutting at
+					# the first `>` of any kind truncated `<a\>b c.md>` to `<a\>`.
+					# match()+substr() rather than sub() with a backreference:
+					# POSIX awk has no \1, and using one silently substituted the
+					# literal text `\1` for the path -- measured.
+					if (match(t, /^<([^\\>]|\\.)*>/)) t = substr(t, 1, RLENGTH)
 				}
 				else if (t ~ /^</) { }
 				else if (t ~ /[ \t]/ && t !~ /^[^ \t]+[ \t]+[\042\047(]/) {
@@ -448,7 +456,13 @@ lint_file() {
 			[ "$_kind" = NOTDEF ] && _target=${_target#*	}
 			is_placeholder "$_target" && { IFS=$nl; continue; }
 			n_links=$((n_links + 1))
-			err L8 "$_rel:$_lineno has a bare destination holding a space or a tab, $_target, which CommonMark does not read as a link, so the forge shows the text as written. If a link was meant, write it as <$_target> or percent-encode the blanks; if prose was meant, nothing needs to change"
+			# The advice has to ESCAPE the angle characters. CommonMark forbids an
+			# unescaped `<` or `>` inside an angle destination, so the old advice
+			# -- `<$_target>` verbatim -- produced something that is not a link for
+			# any target holding either. Measured on #114 with pandoc: bare failed
+			# all four such inputs, escaped passed all four.
+			_advice=$(printf '%s' "$_target" | sed -e 's/</\\</g' -e 's/>/\\>/g')
+			err L8 "$_rel:$_lineno has a bare destination holding a space or a tab, $_target, which CommonMark does not read as a link, so the forge shows the text as written. If a link was meant, write it as <$_advice> or percent-encode the blanks; if prose was meant, nothing needs to change"
 			IFS=$nl; continue
 		fi
 
@@ -458,6 +472,19 @@ lint_file() {
 		# a CommonMark angle destination — strip the wrapper, keep the path
 		case $_target in
 		'<'*'>') _target=${_target#<}; _target=${_target%>} ;;
+		esac
+
+		# CommonMark applies a backslash escape inside a destination, so `a\>b.md`
+		# names the file `a>b.md`. Without this the linter looked for a path with a
+		# literal backslash in it and reported the correct spelling as broken --
+		# measured on #114: `[x](<a \<b.md>)` gave `links a \<b.md`, which no tree
+		# holds. Only the two angle characters are unescaped here: they are the
+		# ones an angle destination has to escape, and a general unescape would
+		# also eat a backslash that is part of a Windows-style path.
+		case $_target in
+		*'\<'*|*'\>'*)
+			_target=$(printf '%s' "$_target" | sed -e 's/\\</</g' -e 's/\\>/>/g')
+			;;
 		esac
 
 		# a percent-encoded space is what a forge writes for a spaced path and
