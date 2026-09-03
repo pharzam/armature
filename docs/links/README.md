@@ -192,24 +192,41 @@ change excluded the repository root from the walk.
    are grouped by the character the target carries, which is a way to read the list
    rather than a claim that the list is finished.
 
-   | The target carries | Inputs, inline and by reference definition | `link-lint` on the followed line | pandoc on the followed line |
+   | The target carries | Inputs | `link-lint` on the followed line | pandoc on the followed line |
    |---|---|---|---|
    | a `<`, and no `>` | `a <b.md`, `Design Notes/a<b.md`, `a b<` | `OK  2 links resolved`, exit 0 | the text as written, escaped |
    | a `>` | `a>b c.md`, `a b>`; and the truncation sub-case, a blank or a tab after the `>`: `target.md> a/b.md`, `docs> adr/0001.md` | `OK  2 links resolved`, exit 0 — the truncation pair reads back as `target.md` and as the directory `docs` | the text as written, carrying a raw `<a>` or `<docs>` tag where the wrapped target reads as one |
-   | a backslash escape | `a\.b c.md` | `OK  2 links resolved`, exit 0, on the literal path | `<a href="a.b c.md">` — a link to a different path |
+   | a backslash escape | `a\.b c.md`, inline | `OK  2 links resolved`, exit 0, on the literal path | `<a href="a.b c.md">` — a link to a different path |
+   | a backslash escape | `a\.b c.md`, by reference definition | `OK  2 links resolved`, exit 0, on the literal path | nothing — see below |
+
+   **The two forms are listed apart because the backslash row is where they part.**
+   Every other row was run both ways and gave the same result; that one does not.
+   Written inline, `[x](<a\.b c.md>)` renders `<p><a href="a.b c.md">x</a></p>` — a
+   link to a path the author did not write. Written as `[lbl]: <a\.b c.md>` it
+   renders **no element at all**: the advice makes it a *valid* link reference
+   definition, and a definition nothing references renders nothing. Measured at
+   `a74e2ef` with a control link present, the inline output is 63 bytes and the
+   reference-definition output is 31 — the control alone. Neither form is a link to
+   the path as written, and they fail differently, which is why one cell cannot
+   hold both.
 
    The second resolved link in each run is a control that exists, so the count reads 2
    rather than 1, and the truncation rows need `target.md` and a `docs/` directory in
    the tree rather than the literal destination. Removing the target says which path
-   each `>` row resolved. `[x](<target.md> a/b.md>)` gives `FAIL L1: links target.md`
-   and `[lbl]: <docs> adr/0001.md>` gives `links docs`, shorter than the line names:
+   each `>` row resolved. `[x](<target.md> a/b.md>)` gives
+   `FAIL  L1: <file>:<line> links target.md, but that path does not exist` — two
+   spaces after `FAIL`, and the file and line the run prints, which the earlier
+   quote dropped — and
+   `[lbl]: <docs> adr/0001.md>` names `docs`, shorter than the line names:
    that is the `>`-then-junk read at `link-lint.sh:252`, and it belongs to
    [#97](https://github.com/pharzam/armature/issues/97), whose body names all three
    groups. `[x](<a>b c.md>)` gives `links a>b c.md` and `[x](<a b>>)` gives `links a b>`,
    the path as written, so that read did not run on them; what those two turn on is the
-   spelling the advice produces, measured in round 1 of
-   [#98](https://github.com/pharzam/armature/issues/98) and routed off this change's
-   path. A full `)`-aware
+   spelling the advice produces — `L8` echoes the target back unescaped, and
+   CommonMark forbids an unescaped `>` inside an angle destination. Measured in
+   [#98](https://github.com/pharzam/armature/issues/98) round 1, routed off this
+   change's path, and owned by
+   [#97](https://github.com/pharzam/armature/issues/97) as its seventh gap. A full `)`-aware
    parse was rejected there: about fourteen lines per branch, it must still exempt
    the `<id>.md` marker, and no link in the tree needs it.
 

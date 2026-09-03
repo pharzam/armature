@@ -342,16 +342,17 @@ lint_file() {
 		# a b "t", but that path does not exist -- loud, on a path the author did
 		# not mean. `[x](target.md> a/b.md)`, with target.md in the tree, is advised
 		# `<target.md> a/b.md>`; the extractor ends an angle destination at its
-		# first `>` when a blank follows, so the advice reads back as target.md and
-		# RESOLVES, exit 0, on a line CommonMark shows as text. That hole is the
-		# extractor's rather than the remedy's, and it is #97's. docs/links/README.md
-		# limit 7 lists the inputs grouped by the character the target carries -- a
-		# `<`, a `>`, a backslash escape, truncation being the `>` sub-case where a
-		# blank follows -- and records which path each `>` row resolved. The three
-		# other inputs named here are not in that table; their runs are on #98. Two
-		# of them: `[x](<id>.md x)` draws neither L8 nor L1, because is_placeholder()
-		# skips it -- `OK  1 links resolved` beside one control link, exit 0; and
-		# `[lbl]: <Design Notes/target.md` fails L1 with the whole cut text.
+		# first `>` when a blank or a tab follows, so the advice reads back as
+		# target.md and RESOLVES, exit 0, on a line CommonMark shows as text. That
+		# hole is the extractor's rather than the remedy's, and it is #97's.
+		# docs/links/README.md limit 7 lists the inputs grouped by the character the
+		# target carries -- a `<`, a `>`, a backslash escape, truncation being the
+		# `>` sub-case where a blank or a tab follows -- and records which path each
+		# `>` row resolved. Two inputs named in THIS comment are not in that table,
+		# and their runs are on #98: `[x](<id>.md x)` draws neither L8 nor L1,
+		# because is_placeholder() skips it -- `OK  1 links resolved` beside one
+		# control link, exit 0; and `[lbl]: <Design Notes/target.md` fails L1 with
+		# the whole cut text.
 		if [ "$_kind" = NOTLINK ] || [ "$_kind" = NOTDEF ]; then
 			[ "$_kind" = NOTDEF ] && _target=${_target#*	}
 			is_placeholder "$_target" && { IFS=$nl; continue; }
