@@ -130,8 +130,13 @@ function has(s, v) { return index(s, v) > 0 }
 	# The separator between "Review record" and the number is the ADR-s em dash;
 	# accept any run of non-digits so a hyphen typed by hand is not a false red.
 	line = $0
-	if (match(line, /[0-9]+[ \t]*$/) == 0) { err("RR3", "a review record heading names no round number: " line); next }
-	round_no = substr(line, RSTART, RLENGTH) + 0
+	# The number FOLLOWS the word "round"; real headings carry context after it,
+	# e.g. "round 1 (PR A), lens: ...". Taking the last number on the line reads
+	# that context instead, so anchor on the word.
+	if (match(line, /[Rr]ound[^0-9]*[0-9]+/) == 0) { err("RR3", "a review record heading names no round number: " line); next }
+	seg = substr(line, RSTART, RLENGTH)
+	match(seg, /[0-9]+/)
+	round_no = substr(seg, RSTART, RLENGTH) + 0
 	in_rec = 1; nrec++
 	rec_created[nrec] = c_created
 	rec_round[nrec] = round_no
