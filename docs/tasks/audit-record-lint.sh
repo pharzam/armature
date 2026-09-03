@@ -419,6 +419,23 @@ if [ -n "$repo_root" ]; then
 		}
 		# The patterns are STRINGS, not /regex/ literals: a regex literal passed as
 		# a function argument is matched against $0 first and arrives as 0 or 1.
+		#
+		# Only a table row under `## Findings`, and #112 MEASURED what that costs
+		# before deciding to keep it. In docs/tasks/T-3v9q.md, 84 citations sit in
+		# Findings rows and 35 do not -- 29% of them, in `## Verdict`,
+		# `## Corrections to the reports`, `## What neither report found` and five
+		# other sections. None of those is bounds-checked.
+		#
+		# Widening was tried and reverted. The first thing it caught was
+		# `LICENSE:99999` at T-3v9q.md:682, which that row QUOTES as an example of
+		# a citation the check used to miss. An audit record quotes bad citations
+		# as evidence -- that is what an audit record is -- so a whole-record
+		# harvest turns the record red for describing the defect it records. The
+		# narrow scope had a reason and the run proved it.
+		#
+		# What would make widening safe is citations that mark themselves as
+		# quoted rather than claimed, which is a convention change and not this
+		# rule to make. Recorded on #112 rather than invented here.
 		/^## / { sec = ($0 ~ /^## Findings/) ? 1 : 0 }
 		sec && /^[ \t]*\|/ {
 			harvest("[A-Za-z0-9_./-]+\\.(md|sh|ya?ml|json|toml|txt):[0-9]+")
@@ -573,6 +590,46 @@ EOF
 		# citation legitimately points at prose. `#` at the start of a Markdown
 		# line is a heading, not a comment, which is why the suffix is checked.
 		case $p in
+		# A Markdown citation may legitimately point at prose, so the COMMENT half
+		# of this rule stays shell-only -- `#` opens a heading in Markdown, not a
+		# comment. But a BLANK line is never prose worth citing, in any language.
+		#
+		# Measured before widening: docs/tasks/T-3v9q.md:279 cites `README.md:67`
+		# for the words "not a fork" and `:81` for "no fork relationship". Line 67
+		# is blank and line 81 is a code fence; the text moved to 75 and 89. That
+		# row sits in a Findings table and WAS harvested -- block 2b passed it
+		# because README.md has 108 lines, so the cited line exists. A bounds check
+		# cannot see a citation that slid onto the wrong line of a file long enough
+		# to hold it. This is what saw it.
+		*.md)
+			# Real record only, and for the same reason the shell half gives: a
+			# fixture cites illustratively. So this half has no fixture of its
+			# own either. It was verified against the THREE real citations it
+			# found stale when it was written -- engineering-discipline.md:116,
+			# :188 and :291, all blank, all corrected in the same change.
+			[ "$is_fixture" -eq 1 ] && continue
+			# A cited basename can name several files -- this tree holds seven
+			# README.md. Block 2b passes when ANY candidate is long enough, and
+			# this must be as permissive or it invents drift: firing on the first
+			# candidate that happens to be blank at that line gave 33 findings,
+			# nearly all of them a different README than the one meant. So it
+			# fires only when EVERY candidate is blank there, which is the same
+			# any-candidate-may-be-the-one reading, inverted correctly.
+			all_blank=1
+			any_cand=0
+			while IFS= read -r f; do
+				[ -n "$f" ] || continue
+				[ -f "$repo_root/$f" ] || continue
+				any_cand=1
+				cited=$(text "$repo_root/$f" | awk -v n="$ln" 'NR == n { print; exit }')
+				trimmed=$(printf '%s' "$cited" | sed 's/^[ 	]*//')
+				[ -n "$trimmed" ] && { all_blank=0; break; }
+			done <<EOF
+$cands
+EOF
+			[ "$any_cand" -eq 1 ] && [ "$all_blank" -eq 1 ] \
+				&& err "citation $c points at a BLANK line in every file it can name -- the text it names has moved (DoD 2)"
+			;;
 		*.sh)
 			# Real record only. A fixture's citations are illustrative (see the
 			# note beside is_fixture), so holding them to the real tree's line
