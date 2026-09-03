@@ -88,6 +88,30 @@ success without having done its job.
   [make the checks required](ci/README.md#make-the-checks-required) on the
   default branch, and take the branch API read as the evidence — not the green run.
 
+- ❌ **A check the change supplies is not a control.** CI checks out the pull
+  request's own head and then runs the check from that checkout, so **the script
+  that judges the change comes from the change**. Measured on
+  [#84](https://github.com/pharzam/armature/issues/84): a branch that replaces
+  `docs/links/link-lint.sh` with `exit 0` passes that job — and replacing
+  `docs/tests/run-discipline-tests.sh` as well turns **every** required job green
+  over a dead link in the tree. Gutting a linter alone does not, because the
+  fixture harness asserts exit codes and 19 `bad-*` cases stop failing; the runner
+  is the single point.
+  **The trap inside the remedy:** each script roots its scan at its own directory
+  (`dirname $0`), so running the default branch's copy *where it sits* lints the
+  wrong tree and reports OK. That was measured too, while building the fix.
+  **The check:** every job in [`ci.yml`](../.github/workflows/ci.yml) restores the
+  check scripts from the default branch **in place** before running them, so the
+  branch's copy is never the judge.
+  **Bound on the damage, and it is not nil:** a `pull_request` event runs the
+  workflow as the branch has it, so a branch that edits `ci.yml` removes the
+  restore step — closed only by review of `.github/**`, which wants a `CODEOWNERS`
+  entry and a second human the forge knows about. Restoring also stops a bypass,
+  not a merge: once a weakened check lands it *is* the default branch's copy. And
+  a change that *improves* a check is judged by the older copy, so it lands in two
+  steps. These checks are a control against forgetting, not against an operator
+  who edits the check.
+
 ### Testing pitfalls (kit-wide — keep these)
 
 These traps are not domain-specific: they hurt every project's test suite, so the
