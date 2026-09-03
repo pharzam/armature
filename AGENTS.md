@@ -73,7 +73,7 @@ file.
 - **R9** — [Test freeze after confirmation](docs/issue-workflow.md#r9--test-freeze-after-confirmation): once a fresh context confirms them, a later failure opens a bug sub-issue (written rule)
 - **R10** — [Sync with governance](docs/issue-workflow.md#r10--sync-with-governance): keep this file and the governance documents in step; a conflict stops work (written rule)
 - **R11** — [Single-goal issues](docs/issue-workflow.md#r11--single-goal-issues): one issue is one actionable, demoable goal at a limited scale (written rule)
-- **R12** — [Slice and prioritize](docs/issue-workflow.md#r12--slice-and-prioritize): an ordered, DoD-covering plan, the test slice first, reviewed once on the issue (written rule)
+- **R12** — [Slice and prioritize](docs/issue-workflow.md#r12--slice-and-prioritize): an ordered, DoD-covering plan, the test slice first, reviewed once on the issue
 
 ## Checks you can run
 
@@ -93,8 +93,9 @@ sh docs/tests/run-discipline-tests.sh
 git diff --check
 ```
 
-[`docs/ci/pr-link-lint.sh`](docs/ci/pr-link-lint.sh) reads a pull-request body, so
-it runs in CI only and has no local run. Armature has no product test suite and no
+[`docs/ci/pr-link-lint.sh`](docs/ci/pr-link-lint.sh) and
+[`docs/ci/review-record-lint.sh`](docs/ci/review-record-lint.sh) read forge
+artifacts, so they run in CI only and have no local run. Armature has no product test suite and no
 product toolchain: never invent a build, lint or test command for it.
 
 ## Branches, worktrees, commits, and pull requests
