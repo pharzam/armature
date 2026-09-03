@@ -57,6 +57,18 @@ Then replace every `‹…›` marker with your stack's command, and
 | PR link | The PR body links an issue (R1), via [`pr-link-lint.sh`](pr-link-lint.sh). Its own PR-event workflow (GitHub); an `mr-link` job (GitLab). | Ready as-is — but its workflow copy is optional; skip the copy and [drop `pr-link` with it](#drop-what-you-did-not-install). |
 | Review record | The linked issue carries a plan, a plan review with its budget and cycle cap, and a parseable review record per round whose chronology holds ([ADR-0008](../adr/0008-stop-the-gate-on-a-frozen-head.md#6-the-review-record)), via [`review-record-lint.sh`](review-record-lint.sh). Its own PR-event workflow ([`github-actions-review-record.yml`](github-actions-review-record.yml)). **Make this one required last** — it fails a pull request whose issue carries no record, so turning it on before your team writes records blocks every merge. |
 
+**Every job restores its check scripts from the default branch before running
+them** ([#84](https://github.com/pharzam/armature/issues/84)). Without that, a pull
+request that replaces a linter with `exit 0` passes that linter's own required
+check — and replacing `run-discipline-tests.sh` as well turns the whole required
+set green over a real defect. Both were measured. The limit that remains is that
+the workflow file itself comes from the pull request, so a branch that edits
+`ci.yml` removes the step; only review of `.github/**` closes that, and
+[`docs/guardrails.md`](../guardrails.md) states all three residual limits. An
+adopter with two human operators should add a `CODEOWNERS` entry over
+`.github/**`, `.githooks/**` and `*-lint.sh` as well; a one-operator repository
+cannot, which is why it is not shipped on by default.
+
 Delete any job your project does not need. If you add a discipline test that lints
 files in the repo — as the [PRD linter](../prd/prd-lint.sh) does — wire it into
 both a CI job and the [`pre-commit`](../../.githooks/pre-commit) hook, the way
