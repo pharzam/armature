@@ -216,12 +216,12 @@ protocol that bounds the rounds is
 [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head):
 
 - **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
-  the next round names it. So does the close-out bookkeeping — the task line
-  arriving in the completed log, which gate step 8 requires of the landing pull
-  request and which cannot exist before the rounds finish. The exception covers
-  that bookkeeping alone; where the same commit also corrects a claim, that
-  correction is a fix and is named as one. The close-out records which of the two
-  the commit carried, and that no round read it.
+  the next round names it. The close-out bookkeeping lands as a head no round
+  names — the task line arriving in the completed log, which gate step 8
+  requires of the landing pull request and which cannot exist before the rounds
+  finish. The exception covers that bookkeeping alone; where the same commit
+  also corrects a claim, that correction is a fix and is named as one. The
+  close-out records which of the two it carried, and that no round read it.
 - **The last round carries the verdict.** The round that ends the work runs on a
   frozen head that no fix followed. Its verdict is `nothing material in scope`
   when nothing material in scope remains, and `not mergeable, findings recorded`

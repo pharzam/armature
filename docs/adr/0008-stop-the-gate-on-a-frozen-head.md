@@ -192,9 +192,11 @@ file's length would have caught.
   a tip the branch does not contain renders the default branch's own commits as
   deletions of this branch: this record's own branch at `76073a8` read 637 over 10
   files against the tip it contained, and 1236 over 19 against the tip it did not.
-  Merging the default branch in never lowers the number, and where a fresh
-  measurement comes out below the last recorded, the last stands. Rejected: "the
-  merge-base", which moves every time the branch takes the default branch.
+  Merging the default branch in **can** lower the number: the base moves forward
+  with it, so work the branch did that `main` has since done independently stops
+  counting as the branch's. Where a fresh measurement comes out below the last
+  recorded, the last stands. Rejected: "the merge-base", which moves every time
+  the branch takes the default branch.
 - **Baseline**: the plan's estimate. **Maximum**: set in the plan-review
   confirmation.
 - **Overrun**: a finding reported on the issue, never a revision of the number.
