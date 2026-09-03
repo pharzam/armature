@@ -133,7 +133,7 @@ function has(s, v) { return index(s, v) > 0 }
 	# The number FOLLOWS the word "round"; real headings carry context after it,
 	# e.g. "round 1 (PR A), lens: ...". Taking the last number on the line reads
 	# that context instead, so anchor on the word.
-	if (match(line, /[Rr]ound[^0-9]*[0-9]+/) == 0) { err("RR3", "a review record heading names no round number: " line); next }
+	if (match(line, /[Rr]ound[ \t#]*[0-9]+/) == 0) { err("RR3", "a review record heading names no round number: " line); next }
 	seg = substr(line, RSTART, RLENGTH)
 	match(seg, /[0-9]+/)
 	round_no = substr(seg, RSTART, RLENGTH) + 0
@@ -241,9 +241,11 @@ END {
 			err("RR5", "round " rec_round[i] " `Commit reviewed` holds no 7-to-40 character hexadecimal SHA: " s)
 
 		cy = ""
-		if (rec_cycle[i] != "" && match(rec_cycle[i], /[0-9]+/) > 0)
+		if (rec_cycle[i] ~ /(^|[^0-9])-[0-9]/)
+			err("RR6", "round " rec_round[i] " `Cycle` is negative; a cycle counts from 0: " rec_cycle[i])
+		else if (rec_cycle[i] != "" && match(rec_cycle[i], /[0-9]+/) > 0)
 			cy = substr(rec_cycle[i], RSTART, RLENGTH)
-		if (rec_cycle[i] != "" && cy == "")
+		else if (rec_cycle[i] != "")
 			err("RR6", "round " rec_round[i] " `Cycle` holds no non-negative integer: " rec_cycle[i])
 
 		# RR7 — round numbers contiguous from 1, cycles contiguous from 0.
@@ -286,7 +288,10 @@ END {
 
 	if (edited > 0)
 		note(edited " comment(s) edited after posting; ADR-0008 section 5 asks for a new comment rather than an edit")
-	printf "review-record-lint: OK  %d comments; %d round(s); cap %s\n", ncomment, nrec, (pr_cap == "" ? "-" : pr_cap)
+	# Print the cap this check PARSED, not the prose it came from: the summary is
+	# where a reader confirms the cap assertion was live, and echoing the raw text
+	# hides whether a number was found in it at all.
+	printf "review-record-lint: OK  %d comments; %d round(s); cap %s\n", ncomment, nrec, (cap < 0 ? "not declared" : cap)
 	exit 0
 }
 '

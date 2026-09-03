@@ -47,7 +47,7 @@ jobs:
             | grep -Eoi '(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed)|refs?|part of)[[:space:]]+#[0-9]+' \
             | head -1 | grep -Eo '[0-9]+' || true)
           if [ -z "$n" ]; then
-            echo "FAIL  review-record: the PR body links no issue number; pr-link.yml owns that failure." >&2
+            echo "FAIL  review-record: the PR body links no plain #N issue reference this step can read. A URL or owner/repo#N form satisfies R1 and pr-link.yml but is not read here." >&2
             exit 1
           fi
           echo "number=$n" >> "$GITHUB_OUTPUT"
