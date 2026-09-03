@@ -1,17 +1,18 @@
 # Completed
 
-Append-only log of finished tasks, most recent first. A task reaches this log
-whether or not it ever had a line in [backlog.md](backlog.md).
+Append-only log of finished tasks, backlog-listed or not, most recent first.
 
 ## How to keep this file readable
 
 **One line per task — keep it that way.** When a task in [backlog.md](backlog.md)
-is done, move its line here unchanged except for a leading completion date; when
-a task never had a backlog line, write the entry in the same shape:
+is done, move its line here unchanged except for a leading completion date:
 `**YYYY-MM-DD** — **<ID>** — <summary> (<links>)`. Any detail worth keeping — the
 design, the bugs caught, the verification story — lives in `tasks/<id>.md`, linked
 as `[detail](<id>.md)`; it does **not** go inline here. This is a dated index, not
 a changelog narrative. The git history and commit messages hold the blow-by-blow.
+
+**A task that never had a backlog line** has no line to move: write its entry
+here directly, in the shape above.
 
 ## Log
 
