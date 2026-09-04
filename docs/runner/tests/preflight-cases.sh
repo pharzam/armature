@@ -135,8 +135,13 @@ echo 'seed' > "$t/repo/seed.txt"
 git -C "$t/repo" add -A >/dev/null 2>&1
 git -C "$t/repo" commit -q -m 'seed' >/dev/null 2>&1 || {
 	printf 'FAIL  could not commit in the template repository\n' >&2; exit 1; }
-git -C "$t/repo" remote add origin "$base/remote/origin.git"
-git -C "$t/repo" push -q origin HEAD:refs/heads/main >/dev/null 2>&1 || {
+# Two remotes, because they answer two different questions and a real clone answers
+# them with one URL that this suite cannot have. `origin` supplies the FORGE HOST,
+# so it carries an https URL and is never fetched. `local` supplies FETCHABILITY,
+# so it is the bare repository beside us and keeps the suite off the network.
+git -C "$t/repo" remote add origin 'https://forge.invalid/demo/repo.git'
+git -C "$t/repo" remote add local "$base/remote/origin.git"
+git -C "$t/repo" push -q local HEAD:refs/heads/main >/dev/null 2>&1 || {
 	printf 'FAIL  could not publish main to the bare remote\n' >&2; exit 1; }
 
 # A second remote that never answers, for the timeout cases. `ext::` runs a helper
@@ -151,7 +156,7 @@ git -C "$t/repo" config core.hooksPath .githooks
 git -C "$t/repo" config armature.forgeCli forge-stub
 git -C "$t/repo" config armature.forgeScopes 'repo workflow'
 git -C "$t/repo" config armature.worktreeDir .worktree
-git -C "$t/repo" config armature.baseRef origin/main
+git -C "$t/repo" config armature.baseRef local/main
 git -C "$t/repo" config armature.preflightTimeout 2
 
 # The stub forge tool. It answers `auth status` the way the real tools do — a
@@ -190,6 +195,17 @@ chmod +x "$t/bin/forge-stub"
 	printf "  - Token scopes: 'repo', 'workflow'\n"
 } > "$t/forge-state"
 
+# block HOST ACTIVE SCOPES — one account block in the shape the real tools print.
+# Used by the multi-account cases below so their shape is stated once.
+block() {
+	printf '%s\n' "$1"
+	printf '  * Logged in to %s account demo (keyring)\n' "$1"
+	[ "$2" = active ] && printf '  - Active account: true\n'
+	printf '  - Token: @TOKEN@\n'
+	printf "  - Token scopes: %s\n" "$3"
+	printf '\n'
+}
+
 # --- the cases -------------------------------------------------------------
 
 # run_case NAME WANT_STATUS EXPECT_CODE
@@ -210,74 +226,56 @@ run_case() {
 	bad-credential)        sed 's/^authed=1/authed=0/' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
 	bad-scope-revoked)     sed "s/'repo', 'workflow'/'workflow'/" "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
 	bad-scope-union)
-		# Two accounts, the active one holding `repo` and the other `workflow`.
-		# Neither holds both; only their union does. This is #80's shape.
+		# Two accounts on ONE host, the active one holding `repo` and the other
+		# `workflow`. Neither holds both; only their union does. This is #80's
+		# shape, and the defect round 1 measured passing.
 		{
 			printf 'authed=1\nhang=0\naccounts\n'
-			printf 'forge.invalid\n'
-			printf '  * Logged in to forge.invalid account work (keyring)\n'
-			printf '  - Active account: true\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'gist', 'read:org', 'repo'\n"
-			printf '\n'
-			printf '  * Logged in to forge.invalid account personal (keyring)\n'
-			printf '  - Active account: false\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'read:org', 'workflow'\n"
+			block forge.invalid active   "'gist', 'read:org', 'repo'"
+			block forge.invalid inactive "'read:org', 'workflow'"
 		} > "$_w/forge-state" ;;
 	bad-account-ambiguous)
-		# Several accounts, none marked active, and they DISAGREE about the
-		# scopes. The script must refuse: with nothing marking a winner and the
-		# sets unequal, picking one is the guess #80 punished.
+		# Two accounts on the TARGET host and neither marked active. Nothing
+		# names a winner, so the script must refuse rather than pick.
 		{
 			printf 'authed=1\nhang=0\naccounts\n'
-			printf 'forge.invalid\n'
-			printf '  * Logged in to forge.invalid account work (keyring)\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'repo', 'workflow'\n"
-			printf '\n'
-			printf '  * Logged in to other.invalid account personal (keyring)\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'repo'\n"
+			block forge.invalid inactive "'repo', 'workflow'"
+			block forge.invalid inactive "'repo'"
 		} > "$_w/forge-state" ;;
-	good-two-hosts-both-active)
-		# `gh` marks one account active PER HOST, so a user logged in to two hosts
-		# has TWO active accounts and neither is wrong. Round 2 measured the
-		# previous "exactly one active" rule refusing this valid setup, claiming
-		# "marks none of them active" when both were, and offering `auth switch`,
-		# which moves the active account within a host and can never reduce the
-		# count. Both accounts hold every wanted scope, so nothing can harm the run.
+	good-enterprise-other-host-short)
+		# The shape round 2 measured being falsely refused. Two hosts, both with an
+		# active account — which is what `gh` prints, because it marks one active
+		# PER HOST. The target host holds every wanted scope; an unrelated
+		# enterprise host holds fewer, as enterprise tokens routinely do. Nothing
+		# about that other host can harm a run against this one, so this must PASS.
 		{
 			printf 'authed=1\nhang=0\naccounts\n'
-			printf 'github.invalid\n'
-			printf '  * Logged in to github.invalid account work (keyring)\n'
-			printf '  - Active account: true\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'repo', 'workflow'\n"
-			printf '\n'
-			printf 'enterprise.invalid\n'
-			printf '  * Logged in to enterprise.invalid account work (keyring)\n'
-			printf '  - Active account: true\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'gist', 'repo', 'workflow'\n"
+			block forge.invalid active "'repo', 'workflow'"
+			block enterprise.invalid active "'repo'"
 		} > "$_w/forge-state" ;;
-	bad-two-hosts-one-short)
-		# The same two-host shape, but the second active account lacks `workflow`.
-		# The pre-flight cannot tell which host the run will target, so it refuses
-		# and says so — erring toward refusal, which is the direction #80 argues.
+	bad-target-host-short)
+		# The mirror image: the OTHER host is fully scoped and the target host is
+		# short. The run would use the short one, so this must refuse — and name
+		# the host, so the operator fixes the right account.
 		{
 			printf 'authed=1\nhang=0\naccounts\n'
-			printf 'github.invalid\n'
-			printf '  * Logged in to github.invalid account work (keyring)\n'
-			printf '  - Active account: true\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'repo', 'workflow'\n"
-			printf '\n'
-			printf 'enterprise.invalid\n'
-			printf '  * Logged in to enterprise.invalid account work (keyring)\n'
-			printf '  - Active account: true\n'
-			printf '  - Token: @TOKEN@\n'
-			printf "  - Token scopes: 'repo'\n"
+			block forge.invalid active "'repo'"
+			block enterprise.invalid active "'repo', 'workflow'"
+		} > "$_w/forge-state" ;;
+	bad-no-account-for-host)
+		# Authenticated, correctly scoped — but to a forge the run does not use.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			block enterprise.invalid active "'repo', 'workflow'"
+		} > "$_w/forge-state" ;;
+	bad-origin-hostless)
+		# origin points at a local path, so no block can be matched to it. With
+		# several accounts reported the script must say that rather than guess.
+		git -C "$_r" remote set-url origin "$_w/plain.git"
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			block forge.invalid active "'repo', 'workflow'"
+			block enterprise.invalid active "'repo', 'workflow'"
 		} > "$_w/forge-state" ;;
 	bad-no-scope-line)     sed '/Token scopes:/d' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
 	bad-forge-hangs)       sed 's/^hang=0/hang=1/' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
@@ -285,7 +283,7 @@ run_case() {
 	bad-worktree-unwritable) chmod 500 "$_r/.worktree" ;;
 	bad-worktree-not-a-dir) rmdir "$_r/.worktree"; echo 'a regular file' > "$_r/.worktree" ;;
 	bad-worktree-occupied) mkdir -p "$_r/.worktree/$TASK"; echo x > "$_r/.worktree/$TASK/in-progress" ;;
-	bad-base-unfetchable)  git -C "$_r" config armature.baseRef origin/no-such-branch ;;
+	bad-base-unfetchable)  git -C "$_r" config armature.baseRef local/no-such-branch ;;
 	bad-base-hangs)        git -C "$_r" config armature.baseRef blackhole/main ;;
 	bad-hookspath-unset)   git -C "$_r" config --unset core.hooksPath ;;
 	bad-hookspath-outside) mkdir -p "$_w/foreign"; git -C "$_r" config core.hooksPath "$_w/foreign" ;;
@@ -355,9 +353,11 @@ run_case bad-scopes-unset        1 forge-scopes-unset
 run_case bad-credential          1 forge-no-credential
 run_case bad-forge-hangs         1 forge-auth-timeout
 run_case bad-no-scope-line       1 forge-no-scope-line
-run_case bad-account-ambiguous   1 forge-missing-scope
-run_case good-two-hosts-both-active 0 'preflight: OK'
-run_case bad-two-hosts-one-short 1 forge-missing-scope
+run_case bad-account-ambiguous   1 forge-ambiguous-account
+run_case good-enterprise-other-host-short 0 'preflight: OK'
+run_case bad-target-host-short   1 forge-missing-scope
+run_case bad-no-account-for-host 1 forge-no-account-for-host
+run_case bad-origin-hostless     1 forge-host-unknown
 run_case bad-scope-union         1 forge-missing-scope
 run_case bad-scope-revoked       1 forge-missing-scope
 run_case bad-base-unfetchable    1 base-ref-unfetchable

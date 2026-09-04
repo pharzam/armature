@@ -90,21 +90,26 @@ The configured tool must answer `auth status`:
 - where more than one account is reported, the ones in play are marked
   **`Active account: true`**.
 
-`gh` marks one account active **per host** — *"Each host section will indicate the
-active account, which will be used when targeting that host"* — so a user logged in
-to two hosts has **two** active accounts and neither is wrong. The pre-flight
-therefore requires **every** candidate account to hold every scope, and never merges
-their scope sets. Candidates are the accounts marked active, or all of them when the
-tool marks none.
+**The host is the selector, not activeness.** `gh` marks one account active **per
+host** — *"Each host section will indicate the active account, which will be used
+when targeting that host"* — so a two-host login has **two** active accounts and
+neither is wrong. The pre-flight matches the account block whose host is the host of
+**`origin`'s URL**, because that is where a run pushes and opens its pull request.
+`armature.baseRef` may name a different remote; it answers a different question,
+whether the base branch can be fetched.
 
-**LIMIT, stated rather than implied.** This does not resolve which host the run will
-target, so with several active accounts it demands the scopes of all of them, and can
-refuse a setup whose targeted account is in fact fine. It errs toward refusing, which
-is the direction #80 argues for, and the refusal says which scope and how many
-accounts were weighed. An earlier version required *exactly one* active account: it
-refused a valid two-host setup, told the operator "marks none of them active" when
-both were, and offered `auth switch`, which moves the active account within a host
-and can never reduce the count.
+Within that host: one account is used; several with one marked active uses the active
+one; several with none marked active is refused (`forge-ambiguous-account`) rather
+than guessed. No account for that host is `forge-no-account-for-host`. An `origin`
+whose URL names no host — a local path — is `forge-host-unknown` when more than one
+account is reported. **Scope sets are never merged across accounts.**
+
+Two rules were tried and measured wrong before this one, both by keying on
+activeness rather than host: *exactly one active* refused every valid two-host setup
+and told the operator "marks none of them active" when both were; *every active
+account holds every scope* then refused a perfectly good run against `github.com`
+because an unrelated enterprise token carried fewer scopes. Enterprise tokens
+routinely differ, and nothing about another host can harm this run.
 
 **Which tools meet it, measured rather than assumed.** `gh` does. **`glab` does
 not** — its binary carries neither string (`strings $(command -v glab) | grep -ci
