@@ -226,8 +226,9 @@ run_case() {
 			printf "  - Token scopes: 'read:org', 'workflow'\n"
 		} > "$_w/forge-state" ;;
 	bad-account-ambiguous)
-		# Several accounts and none marked active: the script must refuse rather
-		# than pick one, because picking wrong is what #80 cost.
+		# Several accounts, none marked active, and they DISAGREE about the
+		# scopes. The script must refuse: with nothing marking a winner and the
+		# sets unequal, picking one is the guess #80 punished.
 		{
 			printf 'authed=1\nhang=0\naccounts\n'
 			printf 'forge.invalid\n'
@@ -237,7 +238,46 @@ run_case() {
 			printf '\n'
 			printf '  * Logged in to other.invalid account personal (keyring)\n'
 			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo'\n"
+		} > "$_w/forge-state" ;;
+	good-two-hosts-both-active)
+		# `gh` marks one account active PER HOST, so a user logged in to two hosts
+		# has TWO active accounts and neither is wrong. Round 2 measured the
+		# previous "exactly one active" rule refusing this valid setup, claiming
+		# "marks none of them active" when both were, and offering `auth switch`,
+		# which moves the active account within a host and can never reduce the
+		# count. Both accounts hold every wanted scope, so nothing can harm the run.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'github.invalid\n'
+			printf '  * Logged in to github.invalid account work (keyring)\n'
+			printf '  - Active account: true\n'
+			printf '  - Token: @TOKEN@\n'
 			printf "  - Token scopes: 'repo', 'workflow'\n"
+			printf '\n'
+			printf 'enterprise.invalid\n'
+			printf '  * Logged in to enterprise.invalid account work (keyring)\n'
+			printf '  - Active account: true\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'gist', 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
+	bad-two-hosts-one-short)
+		# The same two-host shape, but the second active account lacks `workflow`.
+		# The pre-flight cannot tell which host the run will target, so it refuses
+		# and says so — erring toward refusal, which is the direction #80 argues.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'github.invalid\n'
+			printf '  * Logged in to github.invalid account work (keyring)\n'
+			printf '  - Active account: true\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+			printf '\n'
+			printf 'enterprise.invalid\n'
+			printf '  * Logged in to enterprise.invalid account work (keyring)\n'
+			printf '  - Active account: true\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo'\n"
 		} > "$_w/forge-state" ;;
 	bad-no-scope-line)     sed '/Token scopes:/d' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
 	bad-forge-hangs)       sed 's/^hang=0/hang=1/' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
@@ -315,7 +355,9 @@ run_case bad-scopes-unset        1 forge-scopes-unset
 run_case bad-credential          1 forge-no-credential
 run_case bad-forge-hangs         1 forge-auth-timeout
 run_case bad-no-scope-line       1 forge-no-scope-line
-run_case bad-account-ambiguous   1 forge-ambiguous-account
+run_case bad-account-ambiguous   1 forge-missing-scope
+run_case good-two-hosts-both-active 0 'preflight: OK'
+run_case bad-two-hosts-one-short 1 forge-missing-scope
 run_case bad-scope-union         1 forge-missing-scope
 run_case bad-scope-revoked       1 forge-missing-scope
 run_case bad-base-unfetchable    1 base-ref-unfetchable

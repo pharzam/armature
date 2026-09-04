@@ -40,11 +40,12 @@
 # that the output is read from standard output and standard error together, because
 # forge tools disagree about which one it goes to between versions.
 #
-# ONE ACCOUNT'S SCOPES, NEVER THE UNION. Round 1 measured the first version taking
-# a work account's `repo` and a personal account's `workflow` as though one token
-# held both — #80's shape, passed by the check written to catch it. Scopes come from
-# the block marked the active account; with several and none marked active the
-# script REFUSES rather than guess.
+# NEVER THE UNION OF SEVERAL ACCOUNTS. Round 1 measured the first version taking a
+# work account's `repo` and a personal account's `workflow` as though one token held
+# both — #80's shape, passed by the check written to catch it. Round 2 then measured
+# the first fix refusing a valid two-host `gh` setup, because `gh` marks one account
+# active PER HOST. Every candidate account must now hold every scope, and their sets
+# are never merged; the README states the limit that leaves.
 #
 # Usage:  sh docs/runner/preflight.sh TASK [ROOT]
 #   TASK  the task ID whose worktree the run will take, for example T-heh3
@@ -255,7 +256,10 @@ auth_st=$?
 	|| refuse forge-no-credential "$forge reports no authenticated account" \
 	          "$forge auth login"
 
-# One account's scopes, never the union of several. See the header.
+# EVERY CANDIDATE ACCOUNT'S SCOPES, never the union of several. See the header.
+# One line per candidate, so the shell can require each of them separately; the
+# union that round 1 caught was one SET built from several accounts, and that
+# cannot happen when the sets never merge.
 scopes_read=$(awk '
 	/[Ll]ogged in to/              { active = 0 }
 	/[Aa]ctive account:[ \t]*true/ { active = 1 }
@@ -265,38 +269,65 @@ scopes_read=$(awk '
 		gsub(/[\047"]/, "", line)
 		gsub(/,/, " ", line)
 		n++
-		if (n == 1) first = line
-		if (active) { na++; chosen = line }
+		all[n] = line
+		if (active) { na++; act[na] = line }
 	}
 	END {
-		if (n == 0)  { print "none";                exit }
-		if (n == 1)  { print "ok " first;           exit }
-		if (na == 1) { print "ok " chosen;          exit }
-		print "ambiguous " n
+		if (n == 0) { print "none"; exit }
+		# Candidates are the ACTIVE blocks, or every block when the tool marks
+		# none — never a merge of the two.
+		if (na > 0) { print "ok " na; for (i = 1; i <= na; i++) print act[i] }
+		else        { print "ok " n;  for (i = 1; i <= n;  i++) print all[i] }
 	}' < "$rb_out")
 
-case $scopes_read in
-	none)
-		refuse forge-no-scope-line "$forge answered auth status but reported no \`Token scopes:\` line" \
-		       "check that $forge is a supported forge tool; see docs/runner/README.md" ;;
-	ambiguous*)
-		refuse forge-ambiguous-account "$forge reports ${scopes_read#ambiguous } accounts and marks none of them active, so the scopes the run would use cannot be told apart" \
-		       "select one account, for example: $forge auth switch" ;;
-esac
-scopes_have=${scopes_read#ok }
+if [ "$scopes_read" = none ]; then
+	refuse forge-no-scope-line "$forge answered auth status but reported no \`Token scopes:\` line" \
+	       "check that $forge is a supported forge tool; see docs/runner/README.md"
+fi
+ncand=$(printf '%s\n' "$scopes_read" | sed -n '1s/^ok //p')
+cand=$(printf '%s\n' "$scopes_read" | sed '1d')
 
-for want in $scopes_want; do
-	found=0
-	for have in $scopes_have; do
-		[ "$want" = "$have" ] && { found=1; break; }
+# Each candidate must hold every wanted scope, and the sets are never merged.
+#
+# `gh` marks one account active PER HOST — "Each host section will indicate the
+# active account, which will be used when targeting that host" — so a user logged
+# in to two hosts has two active accounts and neither is wrong. Requiring exactly
+# one active refused that valid setup, said "marks none of them active" when both
+# were, and offered `auth switch`, which moves the active account WITHIN a host and
+# can never reduce the count. Requiring every candidate instead accepts it whenever
+# the run cannot be harmed, and refuses only when the accounts genuinely disagree.
+#
+# LIMIT, stated rather than implied: this does not resolve WHICH host the run will
+# target, so where several accounts are active it demands the scopes of all of them.
+# That can refuse a setup whose targeted account is fine. It errs toward refusing,
+# which is the direction #80 argues for, and the message says which scope and how
+# many accounts were weighed.
+nl='
+'
+_oifs=$IFS
+IFS=$nl
+# The fix names the scope, not a subcommand: `auth refresh` is gh's spelling and
+# glab has no such command, so printing it at every tool would be an invented
+# command — the thing this kit forbids.
+for have_line in $cand; do
+	IFS=$_oifs
+	for want in $scopes_want; do
+		found=0
+		for have in $have_line; do
+			[ "$want" = "$have" ] && { found=1; break; }
+		done
+		if [ "$found" -ne 1 ]; then
+			if [ "$ncand" -gt 1 ]; then
+				refuse forge-missing-scope "one of the $ncand active forge accounts is missing scope: $want — the pre-flight cannot tell which one the run will use, so it requires every one of them" \
+				       "grant $want to that account (with gh: gh auth refresh -s $want)"
+			fi
+			refuse forge-missing-scope "the forge credential is missing scope: $want" \
+			       "grant $want to the credential (with gh: gh auth refresh -s $want)"
+		fi
 	done
-	# The fix names the scope, not a subcommand: `auth refresh` is gh's spelling and
-	# glab has no such command, so printing it at every tool would be an invented
-	# command — the thing this kit forbids.
-	[ "$found" -eq 1 ] \
-		|| refuse forge-missing-scope "the forge credential is missing scope: $want" \
-		          "grant $want to the credential (with gh: gh auth refresh -s $want)"
+	IFS=$nl
 done
+IFS=$_oifs
 
 # --- 4. the base branch is fetchable (the one fetch) -----------------------
 base_ref=$(cfg armature.baseRef)
