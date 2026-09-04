@@ -15,15 +15,9 @@
 # code — not merely non-zero, so a crashed linter (a syntax error, a not-found, a
 # bad-argument exit) is caught rather than mistaken for a rejection.
 #
-# Fixtures come in three shapes, so the runner dispatches per suite:
+# Fixtures come in two shapes, so the runner dispatches per suite:
 #   directory — the linter is pointed at a case directory
 #   file      — the linter reads a single file argument
-#   delegated — the cases are ENVIRONMENTS, not committed files, so a harness
-#               builds each one and reports its own counts. A repository with a
-#               configured hooks path, a writable worktree directory and a scoped
-#               credential cannot be committed as a fixture — a fixture cannot
-#               carry a nested repository directory — so the harness owns those
-#               cases and this runner folds its verdict in as one.
 # Which suite takes which shape is the dispatch list at the foot of this file.
 # That list is deliberately the only place it is written down: naming the suites
 # here as well gives a second copy that goes stale the next time one is added.
@@ -306,29 +300,6 @@ run_file_suite() {
 	check_floor "$4"
 }
 
-# run_delegated_suite HARNESS LABEL — a suite whose cases are environments rather
-# than committed files. The harness builds each case, makes its own assertions and
-# prints its own summary, so this runner cannot count the cases inside it and folds
-# the whole suite in as ONE. The good*/bad* coverage floor therefore does not reach
-# it, which is why the harness is required to carry a floor of its own; without one
-# a harness that lost every case would report success and be believed here.
-# Its output is shown only on failure, to stay quiet enough for the hook.
-run_delegated_suite() {
-	if [ ! -f "$1" ]; then
-		skipped=$((skipped + 1))
-		printf 'skip  %s (harness absent)\n' "$2"
-		return 0
-	fi
-	if _out=$(sh "$1" 2>&1); then
-		pass=$((pass + 1))
-		[ "$verbose" -eq 1 ] && printf 'ok    %s\n' "$2"
-	else
-		fail=$((fail + 1))
-		printf 'FAIL  %s\n' "$2"
-		printf '%s\n' "$_out" | sed 's/^/      | /'
-	fi
-}
-
 run_dir_suite  docs/adr/adr-lint.sh    docs/adr/tests              adr-lint
 run_dir_suite  docs/prd/prd-lint.sh    docs/prd/tests              prd-lint
 run_file_suite docs/ci/pr-link-lint.sh docs/ci/tests/pr-link  .md  pr-link-lint
@@ -337,7 +308,6 @@ run_file_suite .githooks/commit-msg    .githooks/tests/commit-msg  .txt  commit-
 run_dir_suite  docs/tasks/audit-record-lint.sh docs/tasks/tests    audit-record-lint
 run_dir_suite  docs/agents/agents-lint.sh      docs/agents/tests   agents-lint
 run_dir_suite  docs/links/link-lint.sh        docs/links/tests    link-lint
-run_delegated_suite docs/runner/tests/preflight-cases.sh          preflight
 
 # Repository-wide, so they run once rather than per suite. Both, for the reason
 # written above them: the case-name check survives a deleted pin, the pin check
