@@ -85,10 +85,23 @@ nothing to refuse on. The full selection with its rejected alternatives is on
 
 The configured tool must answer `auth status`:
 
-- a **non-zero exit** means no authenticated account;
+- a **non-zero exit** is treated as no usable credential — but see the measured
+  limit below, because the exit code alone is not trustworthy in either direction;
 - a **`Token scopes:` line** lists the scopes held;
 - where more than one account is reported, the ones in play are marked
   **`Active account: true`**.
+
+**The exit code is not trustworthy on its own, measured in both directions.**
+`glab auth status` exits **1** while the host you use is fully authenticated, because
+an *unrelated* second GitLab instance failed. And `gh auth status` exits **0** with an
+invalid `GH_TOKEN` marked active — printing the failure as `Failed to log in to …`,
+which is not the `Logged in to` shape a block starts with, and carrying no scopes
+line while a working but **inactive** account below it does. Reading that inactive
+account's scopes was a false *pass*: the pre-flight said `OK` over a credential that
+would fail at the push, in exactly the environment it exists for, since GitHub
+Actions and most agent harnesses set `GH_TOKEN`. So an account marked active that
+reports no scopes is refused (`forge-active-account-broken`) rather than skipped, and
+the scope check — not the exit code — is what catches it.
 
 **The host is the selector, not activeness.** `gh` marks one account active **per
 host** — *"Each host section will indicate the active account, which will be used

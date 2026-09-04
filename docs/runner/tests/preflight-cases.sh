@@ -262,6 +262,30 @@ run_case() {
 			block forge.invalid active "'repo'"
 			block enterprise.invalid active "'repo', 'workflow'"
 		} > "$_w/forge-state" ;;
+	bad-active-account-broken)
+		# The real shape `gh` prints when GH_TOKEN holds an invalid token — which
+		# is the DEFINING condition of an unattended run, since GitHub Actions and
+		# most agent harnesses set it. `gh` marks the env token active and the
+		# working keyring account INACTIVE, and the active block carries no scopes
+		# line because that credential is broken. `auth status` still exits 0.
+		#
+		# Two traps in one: the failure line reads "Failed to log **in to**", which
+		# does not match the "Logged in to" block reset, so the active flag is not
+		# cleared before it is set; and the only scopes line in the transcript
+		# belongs to an account the tool would NOT use. Reading it was a false PASS
+		# — #80's failure produced by the check written to prevent it.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'forge.invalid\n'
+			printf '  X Failed to log in to forge.invalid using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '  - The token in GH_TOKEN is invalid.\n'
+			printf '\n'
+			printf '  * Logged in to forge.invalid account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
 	bad-no-account-for-host)
 		# Authenticated, correctly scoped — but to a forge the run does not use.
 		{
@@ -277,7 +301,17 @@ run_case() {
 			block forge.invalid active "'repo', 'workflow'"
 			block enterprise.invalid active "'repo', 'workflow'"
 		} > "$_w/forge-state" ;;
-	bad-no-scope-line)     sed '/Token scopes:/d' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
+	bad-no-scope-line)
+		# Real `glab`'s shape, measured: it reports a login and a "Token found"
+		# line and never a `Token scopes:` line, and marks no account active. A
+		# tool that cannot answer the scope question must be refused BY NAME
+		# rather than mistaken for a credential missing a scope.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'forge.invalid\n'
+			printf '  * Logged in to forge.invalid as demo (/dev/null/config.yml)\n'
+			printf '  * Token found: ****************\n'
+		} > "$_w/forge-state" ;;
 	bad-forge-hangs)       sed 's/^hang=0/hang=1/' "$_w/forge-state" > "$_w/s" && mv "$_w/s" "$_w/forge-state" ;;
 	bad-worktree-unset)    git -C "$_r" config --unset armature.worktreeDir ;;
 	bad-worktree-unwritable) chmod 500 "$_r/.worktree" ;;
@@ -356,6 +390,7 @@ run_case bad-no-scope-line       1 forge-no-scope-line
 run_case bad-account-ambiguous   1 forge-ambiguous-account
 run_case good-enterprise-other-host-short 0 'preflight: OK'
 run_case bad-target-host-short   1 forge-missing-scope
+run_case bad-active-account-broken 1 forge-active-account-broken
 run_case bad-no-account-for-host 1 forge-no-account-for-host
 run_case bad-origin-hostless     1 forge-host-unknown
 run_case bad-scope-union         1 forge-missing-scope

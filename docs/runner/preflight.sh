@@ -280,17 +280,23 @@ forge_host=$(printf '%s\n' "$origin_url" \
 # what keeps round 1's union closed.
 scopes_read=$(awk -v want_host="$forge_host" '
 	/[Ll]ogged in to/ {
+		# A block marked active that never reached a scopes line is a broken
+		# credential, not an absent one. Detected HERE, at the next block, and
+		# again at END.
+		if (pending) broken = 1
+		pending = 0
 		active = 0
 		host = $0
 		sub(/^.*[Ll]ogged in to[ \t]+/, "", host)
 		sub(/[ \t].*$/, "", host)
 	}
-	/[Aa]ctive account:[ \t]*true/ { active = 1 }
+	/[Aa]ctive account:[ \t]*true/ { active = 1; pending = 1 }
 	/[Tt]oken scopes:/ {
 		line = $0
 		sub(/.*[Tt]oken scopes:[ \t]*/, "", line)
 		gsub(/[\047"]/, "", line)
 		gsub(/,/, " ", line)
+		if (active) pending = 0
 		n++
 		all[n] = line
 		if (want_host != "" && host == want_host) {
@@ -299,6 +305,12 @@ scopes_read=$(awk -v want_host="$forge_host" '
 		}
 	}
 	END {
+		if (pending) broken = 1
+		# Before everything else: an active account with no scopes means the
+		# credential the tool would USE is unusable, and any scopes line found
+		# elsewhere belongs to an account it would NOT use. Reading those would be
+		# a false PASS — the direction that costs a whole build.
+		if (broken) { print "broken"; exit }
 		if (n == 0) { print "none"; exit }
 		if (want_host == "") {
 			# origin names no host, so no block can be matched to it. One
@@ -314,6 +326,9 @@ scopes_read=$(awk -v want_host="$forge_host" '
 	}' < "$rb_out")
 
 case $scopes_read in
+	broken)
+		refuse forge-active-account-broken "the account $forge marks active reports no scopes, so the credential a run would actually use is not usable" \
+		       "repair or unset that credential — an invalid GH_TOKEN produces exactly this; check with: $forge auth status" ;;
 	none)
 		refuse forge-no-scope-line "$forge answered auth status but reported no \`Token scopes:\` line" \
 		       "check that $forge is a supported forge tool; see docs/runner/README.md" ;;
