@@ -316,6 +316,66 @@ run_case() {
 			printf '\n'
 			block enterprise.invalid active "'repo', 'workflow'"
 		} > "$_w/forge-state" ;;
+	bad-broken-overwritten-by-other-host)
+		# Round 3's measured false pass. The TARGET host's block failed and is
+		# active; a second failed block on another host follows, and a working but
+		# INACTIVE account for the target host follows that. Judging an unresolved
+		# block only at the next login line let the second failure overwrite the
+		# first before it was ever looked at, and the run passed on the inactive
+		# account's scopes. Every block boundary must close the block.
+		#
+		# The shape is built so it DISCRIMINATES: the unresolved block belongs to
+		# the target host, but the next section header names another host that is
+		# genuinely logged in. Close the block late and it is attributed to that
+		# other host, is trusted because that host was seen, and the run passes on
+		# the target's inactive account. Close it at the section boundary and it
+		# keeps the host it actually had.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'forge.invalid\n'
+			printf '  X Failed to log in to forge.invalid using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf 'enterprise.invalid\n'
+			printf '  * Logged in to enterprise.invalid account bot (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo'\n"
+			printf 'forge.invalid\n'
+			printf '  * Logged in to forge.invalid account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
+	bad-broken-under-stray-header)
+		# The same false pass reached by a stray line at column 0 that looks like a
+		# host. It becomes the section header, so the failed block is attributed to
+		# a host nothing ever logged in to. A guessed host is trusted only when it
+		# was actually seen on a login line; otherwise the block fails closed.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'notice.invalid\n'
+			printf '  X Failed to log in to forge.invalid using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '\n'
+			printf '  * Logged in to forge.invalid account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
+	bad-installation-token)
+		# What `GH_TOKEN` holds inside GitHub Actions. `gh` prints the scopes line
+		# only for classic and OAuth tokens, so an installation (`ghs_`) or
+		# fine-grained token authenticates, exits 0, and reports NO scopes. Calling
+		# that credential "broken" would be false — it works; its permissions
+		# simply are not OAuth scopes. It gets its own refusal, because the scope
+		# precondition genuinely cannot be checked from `auth status`.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'forge.invalid\n'
+			printf '  * Logged in to forge.invalid account demo (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '  - Token: @TOKEN@\n'
+		} > "$_w/forge-state" ;;
 	bad-no-account-for-host)
 		# Authenticated, correctly scoped — but to a forge the run does not use.
 		{
@@ -423,6 +483,9 @@ run_case bad-target-host-short   1 forge-missing-scope
 run_case bad-active-account-broken 1 forge-active-account-broken
 run_case good-other-host-broken   0 'preflight: OK'
 run_case bad-target-host-broken-no-header 1 forge-active-account-broken
+run_case bad-broken-overwritten-by-other-host 1 forge-active-account-broken
+run_case bad-broken-under-stray-header 1 forge-active-account-broken
+run_case bad-installation-token   1 forge-scopes-unverifiable
 run_case bad-no-account-for-host 1 forge-no-account-for-host
 run_case bad-origin-hostless     1 forge-host-unknown
 run_case bad-scope-union         1 forge-missing-scope

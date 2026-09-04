@@ -284,28 +284,35 @@ scopes_read=$(awk -v want_host="$forge_host" '
 	# to …", which carries no "Logged in to" line, so without the section header
 	# its host is unknowable and the refusal below would be attributed to whatever
 	# block came before it.
+	# close_block — an active block that never reached a scopes line is UNRESOLVED,
+	# and is recorded rather than judged, because judging it needs `seen`, which is
+	# only complete at END. It runs at EVERY block boundary — a section header as
+	# well as a login line. Judging at the login line alone let a later unresolved
+	# block on another host overwrite the target host s own before it was ever
+	# looked at, which round 3 measured as a false pass.
+	function close_block() {
+		if (pending) {
+			np++
+			p_host[np] = host      # certain, from this block s own login line
+			p_sec[np]  = section   # a guess, for a block that has no login line
+		}
+		pending = 0
+	}
 	/^[A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z][A-Za-z]+[ \t]*\r?$/ {
+		close_block()
 		section = $0
 		sub(/[ \t\r]+$/, "", section)
 		host = ""
 	}
 	/[Ll]ogged in to/ {
-		# A block marked active that never reached a scopes line is a broken
-		# credential, not an absent one. Detected HERE, at the next block, and
-		# again at END — and only for the host this run targets.
-		if (pending && (want_host == "" || pending_host == want_host)) broken = 1
-		pending = 0
+		close_block()
 		active = 0
 		host = $0
 		sub(/^.*[Ll]ogged in to[ \t]+/, "", host)
 		sub(/[ \t].*$/, "", host)
+		seen[host] = 1
 	}
-	# Attributed to this block'"'"'s own host — its "Logged in to" host when it has
-	# one, else the section header above it.
-	/[Aa]ctive account:[ \t]*true/ {
-		active = 1; pending = 1
-		pending_host = (host != "" ? host : section)
-	}
+	/[Aa]ctive account:[ \t]*true/ { active = 1; pending = 1 }
 	/[Tt]oken scopes:/ {
 		line = $0
 		sub(/.*[Tt]oken scopes:[ \t]*/, "", line)
@@ -320,12 +327,36 @@ scopes_read=$(awk -v want_host="$forge_host" '
 		}
 	}
 	END {
-		if (pending && (want_host == "" || pending_host == want_host)) broken = 1
-		# Before everything else: an active account with no scopes means the
-		# credential the tool would USE is unusable, and any scopes line found
-		# elsewhere belongs to an account it would NOT use. Reading those would be
-		# a false PASS — the direction that costs a whole build.
-		if (broken) { print "broken"; exit }
+		close_block()
+		# Judge every unresolved active block, now that `seen` is complete.
+		#
+		# A block WITH its own login line has a certain host and is authenticated:
+		# it reported no scopes because its token carries none. `gh` prints the
+		# scopes line only for classic and OAuth tokens, so an installation
+		# (`ghs_`) or fine-grained token lands here — and calling that "broken"
+		# would be false.
+		#
+		# A block with NO login line is a failure block, and its host is a guess
+		# from the section header above it. The guess is trusted ONLY when that
+		# header is a host actually seen on some login line and is not the target.
+		# Anything else fails closed: an unresolved block whose host cannot be
+		# established is treated as the target s, because a wrong guess in the
+		# other direction is a false pass.
+		for (i = 1; i <= np; i++) {
+			if (p_host[i] != "") {
+				if (want_host == "" || p_host[i] == want_host) unverifiable = 1
+			} else {
+				s = p_sec[i]
+				if (want_host == "" || s == "" || !(s in seen) || s == want_host) broken = 1
+			}
+		}
+		# Before everything else, and `broken` before `unverifiable`: an active
+		# account that failed means the credential the tool would USE is unusable,
+		# and any scopes line found elsewhere belongs to an account it would NOT
+		# use. Reading those would be a false PASS — the direction that costs a
+		# whole build.
+		if (broken)      { print "broken";       exit }
+		if (unverifiable) { print "unverifiable"; exit }
 		if (n == 0) { print "none"; exit }
 		if (want_host == "") {
 			# origin names no host, so no block can be matched to it. One
@@ -342,8 +373,11 @@ scopes_read=$(awk -v want_host="$forge_host" '
 
 case $scopes_read in
 	broken)
-		refuse forge-active-account-broken "the account $forge marks active reports no scopes, so the credential a run would actually use is not usable" \
+		refuse forge-active-account-broken "the account $forge marks active for $forge_host failed to authenticate, so the credential a run would actually use is not usable" \
 		       "repair or unset that credential — an invalid GH_TOKEN produces exactly this; check with: $forge auth status" ;;
+	unverifiable)
+		refuse forge-scopes-unverifiable "the account $forge marks active for $forge_host is authenticated but reports no scopes, so the scopes this run needs cannot be verified — an installation (\`ghs_\`) or fine-grained token carries none" \
+		       "use a classic or OAuth token for the run; see the scope-model limit in docs/runner/README.md" ;;
 	none)
 		refuse forge-no-scope-line "$forge answered auth status but reported no \`Token scopes:\` line" \
 		       "check that $forge is a supported forge tool; see docs/runner/README.md" ;;

@@ -110,6 +110,34 @@ bot token. A failed block carries no `Logged in to` line — `gh` writes it as *
 to log in to …"* — so its host comes from the bare host-section header above it,
 which is the only reason that header is parsed.
 
+Attribution **fails closed**, because getting it wrong the other way is a false pass.
+An unresolved block is closed at *every* block boundary, a section header included —
+closing only at login lines let a later failure on another host inherit the target's
+attribution — and a host guessed from a section header is trusted only when that host
+was actually seen on a login line and is not the target. Anything else is treated as
+the target's. Three false passes were measured against earlier versions of exactly
+this logic; each now has a case.
+
+### The scope model has no answer for an installation token
+
+`gh` prints `Token scopes:` **only** for classic and OAuth tokens. An installation
+token (`ghs_`) or a fine-grained PAT authenticates, exits 0, and reports **no scopes
+line at all** — and `ghs_` is what `GH_TOKEN` holds inside GitHub Actions, which is
+the environment this whole feature is named for.
+
+Such a credential is refused as `forge-scopes-unverifiable`, deliberately distinct
+from `forge-active-account-broken`: it is a **working** credential whose permissions
+simply are not OAuth scopes, and calling it broken would be false. The pre-flight
+refuses rather than passes because it cannot verify the precondition it exists to
+verify, and this branch has already shipped two false passes by assuming instead.
+
+**So the scope check does not work under a GitHub Actions token today.** Verifying an
+installation token's permissions needs an API call, not a transcript, which is a
+different mechanism and a different change. Two neighbouring limits no parsing can
+see: a token authorized for SAML SSO enforcement shows `repo` and still fails the
+push until authorized, and an SSH remote presents no OAuth token on push at all, so
+the scopes checked may not be the ones used.
+
 **The host is the selector, not activeness.** `gh` marks one account active **per
 host** — *"Each host section will indicate the active account, which will be used
 when targeting that host"* — so a two-host login has **two** active accounts and
