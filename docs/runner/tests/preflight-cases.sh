@@ -176,7 +176,11 @@ if [ "\${1:-}" = auth ] && [ "\${2:-}" = status ]; then
 		exit 1
 	fi
 	sed -n '/^accounts\$/,\$p' "\$d/forge-state" | sed '1d;s/@TOKEN@/$SENTINEL/'
-	exit 0
+	# The real tools set a failure status when ANY configured host fails, even one
+	# the run never touches, so a case must be able to print a healthy transcript
+	# AND exit non-zero.
+	exitcode=\$(sed -n 's/^exitcode=//p' "\$d/forge-state")
+	exit \${exitcode:-0}
 fi
 echo "forge-stub: unsupported invocation: \$*" >&2
 exit 2
@@ -267,7 +271,9 @@ run_case() {
 		# is the DEFINING condition of an unattended run, since GitHub Actions and
 		# most agent harnesses set it. `gh` marks the env token active and the
 		# working keyring account INACTIVE, and the active block carries no scopes
-		# line because that credential is broken. `auth status` still exits 0.
+		# line because that credential is broken. (`auth status` exits 1 for this
+		# shape — measured — but the status is not what catches it, because the
+		# same status arrives when an unrelated host fails and the run is fine.)
 		#
 		# Two traps in one: the failure line reads "Failed to log **in to**", which
 		# does not match the "Logged in to" block reset, so the active flag is not
@@ -422,6 +428,42 @@ run_case() {
 			printf '  - Token: @TOKEN@\n'
 			printf "  - Token scopes: 'repo', 'workflow'\n"
 		} > "$_w/forge-state" ;;
+	bad-broken-after-other-login)
+		# Round 3's last false pass. A failure block carries no "Logged in to"
+		# line, so matching only the success form left it sharing the PREVIOUS
+		# block's host — recorded as a certain attribution to the wrong host, which
+		# let the target's broken credential through on an inactive account's
+		# scopes. The target here is `localhost`, whose name the section-header
+		# pattern does not recognise, so the header cannot rescue the attribution.
+		git -C "$_r" remote set-url origin 'https://localhost/demo/repo.git'
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf '  * Logged in to other.invalid account bot (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo'\n"
+			printf '  X Failed to log in to localhost using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '\n'
+			printf '  * Logged in to localhost account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
+	good-other-host-fails-nonzero-exit)
+		# The exit code is a signal, not a verdict. Both tools set a failure status
+		# when ANY configured host fails, and `glab` was measured exiting 1 with
+		# the host in question fully authenticated. The target host here is fine
+		# and fully scoped; an unrelated host failed. Refusing on the status alone
+		# would refuse a run that would have worked.
+		{
+			printf 'authed=1\nhang=0\nexitcode=1\naccounts\n'
+			block forge.invalid active "'repo', 'workflow'"
+			printf 'enterprise.invalid\n'
+			printf '  X Failed to log in to enterprise.invalid using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '\n'
+		} > "$_w/forge-state" ;;
 	bad-installation-token)
 		# What `GH_TOKEN` holds inside GitHub Actions. `gh` prints the scopes line
 		# only for classic and OAuth tokens, so an installation (`ghs_`) or
@@ -549,6 +591,8 @@ run_case bad-broken-single-label-host 1 forge-active-account-broken
 run_case bad-broken-ip-host      1 forge-active-account-broken
 run_case good-ip-host            0 'preflight: OK'
 run_case bad-broken-filename-header 1 forge-active-account-broken
+run_case bad-broken-after-other-login 1 forge-active-account-broken
+run_case good-other-host-fails-nonzero-exit 0 'preflight: OK'
 run_case bad-installation-token   1 forge-scopes-unverifiable
 run_case bad-no-account-for-host 1 forge-no-account-for-host
 run_case bad-origin-hostless     1 forge-host-unknown

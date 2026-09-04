@@ -252,9 +252,14 @@ auth_st=$?
 [ "$auth_st" -ne 124 ] \
 	|| refuse forge-auth-timeout "$forge auth status did not answer within ${cap}s" \
 	          "check the forge is reachable, or raise: git config armature.preflightTimeout <seconds>"
-[ "$auth_st" -eq 0 ] \
-	|| refuse forge-no-credential "$forge reports no authenticated account" \
-	          "$forge auth login"
+
+# THE EXIT CODE IS A SIGNAL, NOT A VERDICT, so it is not acted on here. Both tools
+# set a failure status when ANY configured host fails, and `glab` was measured
+# exiting 1 with the host in question fully authenticated — so refusing here would
+# refuse a run whose own forge is fine because an unrelated one is not. The
+# transcript is parsed first; the status is consulted only where the parse finds
+# nothing usable for this host, below. It is NEVER a licence to fall back to some
+# other block that looks healthy: selection stays first, the scope check second.
 
 # THE HOST IS THE SELECTOR, not activeness. `gh` marks one account active PER HOST
 # — "Each host section will indicate the active account, which will be used when
@@ -295,6 +300,7 @@ scopes_read=$(awk -v want_host="$forge_host" '
 			np++
 			p_host[np] = host      # certain, from this block s own login line
 			p_sec[np]  = section   # a guess, for a block that has no login line
+			p_fail[np] = blockfailed
 		}
 		pending = 0
 	}
@@ -304,13 +310,22 @@ scopes_read=$(awk -v want_host="$forge_host" '
 		sub(/[ \t\r]+$/, "", section)
 		host = ""
 	}
-	/[Ll]ogged in to/ {
+	# ANY line reporting a login attempt is a block boundary, success or failure:
+	# `gh` writes a success as "Logged in to <host> …" and a failure as "Failed to
+	# log in to <host> …". Matching only the success form left a failure block
+	# sharing the PREVIOUS block s host, which END then trusted as certain — a
+	# false pass whenever the section-header pattern did not recognise the host,
+	# which it does not for a single-label name or an IP address.
+	/[Ll]og(ged)? in to/ {
 		close_block()
 		active = 0
+		blockfailed = ($0 ~ /[Ff]ailed/)
 		host = $0
-		sub(/^.*[Ll]ogged in to[ \t]+/, "", host)
+		sub(/^.*[Ll]og(ged)? in to[ \t]+/, "", host)
 		sub(/[ \t].*$/, "", host)
-		seen[host] = 1
+		# `seen` means a host something logged IN to, and so may vouch for a
+		# section header. A failure proves the opposite.
+		if (!blockfailed) seen[host] = 1
 	}
 	/[Aa]ctive account:[ \t]*true/ { active = 1; pending = 1 }
 	/[Tt]oken scopes:/ {
@@ -344,11 +359,18 @@ scopes_read=$(awk -v want_host="$forge_host" '
 		# other direction is a false pass.
 		for (i = 1; i <= np; i++) {
 			if (p_host[i] != "") {
-				if (want_host == "" || p_host[i] == want_host) unverifiable = 1
+				mine = (want_host == "" || p_host[i] == want_host)
 			} else {
 				s = p_sec[i]
-				if (want_host == "" || s == "" || !(s in seen) || s == want_host) broken = 1
+				mine = (want_host == "" || s == "" || !(s in seen) || s == want_host)
 			}
+			if (!mine) continue
+			# A block that FAILED, or one that cannot be tied to a successful
+			# login at all, is a broken credential. A block that did log in and
+			# simply reported no scopes is a working credential whose permissions
+			# are not OAuth scopes.
+			if (p_fail[i] || p_host[i] == "") broken = 1
+			else unverifiable = 1
 		}
 		# Before everything else, and `broken` before `unverifiable`: an active
 		# account that failed means the credential the tool would USE is unusable,
@@ -379,9 +401,16 @@ case $scopes_read in
 		refuse forge-scopes-unverifiable "the account $forge marks active for $forge_host is authenticated but reports no scopes, so the scopes this run needs cannot be verified — an installation (\`ghs_\`) or fine-grained token carries none" \
 		       "use a classic or OAuth token for the run; see the scope-model limit in docs/runner/README.md" ;;
 	none)
+		# Nothing usable anywhere: NOW the exit status tells the two causes apart.
+		[ "$auth_st" -eq 0 ] \
+			|| refuse forge-no-credential "$forge reports no authenticated account (it exited $auth_st and reported no scopes for any account)" \
+			          "$forge auth login"
 		refuse forge-no-scope-line "$forge answered auth status but reported no \`Token scopes:\` line" \
 		       "check that $forge is a supported forge tool; see docs/runner/README.md" ;;
 	nohost)
+		[ "$auth_st" -eq 0 ] \
+			|| refuse forge-no-credential "$forge exited $auth_st and reports no account for $forge_host, which is where origin points" \
+			          "$forge auth login --hostname $forge_host"
 		refuse forge-no-account-for-host "$forge reports no account for $forge_host, which is where origin points" \
 		       "$forge auth login --hostname $forge_host" ;;
 	hostless*)

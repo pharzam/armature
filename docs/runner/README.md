@@ -49,9 +49,9 @@ value. Both network steps run under `armature.preflightTimeout`.
 ## Every refusal carries a code
 
 ```
-preflight: the forge credential is missing scope: repo
+preflight: the forge account for github.com is missing scope: repo
            code: forge-missing-scope
-           fix: gh auth refresh -s repo
+           fix: grant repo to that account (with gh: gh auth refresh -s repo)
 ```
 
 The **code is the contract** the cases assert on, and prose is not — round one found
@@ -93,11 +93,16 @@ The configured tool must answer `auth status`:
 
 **The exit code is not trustworthy on its own, measured in both directions.**
 `glab auth status` exits **1** while the host you use is fully authenticated, because
-an *unrelated* second GitLab instance failed. And `gh auth status` exits **0** with an
-invalid `GH_TOKEN` marked active — printing the failure as `Failed to log in to …`,
-which is not the `Logged in to` shape a block starts with, and carrying no scopes
-line while a working but **inactive** account below it does. Reading that inactive
-account's scopes was a false *pass*: the pre-flight said `OK` over a credential that
+an *unrelated* second GitLab instance failed; `gh` does the same, setting a failure
+status for any non-success entry. So the status is a **signal, never a verdict**: the
+transcript is parsed first, and the status is consulted only where the parse finds
+nothing usable for the target host.
+
+The converse is what makes the parse load-bearing. With an invalid `GH_TOKEN`, `gh`
+prints the failure as `Failed to log in to …` — which is *not* the `Logged in to`
+shape, so it was not treated as a block at all — carrying no scopes line while a
+working but **inactive** account below it does. Reading that inactive account's
+scopes was a false *pass*: the pre-flight said `OK` over a credential that
 would fail at the push, in exactly the environment it exists for, since GitHub
 Actions and most agent harnesses set `GH_TOKEN`. So an account marked active that
 reports no scopes is refused (`forge-active-account-broken`) rather than skipped, and
