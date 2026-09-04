@@ -3,38 +3,31 @@
 # preflight-cases.sh — drive ../preflight.sh against one built environment per
 # precondition class, and assert what it NAMED, not only that it failed.
 #
-# The other discipline suites point a linter at a directory of committed text. The
-# preconditions here are properties of a live repository and a credential — a
-# configured hooks path, a usable worktree directory, a reachable base branch, a
-# scoped token — and no committed directory can hold them; a fixture cannot carry a
-# nested repository directory. So each case is BUILT here: one template environment
-# is made once, then copied per case and mutated in exactly one way. Every case is
-# otherwise valid, so it fails for its own single reason.
+# Each case is BUILT rather than committed: one template environment is made once,
+# then copied per case and mutated in exactly one way, so every case is otherwise
+# valid and fails for its own single reason. No committed fixture could hold these
+# preconditions — a fixture cannot carry a nested repository directory.
+# docs/runner/README.md records why this suite has its own CI job instead of a place
+# in run-discipline-tests.sh.
 #
 # WHY THE CASES ASSERT A CODE AND NOT PROSE. Round 1 measured `bad-forge-cli-unset`
 # passing with the very check it existed for deleted, because the substring
 # `armature.forgeCli` it asserted also appears in a DIFFERENT refusal's fix line. A
 # loose substring cannot tell one precondition class from another, which is the one
-# thing the Definition of Done asks these cases to do. `refuse` now prints a stable
-# `code:` per class, the cases assert on that, and `check_codes_unique` below fails
-# if two classes ever share one.
+# thing the Definition of Done asks these cases to do.
 #
 # Five assertions run on every case, not only the ones that motivate them:
 #
-#   exit status   a bad case must exit exactly 1 — the documented "a precondition
-#                 is unmet" code — so a crashed script (a syntax error, a
-#                 not-found) is caught rather than mistaken for a refusal.
+#   exit status   exactly 1 — the documented "a precondition is unmet" code — so a
+#                 crashed script is not mistaken for a refusal.
 #   the code      the refusal names the class the case exists for.
-#   a fix line    every refusal carries one. The criterion is "naming the first
-#                 unmet precondition AND the command that fixes it", and round 1
-#                 measured the whole suite staying green with the fix line deleted
-#                 from `refuse` — half the criterion untested.
-#   no credential the stub forge tool prints a secret-shaped token on every
-#                 successful `auth status`. No case's output may contain it. One
-#                 assertion, applied everywhere, is what makes "it never prints a
-#                 credential value" a property of the script rather than of the one
-#                 case someone thought to write.
-#   ten seconds   per case, which is the unit the acceptance criterion uses.
+#   a fix line    round 1 measured the whole suite staying green with the fix line
+#                 deleted from `refuse`, leaving half the criterion untested.
+#   no credential the stub prints a secret-shaped token on every successful `auth
+#                 status`, and no case's output may contain it. One assertion
+#                 applied everywhere is what makes "never prints a credential" a
+#                 property of the script rather than of one case.
+#   ten seconds   per case, the unit the acceptance criterion uses.
 #
 # Usage:  sh docs/runner/tests/preflight-cases.sh [-v]
 # Exit status: 0 = every case behaved, 1 = one or more did not.

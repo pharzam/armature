@@ -51,58 +51,38 @@ deterministic check in place of discovering the fault the expensive way.
 ## What round one changed
 
 The first frozen head, `0d8d743`, passed its own suite and was wrong in seven ways.
-Two are worth recording here because they were defects in the *check itself*, of the
-class it exists to prevent:
+The round-one record on
+[#126](https://github.com/pharzam/armature/issues/126) holds each with its evidence;
+two belong here because they were defects in the *check itself*, of the very class it
+exists to prevent:
 
 - **The ten-second bound was not real.** Ordering the cheap checks first bounds a
-  cheap failure and says nothing about the last one. Measured against a remote that
-  never answers, the pre-flight ran 44 seconds and printed nothing. Both steps that
-  can reach the network now run under a wall-clock cap.
-- **Scopes were unioned across accounts.** `gh` prints one block per account, and
-  every `Token scopes:` line was read into one set — so a work account holding
-  `repo` and a personal one holding `workflow` satisfied a requirement for both.
-  That is #80's own shape, waved through by the check written to catch it.
+  cheap failure and says nothing about the last one. Against a remote that never
+  answers the pre-flight ran 44 seconds and printed nothing.
+- **Scopes were unioned across accounts**, so a work account holding `repo` and a
+  personal one holding `workflow` satisfied a requirement for both — #80's own shape,
+  waved through by the check written to catch it.
 
-Three more were defects in the *suite*: nothing asserted the `fix:` line, so deleting
-it left every case green; `bad-forge-cli-unset` passed with its check deleted,
-because the loose substring it asserted also appears in another refusal's fix line;
-and the harness was not isolated from `$XDG_CONFIG_HOME`, so the operator's own
-global configuration could decide whether it passed. Refusals now carry a stable
-`code:` and the cases assert on that.
+Three more were defects in the *suite*, all of the same kind: it reported green over
+a check that had been deleted. Refusals now carry a stable `code:` and the cases
+assert on that rather than on prose.
 
 ## Why the wiring changed
 
 The first version added a third dispatch shape to
 [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). It was withdrawn on
 the plan review's second condition, and that shared file is now byte-identical to
-`main`. Three reasons, in order of weight:
+`main`; the reasoning is in [`docs/runner/README.md`](../runner/README.md). The
+deciding fact was that it did not work: `run-discipline-tests` reported **146 on
+`main` and 146 on the pull request**, because CI restores that runner from the
+default branch (#84).
 
-1. **It did not work.** `run-discipline-tests` reported **146 on `main` and 146 on
-   the pull request** — the same number — because CI restores that runner from the
-   default branch (#84). The delegated suite ran in the commit hook and nowhere else.
-2. **It broke the runner's contract**, which is per-case `good*`/`bad*` accounting
-   with a coverage floor. A harness reporting one aggregate result sits outside both.
-3. **The repository already had the shape.** `nested-checkout-check.sh` builds real
-   repositories, has its own CI job, is in the restore list, and is named in
-   `AGENTS.md`. Following it also means the cases get *real* CI coverage on this pull
-   request, because the restore step keeps a file that is not yet on the default
-   branch.
-
-## The `AGENTS.md` question, decided twice
-
-A `docs/runner/` row in **Sources of truth** was written, refused by `agents-lint`
-A7 at 1506 words against a budget of under 1500, and reverted rather than paid for by
-trimming unrelated prose. It is also the wrong table: that column names the document
-authoritative for a *class of rule*, and gate step 1 belongs to
+A `docs/runner/` row in `AGENTS.md`'s **Sources of truth** was also written, refused
+by `agents-lint` A7 at 1506 words against a budget of under 1500, and reverted rather
+than paid for by trimming unrelated prose. It is the wrong table anyway: that column
+names the document authoritative for a *class of rule*, and gate step 1 belongs to
 [`engineering-discipline.md`](../engineering-discipline.md), which now names the
 pre-flight in **Starting a task**.
-
-What `AGENTS.md` *does* gain is one line in `## Checks you can run` for
-`tests/preflight-cases.sh`, which needs only git and reaches no network — the same
-bar `nested-checkout-check.sh` meets. `preflight.sh` itself stays out, because it
-authenticates against a forge; that exemption is now written down in
-[`docs/runner/README.md`](../runner/README.md), together with the constraint it puts
-on everything added to that directory later.
 
 ## Deliberately out of scope
 

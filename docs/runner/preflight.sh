@@ -17,46 +17,28 @@
 # It never prints a credential value. The forge tool's own output is read and
 # never echoed; only scope NAMES, which are not secret, appear in a message.
 #
-# EVERY REFUSAL CARRIES A CODE. `refuse` takes one, prints it on its own `code:`
-# line, and the codes are the stable contract the cases assert on. Prose is not:
-# round 1 measured `bad-forge-cli-unset` passing with the check it existed for
-# deleted, because the substring `armature.forgeCli` it asserted also appears in a
-# DIFFERENT refusal's fix line. A case that matches loose prose cannot tell one
-# precondition class from another, which is the one thing the Definition of Done
-# asks it to do.
+# EVERY REFUSAL CARRIES A CODE. `refuse` takes one and prints it on its own `code:`
+# line. The codes, not the prose, are the stable contract the cases assert on; the
+# header of docs/runner/tests/preflight-cases.sh records what that fixed.
 #
-# THE TEN-SECOND BOUND IS ENFORCED, NOT HOPED FOR. Ordering the cheap checks first
-# bounds a cheap failure and says nothing about the last one. Round 1 measured this
-# script running 44 s and printing nothing against a remote that never answers, so
-# both steps that can reach the network now run under a wall-clock cap
-# (`run_bounded`). Two capped steps at the default 4 s keep the worst case inside
-# ten. `GIT_TERMINAL_PROMPT=0` closes the prompt hang; the cap closes the rest.
+# THE TEN-SECOND BOUND IS ENFORCED, NOT HOPED FOR. Round 1 measured this script
+# running 44 s and printing nothing against a remote that never answers, so both
+# steps that can reach the network run under a wall-clock cap (`run_bounded`). Two
+# capped steps at the default 4 s keep the worst case inside ten;
+# `GIT_TERMINAL_PROMPT=0` closes the prompt hang. Order is cheapest-first so a wrong
+# configuration never PAYS for a fetch — a cost argument, not a correctness one.
 #
-# Order is cheapest-first so a run whose configuration is wrong never PAYS for a
-# fetch — a cost argument, no longer a correctness one.
+# ADOPTER VALUES. Five `armature.*` keys are the adopter's, and none is guessed
+# here: they are read from repository-local configuration, and an unset one IS an
+# unmet precondition. docs/runner/README.md tabulates them with their defaults and
+# records why configuration is the channel; issue #126 holds the alternatives that
+# were rejected. An ADR falls due on the first change that makes a SECOND mechanism
+# read that namespace.
 #
-# ADOPTER VALUES. Five values belong to the adopter, and none is guessed here.
-# They are read from repository-local configuration, and an unset one IS an unmet
-# precondition — reported with the command that sets it, rather than defaulted to
-# something this kit invented:
-#
-#   armature.forgeCli         the forge command-line tool
-#   armature.forgeScopes      the scopes the run needs, space-separated
-#   armature.worktreeDir      the `‹worktree dir›` of docs/engineering-discipline.md
-#   armature.baseRef          the branch a task branches off; defaults to
-#                             origin/main, which the quality gate already fixes, so
-#                             it is the one value this kit may supply
-#   armature.preflightTimeout the cap on each network step; defaults to 4 seconds
-#
-# The choice of git configuration as the channel, and the alternatives rejected,
-# are recorded on issue #126. An ADR falls due on the first change that makes a
-# SECOND mechanism read the `armature.*` namespace.
-#
-# THE FORGE TOOL CONTRACT. The configured tool must answer `auth status`: a
-# non-zero exit means no authenticated account, and a `Token scopes:` line lists
-# the scopes held. Both `gh` and `glab` behave this way. The output is read from
-# standard output and standard error together, because the tools disagree about
-# which one it goes to and have changed their minds between versions.
+# THE FORGE TOOL CONTRACT is in that README too. The one part that matters at this
+# line is that the output is read from standard output and standard error together,
+# because `gh` and `glab` disagree about which one it goes to and have changed their
+# minds between versions.
 #
 # ONE ACCOUNT'S SCOPES, NEVER THE UNION. `gh` prints one block per host, and since
 # 2.40 one per account per host. Round 1 measured the first version of this script
