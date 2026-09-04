@@ -103,6 +103,13 @@ Actions and most agent harnesses set `GH_TOKEN`. So an account marked active tha
 reports no scopes is refused (`forge-active-account-broken`) rather than skipped, and
 the scope check — not the exit code — is what catches it.
 
+That refusal is **attributed to a host**, like the selection itself: only a broken
+active account on the host the run targets refuses it. A first version made the check
+global and so refused a perfectly good run because an unrelated host held a scopeless
+bot token. A failed block carries no `Logged in to` line — `gh` writes it as *"Failed
+to log in to …"* — so its host comes from the bare host-section header above it,
+which is the only reason that header is parsed.
+
 **The host is the selector, not activeness.** `gh` marks one account active **per
 host** — *"Each host section will indicate the active account, which will be used
 when targeting that host"* — so a two-host login has **two** active accounts and

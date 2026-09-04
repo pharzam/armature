@@ -279,18 +279,33 @@ forge_host=$(printf '%s\n' "$origin_url" \
 # names — the line both `gh` and `glab` emit. Scope sets are never merged, which is
 # what keeps round 1's union closed.
 scopes_read=$(awk -v want_host="$forge_host" '
+	# A bare hostname at column 0 opens a host section. It is the ONLY thing that
+	# gives a FAILED block a host: `gh` writes such a block as "Failed to log in
+	# to …", which carries no "Logged in to" line, so without the section header
+	# its host is unknowable and the refusal below would be attributed to whatever
+	# block came before it.
+	/^[A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z][A-Za-z]+[ \t]*\r?$/ {
+		section = $0
+		sub(/[ \t\r]+$/, "", section)
+		host = ""
+	}
 	/[Ll]ogged in to/ {
 		# A block marked active that never reached a scopes line is a broken
 		# credential, not an absent one. Detected HERE, at the next block, and
-		# again at END.
-		if (pending) broken = 1
+		# again at END — and only for the host this run targets.
+		if (pending && (want_host == "" || pending_host == want_host)) broken = 1
 		pending = 0
 		active = 0
 		host = $0
 		sub(/^.*[Ll]ogged in to[ \t]+/, "", host)
 		sub(/[ \t].*$/, "", host)
 	}
-	/[Aa]ctive account:[ \t]*true/ { active = 1; pending = 1 }
+	# Attributed to this block'"'"'s own host — its "Logged in to" host when it has
+	# one, else the section header above it.
+	/[Aa]ctive account:[ \t]*true/ {
+		active = 1; pending = 1
+		pending_host = (host != "" ? host : section)
+	}
 	/[Tt]oken scopes:/ {
 		line = $0
 		sub(/.*[Tt]oken scopes:[ \t]*/, "", line)
@@ -305,7 +320,7 @@ scopes_read=$(awk -v want_host="$forge_host" '
 		}
 	}
 	END {
-		if (pending) broken = 1
+		if (pending && (want_host == "" || pending_host == want_host)) broken = 1
 		# Before everything else: an active account with no scopes means the
 		# credential the tool would USE is unusable, and any scopes line found
 		# elsewhere belongs to an account it would NOT use. Reading those would be

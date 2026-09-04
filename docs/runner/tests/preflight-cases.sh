@@ -286,6 +286,36 @@ run_case() {
 			printf '  - Token: @TOKEN@\n'
 			printf "  - Token scopes: 'repo', 'workflow'\n"
 		} > "$_w/forge-state" ;;
+	good-other-host-broken)
+		# The target host is fully authenticated and fully scoped; an UNRELATED
+		# host has an active account with no scopes line — a bot token in the
+		# environment, say. Round 3 measured the first version of the broken-account
+		# guard refusing this, because `pending` was global to the transcript rather
+		# than attributed to a host. Nothing here can harm a run against
+		# forge.invalid, so it must pass.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			block forge.invalid active "'repo', 'workflow'"
+			printf 'enterprise.invalid\n'
+			printf '  * Logged in to enterprise.invalid account bot (env)\n'
+			printf '  - Active account: true\n'
+			printf '  - Token: @TOKEN@\n'
+			printf '\n'
+		} > "$_w/forge-state" ;;
+	bad-target-host-broken-no-header)
+		# The mirror, and the one that must NOT be lost to host attribution: the
+		# TARGET host's own active account is broken. Its failure block carries no
+		# "Logged in to" line, so its host comes from the section header above it —
+		# which is why that header is parsed at all.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'forge.invalid\n'
+			printf '  X Failed to log in to forge.invalid using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '  - The token in GH_TOKEN is invalid.\n'
+			printf '\n'
+			block enterprise.invalid active "'repo', 'workflow'"
+		} > "$_w/forge-state" ;;
 	bad-no-account-for-host)
 		# Authenticated, correctly scoped — but to a forge the run does not use.
 		{
@@ -391,6 +421,8 @@ run_case bad-account-ambiguous   1 forge-ambiguous-account
 run_case good-enterprise-other-host-short 0 'preflight: OK'
 run_case bad-target-host-short   1 forge-missing-scope
 run_case bad-active-account-broken 1 forge-active-account-broken
+run_case good-other-host-broken   0 'preflight: OK'
+run_case bad-target-host-broken-no-header 1 forge-active-account-broken
 run_case bad-no-account-for-host 1 forge-no-account-for-host
 run_case bad-origin-hostless     1 forge-host-unknown
 run_case bad-scope-union         1 forge-missing-scope
@@ -408,10 +440,19 @@ else
 fi
 
 # Two precondition classes sharing one code would make the code assertion as blunt
-# as the prose it replaced. `forge-missing-scope` is expected twice — one revoked
-# scope and one union across accounts are the same refusal reached two ways — so
-# that pair is named here rather than the check being weakened to allow any.
-dupes=$(printf '%s' "$codes_seen" | sort | uniq -d | grep -v '^forge-missing-scope$' || :)
+# as the prose it replaced. A code reached by more than one case is fine — several
+# routes to one refusal is coverage, not collision — but each such code is NAMED
+# here, so a NEW duplicate still goes red instead of the check being weakened to
+# allow any:
+#
+#   forge-missing-scope          a revoked scope, a union across accounts, and a
+#                                short token on the target host: one refusal, three
+#                                routes.
+#   forge-active-account-broken  the target host's broken account with a section
+#                                header supplying its host, and the same fault where
+#                                the block carries its own login line.
+dupes=$(printf '%s' "$codes_seen" | sort | uniq -d \
+	| grep -v -e '^forge-missing-scope$' -e '^forge-active-account-broken$' || :)
 if [ -n "$dupes" ]; then
 	printf 'FAIL  two precondition classes share one code: %s\n' "$(printf '%s' "$dupes" | tr '\n' ' ')" >&2
 	fail=$((fail + 1))
