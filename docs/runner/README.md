@@ -6,12 +6,11 @@ check that refuses to start a run when a precondition is missing.
 
 | File | What it is |
 | ---- | ---------- |
-| [`preflight.sh`](preflight.sh) | The pre-flight. Its header carries the implementation rationale — the scope rule, the wall-clock cap, and why each refusal is coded. |
+| [`preflight.sh`](preflight.sh) | The pre-flight. Its header carries the implementation rationale. |
 | [`tests/preflight-cases.sh`](tests/preflight-cases.sh) | Its cases — one built environment per precondition class. Its own [CI job](../../.github/workflows/ci.yml), for the reason under [How the cases are wired](#how-the-cases-are-wired). |
 
-This file is the operator's entry point and the record of the two decisions that
-live nowhere else. It does **not** restate the scripts: a claim kept in three places
-changes in one of them and not the others.
+This file holds the decisions that live nowhere else. It does **not** restate the
+scripts: a claim kept in three places changes in one of them and not the others.
 
 ## In plain terms
 
@@ -55,10 +54,10 @@ preflight: the forge credential is missing scope: repo
            fix: gh auth refresh -s repo
 ```
 
-The **code is the contract** the cases assert on, and prose is not — round one
-measured a case passing with the check it existed for deleted, because the substring
-it asserted also appears in a *different* refusal's fix line. The suite fails if two
-classes ever share a code.
+The **code is the contract** the cases assert on, and prose is not — round one found
+four of ten cases asserting a substring some *other* refusal also emits. One asserted
+a configured value that both base-ref refusals interpolate, which no longer substring
+could have fixed. The suite fails if two classes ever share a code.
 
 ## The values you supply
 
@@ -92,9 +91,17 @@ The configured tool must answer `auth status`:
   **`Active account: true`**. With several and none marked active, the pre-flight
   refuses rather than guess.
 
-Both `gh` and `glab` behave this way. A tool that answers differently needs a
-different pre-flight, not a translation layer here — say so in an [ADR](../adr/)
-rather than widening the parser until it accepts anything.
+**Which tools meet it, measured rather than assumed.** `gh` does. **`glab` does
+not** — its binary carries neither string (`strings $(command -v glab) | grep -ci
+'token scopes'` → `0`, against `2` for `gh`), and it has no `auth refresh`
+subcommand either. An earlier draft of this file claimed both tools behaved this
+way; that claim was false, and a `glab` adopter with a perfectly good credential
+would have been refused, with a fix line naming a command that does not exist.
+
+A tool that does not meet the contract is refused by name — `forge-no-scope-line`,
+not a wrong "missing scope" — so the failure says what is actually wrong. Making one
+work needs a different pre-flight, not a translation layer here: say so in an
+[ADR](../adr/) rather than widening the parser until it accepts anything.
 
 ## Why `preflight.sh` is not in `AGENTS.md`'s check list
 
@@ -148,9 +155,6 @@ pre-registers, and it applies here as to every other check in the restore list.
 ## Running it
 
 ```
-sh docs/runner/preflight.sh <task-ID> [working-tree]
+sh docs/runner/preflight.sh <task-ID> [working-tree]   # 0 met, 1 unmet, 2 bad usage
 sh docs/runner/tests/preflight-cases.sh [-v]
 ```
-
-The pre-flight exits `0` when every precondition is met, `1` when one is unmet and
-named, `2` on bad usage.

@@ -53,43 +53,42 @@ deterministic check in place of discovering the fault the expensive way.
 The first frozen head, `0d8d743`, passed its own suite and was wrong in seven ways.
 The round-one record on
 [#126](https://github.com/pharzam/armature/issues/126) holds each with its evidence;
-two belong here because they were defects in the *check itself*, of the very class it
-exists to prevent:
+three belong here because they were defects in the *check itself*, of the very class
+it exists to prevent:
 
-- **The ten-second bound was not real.** Ordering the cheap checks first bounds a
-  cheap failure and says nothing about the last one. Against a remote that never
-  answers the pre-flight ran 44 seconds and printed nothing.
+- **The ten-second bound was not real** — against a remote that never answers the
+  pre-flight ran 44 seconds and printed nothing.
 - **Scopes were unioned across accounts**, so a work account holding `repo` and a
   personal one holding `workflow` satisfied a requirement for both — #80's own shape,
   waved through by the check written to catch it.
+- **The forge contract named a tool that does not meet it.** `glab` emits no
+  `Token scopes:` line, so a valid credential was refused, with a fix line naming a
+  command `glab` does not have. The claim was written without being measured.
 
-Three more were defects in the *suite*, all of the same kind: it reported green over
-a check that had been deleted. Refusals now carry a stable `code:` and the cases
-assert on that rather than on prose.
+Three more were defects in the *suite*, all of one kind: it reported green over a
+check that had been deleted. Refusals now carry a stable `code:` and the cases assert
+on that rather than on prose.
 
-## Why the wiring changed
+## Two things that were tried and withdrawn
 
-The first version added a third dispatch shape to
-[`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). It was withdrawn on
-the plan review's second condition, and that shared file is now byte-identical to
-`main`; the reasoning is in [`docs/runner/README.md`](../runner/README.md). The
-deciding fact was that it did not work: `run-discipline-tests` reported **146 on
-`main` and 146 on the pull request**, because CI restores that runner from the
-default branch (#84).
+A third dispatch shape in
+[`run-discipline-tests.sh`](../tests/run-discipline-tests.sh); that file is now
+byte-identical to `main`, and [`docs/runner/README.md`](../runner/README.md) carries
+the reasoning. The deciding fact was that it did not work — `run-discipline-tests`
+reported **146 on `main` and 146 on the pull request**, because CI restores that
+runner from the default branch (#84).
 
-A `docs/runner/` row in `AGENTS.md`'s **Sources of truth** was also written, refused
-by `agents-lint` A7 at 1506 words against a budget of under 1500, and reverted rather
-than paid for by trimming unrelated prose. It is the wrong table anyway: that column
-names the document authoritative for a *class of rule*, and gate step 1 belongs to
-[`engineering-discipline.md`](../engineering-discipline.md), which now names the
-pre-flight in **Starting a task**.
+A `docs/runner/` row in `AGENTS.md`'s **Sources of truth**, refused by `agents-lint`
+A7 at 1506 words against a budget of under 1500. It is the wrong table anyway: that
+column names the document authoritative for a *class of rule*, and gate step 1
+belongs to [`engineering-discipline.md`](../engineering-discipline.md), which now
+names the pre-flight in **Starting a task**.
 
 ## Deliberately out of scope
 
-The runner calling this pre-flight before its first step was acceptance criterion 5.
-It is **moved to [#125](https://github.com/pharzam/armature/issues/125)**, which is
-where the runner is built; there is nothing here to wire, and a criterion this task
-cannot satisfy is neither ticked nor left silently open.
+The runner calling this pre-flight before its first step was acceptance criterion 5,
+**moved to [#125](https://github.com/pharzam/armature/issues/125)** where the runner
+is built: a criterion this task cannot satisfy is neither ticked nor left open.
 
 ## Verdict
 

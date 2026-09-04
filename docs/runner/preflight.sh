@@ -35,19 +35,16 @@
 # were rejected. An ADR falls due on the first change that makes a SECOND mechanism
 # read that namespace.
 #
-# THE FORGE TOOL CONTRACT is in that README too. The one part that matters at this
-# line is that the output is read from standard output and standard error together,
-# because `gh` and `glab` disagree about which one it goes to and have changed their
-# minds between versions.
+# THE FORGE TOOL CONTRACT is in that README too, with the measurement of which
+# tools meet it — `gh` does, `glab` does not. The part that matters at this line is
+# that the output is read from standard output and standard error together, because
+# forge tools disagree about which one it goes to between versions.
 #
-# ONE ACCOUNT'S SCOPES, NEVER THE UNION. `gh` prints one block per host, and since
-# 2.40 one per account per host. Round 1 measured the first version of this script
-# accepting a work account holding `repo` and a personal account holding `workflow`
-# as though one token held both — the exact shape of #80, passed by the check
-# written to catch it. The scopes are now read from the block marked the active
-# account; with one block the question does not arise; with several and none marked
-# active the script REFUSES rather than guess, because guessing here is what #80
-# cost.
+# ONE ACCOUNT'S SCOPES, NEVER THE UNION. Round 1 measured the first version taking
+# a work account's `repo` and a personal account's `workflow` as though one token
+# held both — #80's shape, passed by the check written to catch it. Scopes come from
+# the block marked the active account; with several and none marked active the
+# script REFUSES rather than guess.
 #
 # Usage:  sh docs/runner/preflight.sh TASK [ROOT]
 #   TASK  the task ID whose worktree the run will take, for example T-heh3
@@ -293,9 +290,12 @@ for want in $scopes_want; do
 	for have in $scopes_have; do
 		[ "$want" = "$have" ] && { found=1; break; }
 	done
+	# The fix names the scope, not a subcommand: `auth refresh` is gh's spelling and
+	# glab has no such command, so printing it at every tool would be an invented
+	# command — the thing this kit forbids.
 	[ "$found" -eq 1 ] \
 		|| refuse forge-missing-scope "the forge credential is missing scope: $want" \
-		          "$forge auth refresh -s $want"
+		          "grant $want to the credential (with gh: gh auth refresh -s $want)"
 done
 
 # --- 4. the base branch is fetchable (the one fetch) -----------------------
