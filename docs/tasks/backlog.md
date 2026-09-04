@@ -32,6 +32,7 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-q22n** — Mechanise the review record: a CI-only record check with chronology, a budget line in the DoD checklist, and required checks on `main` ([#82](https://github.com/pharzam/armature/issues/82))
+- **T-heh3** — Refuse to start a run when a credential, scope or worktree precondition is missing, naming the one that is missing ([#126](https://github.com/pharzam/armature/issues/126); [detail](T-heh3.md))
 
 ## Next
 
