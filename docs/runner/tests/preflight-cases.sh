@@ -362,6 +362,66 @@ run_case() {
 			printf '  - Token: @TOKEN@\n'
 			printf "  - Token scopes: 'repo', 'workflow'\n"
 		} > "$_w/forge-state" ;;
+	bad-broken-single-label-host)
+		# Round 3's probe A. A single-label host (`localhost`, any intranet name)
+		# is not a dotted name, so no section header opens and the failed block has
+		# no host at all. Firing `broken` only on a POSITIVE match with the target
+		# made that mean "not our problem" and passed the run on the inactive
+		# account's scopes. An unattributed block must fail closed instead.
+		git -C "$_r" remote set-url origin 'https://localhost/demo/repo.git'
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'localhost\n'
+			printf '  X Failed to log in to localhost using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '\n'
+			printf '  * Logged in to localhost account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
+	bad-broken-ip-host)
+		# Probe B — the same hole reached by an IP address, which is what a
+		# self-hosted enterprise instance is often reached by.
+		git -C "$_r" remote set-url origin 'https://10.0.0.5/demo/repo.git'
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf '10.0.0.5\n'
+			printf '  X Failed to log in to 10.0.0.5 using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '\n'
+			printf '  * Logged in to 10.0.0.5 account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
+	good-ip-host)
+		# The other side of failing closed: a perfectly good credential on a host
+		# the section-header pattern does not recognise must still PASS, because
+		# attribution comes from the login line and only a FAILED block ever needs
+		# the header. Without this, the two cases above could be satisfied by
+		# refusing every IP-addressed forge.
+		git -C "$_r" remote set-url origin 'https://10.0.0.5/demo/repo.git'
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			block 10.0.0.5 active "'repo', 'workflow'"
+		} > "$_w/forge-state" ;;
+	bad-broken-filename-header)
+		# Probe D. A bare single-token filename at column 0 matches the header
+		# pattern, opens a bogus section, and the target's failed block attributes
+		# to `config.yml` — a host nothing logged in to. Trusting a guessed host
+		# only when it was seen on a login line closes it.
+		{
+			printf 'authed=1\nhang=0\naccounts\n'
+			printf 'config.yml\n'
+			printf '  X Failed to log in to forge.invalid using token (GH_TOKEN)\n'
+			printf '  - Active account: true\n'
+			printf '\n'
+			printf '  * Logged in to forge.invalid account demo (keyring)\n'
+			printf '  - Active account: false\n'
+			printf '  - Token: @TOKEN@\n'
+			printf "  - Token scopes: 'repo', 'workflow'\n"
+		} > "$_w/forge-state" ;;
 	bad-installation-token)
 		# What `GH_TOKEN` holds inside GitHub Actions. `gh` prints the scopes line
 		# only for classic and OAuth tokens, so an installation (`ghs_`) or
@@ -485,6 +545,10 @@ run_case good-other-host-broken   0 'preflight: OK'
 run_case bad-target-host-broken-no-header 1 forge-active-account-broken
 run_case bad-broken-overwritten-by-other-host 1 forge-active-account-broken
 run_case bad-broken-under-stray-header 1 forge-active-account-broken
+run_case bad-broken-single-label-host 1 forge-active-account-broken
+run_case bad-broken-ip-host      1 forge-active-account-broken
+run_case good-ip-host            0 'preflight: OK'
+run_case bad-broken-filename-header 1 forge-active-account-broken
 run_case bad-installation-token   1 forge-scopes-unverifiable
 run_case bad-no-account-for-host 1 forge-no-account-for-host
 run_case bad-origin-hostless     1 forge-host-unknown
