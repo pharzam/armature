@@ -79,7 +79,7 @@ file.
 
 These read only text, so they need no toolchain. Install the hooks once per clone
 with `git config core.hooksPath .githooks`; the first six then run before every
-commit, and in CI. The last one you run yourself. Keep
+commit, and in CI. The last two you run yourself. Keep
 [`.gitattributes`](.gitattributes): it holds these scripts at line-feed endings,
 without which none of them runs on a Windows checkout.
 
@@ -91,6 +91,7 @@ sh docs/links/link-lint.sh
 sh docs/tasks/audit-record-lint.sh
 sh docs/tests/run-discipline-tests.sh
 sh docs/tests/nested-checkout-check.sh
+sh docs/runner/tests/preflight-cases.sh
 git diff --check
 ```
 

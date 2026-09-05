@@ -754,6 +754,13 @@ abandoned. This keeps the main worktree clean and available at all times, and
 lets many tasks (including ones run by agents) proceed at the same time without
 stepping on each other's working-tree state.
 
+A run that starts without a person at the keyboard checks its preconditions first:
+`sh docs/runner/preflight.sh <task-ID>` refuses to start when the forge credential,
+a scope it needs, the worktree directory, the base branch or the hooks path is
+missing, and names the one that is — see
+[`docs/runner/README.md`](runner/README.md). Checking those where they are *used*
+instead costs the whole build before the fault appears.
+
 ## Commit granularity
 
 Commit at each logical step, not in one large batch at the end of a task. Each
