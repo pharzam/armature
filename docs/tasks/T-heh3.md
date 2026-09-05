@@ -69,6 +69,68 @@ Three more were defects in the *suite*, all of one kind: it reported green over 
 check that had been deleted. Refusals now carry a stable `code:` and the cases assert
 on that rather than on prose.
 
+## What round two changed
+
+The second frozen head, `d8caa2b`, was read against one question: does every claim
+this branch makes about itself survive measurement? One did not, and it was round
+one's last finding in a new costume — a contract measured on one shape, and false on
+another the tool actually produces:
+
+- **`gh` marks one account active per host, not one overall.** An operator logged in
+  to `github.com` and to an enterprise host presents two active accounts. The parser
+  matched neither "exactly one account" nor "exactly one active", so it refused a
+  credential that held every scope the run needed, printed "marks none of them
+  active" where both were marked, and named `gh auth switch` — which cannot make a
+  two-host setup have fewer than two active accounts.
+
+The fix selects the account by **host**, the host of `origin`'s URL, because that is
+where a run pushes and opens its pull request. Activeness is the wrong axis: within
+the target host an inactive block is not used, and an active block on another host is
+not used either. `armature.baseRef` keeps answering the separate question of
+fetchability. The suite grew to 22 cases, `good-enterprise-other-host-short` among
+them — that record's own enterprise shape, which now passes.
+
+Round two also recorded a limit this branch does **not** fix. An SSH remote presents
+no OAuth token on push, so the scopes the pre-flight reads may not be the scopes the
+push presents. That is [#140](https://github.com/pharzam/armature/issues/140), opened
+rather than absorbed.
+
+## What landed after the last record
+
+Five commits landed after `8ee0a59`, ending at `91851aa`:
+
+| Commit | Subject |
+|---|---|
+| `37d2b29` | refuse a broken active credential instead of reading an unused account |
+| `665e74d` | attribute a broken active account to its host, not to the whole run |
+| `2e5305c` | close every block boundary and fail closed on a guessed host |
+| `23be470` | pin the four attribution false passes, and a valid IP-addressed forge |
+| `91851aa` | treat a failed login as a block, and the exit code as a signal |
+
+No review record on [#126](https://github.com/pharzam/armature/issues/126) covers any
+of them, and no commit message cites a round. Whether they answer a round that ran
+and was never posted, or work the author did unprompted, cannot be decided from the
+artifacts this repository keeps — so this record says that, rather than naming a
+round three that may not exist. The commit carrying this record makes one more head,
+and the next round reads it.
+
+## The two bounds this branch stands outside
+
+A successor session reads this file first, so both are here and not only on the
+issue.
+
+- **The cycle cap.** The plan review set it at `2`. `d8caa2b` was cycle 1, `cbd8d53`
+  cycle 2, and `8ee0a59` cycle 3 — declared on the issue as an overrun the operator
+  directed. [ADR-0008 §2](../adr/0008-stop-the-gate-on-a-frozen-head.md#2-the-cycle-cap-and-the-non-merge-verdict)
+  provides no approval that raises a cap: "Nothing raises it." The five commits above
+  stand outside it as well.
+- **The size budget.** The maximum is **1,000 changed lines over 10 files**, measured
+  against base `19cf8d2`. The last figure recorded on the issue was **1,106** at
+  `d8caa2b`; the branch measured **1,499 over 9 files** at `91851aa`, before this
+  record. [#139](https://github.com/pharzam/armature/issues/139) carries the growth,
+  and [ADR-0008 §5](../adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record)
+  says an overrun the operator has not approved blocks the merge.
+
 ## Two things that were tried and withdrawn
 
 A third dispatch shape in
