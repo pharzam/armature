@@ -50,15 +50,16 @@
 # revisions carries files across, because git does not rewrite a file whose blob
 # is unchanged even when an attribute now applies to it.
 #
-# (These seven are NOT the seven commands AGENTS.md lists under "Checks you can
-# run". That block is five linters -- adr, prd, agents, link, audit-record --
-# plus run-discipline-tests.sh plus `git diff --check`. pr-link-lint is absent
-# there by design: it reads a pull-request body and has no local run.)
+# (These seven are NOT the commands AGENTS.md lists under "Checks you can
+# run". That block is three linters -- adr, prd, link -- plus
+# run-discipline-tests.sh, nested-checkout-check.sh and `git diff --check`.
+# pr-link-lint is absent there by design: it reads a pull-request body and has
+# no local run.)
 #
 #
-# WHY FIVE FIXTURE CASES ARE PINNED THE OTHER WAY
+# WHY THREE FIXTURE CASES ARE PINNED THE OTHER WAY
 #
-# One per linter that reads Markdown -- adr, links, agents, tasks -- plus
+# One per linter that reads Markdown -- adr, links -- plus
 # docs/links/tests/bad-crlf-expect/, which is CRLF down to its EXPECT file so
 # that expect-check.sh's own strip has a case. Their files carry Windows line
 # endings, and they are tests only while they keep them.

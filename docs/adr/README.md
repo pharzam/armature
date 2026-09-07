@@ -56,7 +56,7 @@ fixture data called something else is read like any other document.
 link**, which is rarely what the author of a fixture intends. The one exception is
 [this suite's own](tests/README.md): it sits inside this directory, which is
 excluded before anything else, so a link there counts for nothing. Every other
-one — `docs/agents/tests/`, `docs/prd/`, `docs/tasks/` — counts. Nothing enforces
+one — `docs/prd/tests/`, `docs/ci/tests/` — counts. Nothing enforces
 this; it is a rule for whoever writes a fixture.
 
 And a document that only **names** a record is discussing it, not linking it: the
