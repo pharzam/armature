@@ -67,7 +67,7 @@ Consequences you will meet immediately, and which are not negotiable:
 | Path | What |
 |------|------|
 | `‹path›` | `‹what lives there›` |
-| [`AGENTS.md`](../AGENTS.md) | The agent entry point — the whole gate and R1–R12 in one short file. [`CLAUDE.md`](../CLAUDE.md) imports it for Claude Code. |
+| [`AGENTS.md`](../AGENTS.md) | The agent entry point — the gate in brief and a pointer to the R1–R12 rules, in one short file. [`CLAUDE.md`](../CLAUDE.md) imports it for Claude Code. |
 | [`engineering-discipline.md`](engineering-discipline.md) | **How we work**: the quality gate, solution selection, branches, worktrees, commits, tests, reviews, and ADRs. Read before your first commit. |
 | [`glossary.md`](glossary.md) | The shared vocabulary. Skim it; come back constantly. |
 | [`facts/`](facts/) | Facts collected from the customer, stored as-is as immutable evidence. Derived requirements cite them by `F-NNNN` ID. |
