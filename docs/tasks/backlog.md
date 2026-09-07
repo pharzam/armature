@@ -32,6 +32,7 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-q22n** — Mechanise the review record: a CI-only record check with chronology, a budget line in the DoD checklist, and required checks on `main` ([#82](https://github.com/pharzam/armature/issues/82))
+- **T-6vxc** — Sharpen R11 so a multi-class Definition of Done is read as several goals at plan review ([#141](https://github.com/pharzam/armature/issues/141))
 
 ## Next
 
