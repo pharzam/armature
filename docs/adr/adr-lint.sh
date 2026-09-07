@@ -132,20 +132,19 @@ nl='
 #      false orphan WARN; measured on five
 #      ADR trees identical but for the link form, and re-measured after. A bare
 #      destination followed by anything else -- `[x](adr/0001-x.md junk)` -- is
-#      not a link on the forge; link-lint reports it as L8, and since #78's
-#      first review round it names nothing here either, where before it counted.
+#      not a link on the forge; here it names nothing, where before it counted.
+#      (link-lint no longer diagnoses this case: its shrink dropped that handling,
+#      and it now reads the path before the first blank.)
 #      A `%20` is NOT decoded here, deliberately: names() compares BASENAMES,
 #      and the filename check below forbids a space in a record's name, so an
 #      encoded space can only sit in the directory part the comparison drops.
 #      Measured: `[x](dir%20with%20space/0001-x.md)` counted before #78 and
-#      counts after. link-lint decodes it because it resolves the whole path.
-#      That is a reasoned asymmetry between the two extractors, written on both
-#      sides (links/README.md limit 6), because a limit recorded on one side
-#      only IS the drift that entry describes. An earlier draft of both entries
-#      said "both extractors cut at the first space" without qualification --
-#      wrong on BOTH sides, arrived at by reasoning rather than measuring. What
-#      remains: an angle destination holding a `)` is cut at that `)` in both
-#      scripts (links/README.md limit 7), and here reads as no link.
+#      counts after. link-lint no longer decodes `%20` either -- its shrink
+#      dropped the spelling-variant handling -- so the former asymmetry between
+#      the two extractors is gone. An angle destination holding a `)` is cut at
+#      that `)` in both scripts. link-lint still strips a plain `<target.md>`
+#      wrapper and resolves it; only the spaced/escaped/`%20` angle variants were
+#      dropped in its shrink.
 #
 # Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
 # forms. The sharing is BY HAND, though, not by construction -- the fence and
@@ -263,7 +262,7 @@ links_to_record() {
 					# and all, and that `>` ends it: `<id>.md` is a marker, not this
 					# form. A bare one ends at the first blank, where a title may
 					# follow; followed by anything else it is not a link on the
-					# forge (link-lint L8) and names nothing here. It used to count:
+					# forge, and names nothing here. It used to count:
 					# `[x](adr/0001-x.md junk)` was the drift #78 round 1 found.
 					# Padding blanks are trimmed first, as link-lint does.
 					sub(/^[ \t]+/, "", t); sub(/[ \t]+$/, "", t)

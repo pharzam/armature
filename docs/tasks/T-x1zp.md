@@ -33,7 +33,7 @@ measured why: an outer ignore of `tests/` leaves the list non-empty and 370
 documents and 163 links unread, and one of `*.md` leaves `link-lint`'s list empty — measured as zero lines — while `audit-record-lint`'s, which lists every file rather than `*.md`, still returns 125 lines and none of the documents it reads. What decides is
 not which files are missing but whose ignore rules chose them, so the guard asks
 whether the kit owns the repository it is being listed from. The shape is copied into both linters, not shared;
-[`links/README.md`](../links/README.md) limit 9 records that cost.
+[`links/README.md`](../links/README.md) limit 7 records that cost.
 
 **Limit.** `--exclude-standard` reads `.git/info/exclude` and the global ignore
 file, neither versioned, so two operators on one commit can get different lists.
