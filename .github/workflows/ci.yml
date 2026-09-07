@@ -61,7 +61,6 @@ jobs:
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
               cp ".checks-from-default/$f" "$f"
@@ -102,7 +101,6 @@ jobs:
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
               cp ".checks-from-default/$f" "$f"
@@ -143,7 +141,6 @@ jobs:
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
               cp ".checks-from-default/$f" "$f"
@@ -185,7 +182,6 @@ jobs:
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
               cp ".checks-from-default/$f" "$f"
@@ -231,7 +227,6 @@ jobs:
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
               cp ".checks-from-default/$f" "$f"
@@ -278,7 +273,6 @@ jobs:
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
               cp ".checks-from-default/$f" "$f"
@@ -294,4 +288,11 @@ jobs:
       # reads-only-text bar every hook step meets. It runs here on GNU find, which
       # is what exercises link-lint's fallback walk; a macOS checkout has BSD find
       # only.
+      #
+      # Unlike the other checks, this one is deliberately NOT restored from the
+      # default branch (see the loop above). It was rewritten in #145 when
+      # audit-record-lint was removed — main's prior copy hard-required that
+      # now-deleted file — so CI runs this branch's version. The trade is that
+      # main's copy no longer guards it; accepted, since it is non-required and
+      # drives only the restored link-lint.sh.
       - run: sh docs/tests/nested-checkout-check.sh
