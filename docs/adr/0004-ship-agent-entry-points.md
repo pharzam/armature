@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Accepted. Amended by [ADR-0010](0010-cut-the-self-facing-checks.md)
+Accepted. Amended by [ADR-0010](0010-cut-the-self-facing-checks.md), [ADR-0011](0011-fail-on-a-missing-named-suite.md)
 
 ## Context
 
