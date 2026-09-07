@@ -31,10 +31,11 @@
 # still skipped silently as long as one good and one bad remain — keep fixture
 # names within good*/bad*, and see each suite's README for the cases it expects.
 #
-# A suite whose linter or fixtures are ABSENT is skipped, not failed, so a slimmed
-# adopter kit (one that dropped prd/ or ships no ADRs) still runs green. Entries
-# that are neither good* nor bad* — the shared prd facts/ dir, a suite README — are
-# skipped too.
+# A suite NAMED here whose linter or fixtures are ABSENT is a FAILURE, not a skip
+# (ADR-0011): the dispatch list is the contract, so a vanished suite turns the gate
+# red rather than passing green. An adopter who drops a suite removes its dispatch
+# line below to slim the kit. Entries that are neither good* nor bad* — the shared
+# prd facts/ dir, a suite README — are skipped silently.
 #
 # Usage:  sh docs/tests/run-discipline-tests.sh [-v]
 #   -v, --verbose  print an "ok" line per passing case; by default only failures
@@ -59,7 +60,6 @@ cd "$repo" || { printf 'FAIL  cannot cd to repo root: %s\n' "$repo" >&2; exit 1;
 
 pass=0
 fail=0
-skipped=0
 sgood=0   # good cases seen in the suite currently running
 sbad=0    # bad cases seen in the suite currently running
 
@@ -94,13 +94,15 @@ check_floor() {
 	fi
 }
 
-# suite_available LINTER FIXTURE_ROOT LABEL — true if both exist; else note a skip.
+# suite_available LINTER FIXTURE_ROOT LABEL — true if both exist; a NAMED suite whose
+# linter or fixtures are absent is a FAILURE, not a skip (ADR-0011): drop its dispatch
+# line to slim the kit.
 suite_available() {
 	if [ -f "$1" ] && [ -d "$2" ]; then
 		return 0
 	fi
-	skipped=$((skipped + 1))
-	printf 'skip  %s (linter or fixtures absent)\n' "$3"
+	fail=$((fail + 1))
+	printf 'FAIL  %s: named suite is missing its linter or fixtures (%s, %s) — drop its dispatch line to slim the kit\n' "$3" "$1" "$2"
 	return 1
 }
 
@@ -321,7 +323,6 @@ if [ "$((pass + fail))" -eq 0 ]; then
 fi
 
 printf '\nrun-discipline-tests: %d passed, %d failed' "$pass" "$fail"
-[ "$skipped" -gt 0 ] && printf ', %d suite(s) skipped' "$skipped"
 printf '\n'
 
 [ "$fail" -eq 0 ] && exit 0 || exit 1
