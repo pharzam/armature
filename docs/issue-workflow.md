@@ -128,10 +128,25 @@ so the plan states the scale out loud and a reviewer checks that one sentence:
 - **A second goal arriving mid-task is a child issue**, not a wider demo. Widening
   the demo to fit what the work became is how a task stops being demoable, and it
   is the move this rule exists to catch.
+- **Count the goal in the DoD, not only the demo.** A single demo sentence can
+  sit over a Definition of Done that enumerates several independent checks — one
+  verb over many objects, "refuse when *a*, *b* or *c* is missing" — which reads
+  as one goal and is several. The reviewer counts the **goal classes** the DoD
+  names. Two items are the *same* class when one test failing for either fails for
+  both, because they share a failure mode; they are *different* classes when
+  either can fail while the other passes. A DoD of N independent classes is N
+  goals: one child issue per class beyond the first, unless a single mechanism and
+  a single test cover them all. A DoD that asks for a test per item — "a test
+  asserts each *X* when removed" — has already named N failure modes, so the
+  exception does not apply. The plan-review confirmation records the class count
+  beside the demo.
 
 The tripwire bounds the **goal**, where R12's budget bounds the **size**. They fail
 differently and both are needed: #76 stayed one goal and grew without limit, while a
-task can hold to a size and still quietly acquire a second outcome.
+task can hold to a size and still quietly acquire a second outcome. And #126 held
+one clean demo over a Definition of Done of six precondition classes, so the demo
+passed the tripwire while the goal count did not — the gap the size gate closed only
+downstream, at cost.
 
 ## R12 — Slice and prioritize
 
