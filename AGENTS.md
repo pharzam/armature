@@ -3,9 +3,9 @@
 Agent context for **Armature**, the engineering-discipline kit. Read this before
 you change anything in this repository.
 
-This file is the compressed form of the rules. Where it disagrees with the
-document it summarises, **the document wins** — and the disagreement is a defect
-to fix in the same change
+This file is a startup index and summary of how we work here. Where it disagrees
+with a document it points to or summarises, **the document wins** — and the
+disagreement is a defect to fix in the same change
 ([R10](docs/issue-workflow.md#r10--sync-with-governance)).
 
 ## What this repository is
@@ -56,24 +56,13 @@ plan review is architecture and scope, never implementation approval.
 
 ## The issue rules
 
-The workflow defines **twelve** numbered rules; cite one by number in a review or
-a commit. A line marked `(written rule)` has no mechanism behind it today, and the
-honest account of what is enforced is that document's own
-[enforcement table](docs/issue-workflow.md#what-is-enforced-where), never this
+The workflow defines **twelve** numbered rules, R1–R12; cite one by number in a
+review or a commit. They are defined once, in
+[`docs/issue-workflow.md`](docs/issue-workflow.md) — this file points there rather
+than restating them, so there is a single source to keep in step. Which rule a
+mechanism backs today, and which is `(written rule)` with none, is that document's
+own [enforcement table](docs/issue-workflow.md#what-is-enforced-where), never this
 file.
-
-- **R1** — [Issue first](docs/issue-workflow.md#r1--issue-first): no commit and no pull request without an open issue behind it.
-- **R2** — [Duplicate check before a new issue](docs/issue-workflow.md#r2--duplicate-check-before-a-new-issue): search the open and the closed issues before you open one (written rule)
-- **R3** — [Apply the solution-selection standard](docs/issue-workflow.md#r3--apply-the-solution-selection-standard): compare the candidates, then record the selected and the rejected ones (written rule)
-- **R4** — [No workarounds](docs/issue-workflow.md#r4--no-workarounds): two operators approve one in writing, and it gets its own removal issue (written rule)
-- **R5** — [Deterministic over LLM-based](docs/issue-workflow.md#r5--deterministic-over-llm-based): prefer a script, a linter or a gate to a model's judgement.
-- **R6** — [Agent-to-agent communication through the issue](docs/issue-workflow.md#r6--agent-to-agent-communication-through-the-issue): never ask another agent directly; comment on the issue with a severity (written rule)
-- **R7** — [Decision transparency on every action](docs/issue-workflow.md#r7--decision-transparency-on-every-action): state the action, the reason and the tradeoffs before the commit that carries it (written rule)
-- **R8** — [Test-driven, strict: red, then green](docs/issue-workflow.md#r8--test-driven-strict-red-then-green): plan on the issue, write the tests, watch them fail, then write code (written rule)
-- **R9** — [Test freeze after confirmation](docs/issue-workflow.md#r9--test-freeze-after-confirmation): once a fresh context confirms them, a later failure opens a bug sub-issue (written rule)
-- **R10** — [Sync with governance](docs/issue-workflow.md#r10--sync-with-governance): keep this file and the governance documents in step; a conflict stops work (written rule)
-- **R11** — [Single-goal issues](docs/issue-workflow.md#r11--single-goal-issues): one issue is one actionable, demoable goal at a limited scale (written rule)
-- **R12** — [Slice and prioritize](docs/issue-workflow.md#r12--slice-and-prioritize): an ordered, DoD-covering plan, the test slice first, reviewed once on the issue
 
 ## Checks you can run
 

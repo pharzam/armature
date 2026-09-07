@@ -44,7 +44,7 @@ the frame that gives a thing its strength.
 
 | Piece | What it holds |
 |-------|---------------|
-| [`AGENTS.md`](AGENTS.md) | The agent entry point: the quality gate, R1–R12, the checks, and which document is authoritative for each rule — in under 1,500 words. |
+| [`AGENTS.md`](AGENTS.md) | The agent entry point: the quality gate, the checks, a pointer to the R1–R12 rules, and which document is authoritative for each — in under 1,500 words. |
 | [`CLAUDE.md`](CLAUDE.md) | One line, `@AGENTS.md`, so Claude Code loads the same guide. No second copy to drift. |
 | [`docs/agents/`](docs/agents/) | What the entry points are and what they may not become ([ADR-0004](docs/adr/0004-ship-agent-entry-points.md)). |
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
