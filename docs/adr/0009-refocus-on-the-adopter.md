@@ -42,8 +42,9 @@ unattended-run mechanism is built in this repository.
 
 We reject the alternative of continuing that milestone — or carrying it forward as a
 separate autonomous-agent product inside this repository. The assessment left that
-door to the owner, and the owner closes it: the pre-flight already landed (`#126`)
-stays as-is, and the direction ends there.
+door to the owner, and the owner closes it: no further unattended-run mechanism is
+built here, and any of the milestone's work still in flight — the pre-flight (`#126`),
+whose pull request has not landed, among it — is not carried further.
 
 This record states the decision; it does not itself delete any mechanism. The
 deletions the assessment names (the `audit-record` stack, the `agents-lint`

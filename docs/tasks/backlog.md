@@ -28,8 +28,8 @@ same summary, dated — rather than deleting it or checking it off.
 > **Pivot in progress (2026-09-07).** The project has refocused on the adopter and
 > **stopped the unattended-run milestone** — see
 > [ADR-0009](../adr/0009-refocus-on-the-adopter.md). The Now/Next lists below are
-> **not yet re-sliced**; that is Phase 3 of the pivot. Read the self-facing items
-> below knowing they are being retired, not carried forward.
+> **not yet re-sliced**; that re-slice is a later step of the pivot. Read the items
+> below knowing the self-facing ones are being retired, not carried forward.
 
 ## Now
 
