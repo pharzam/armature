@@ -3,7 +3,7 @@
 # pre-commit — run the cheap quality-gate checks before a commit is recorded,
 # so a violation is caught here rather than in CI (docs/ci/) or review.
 #
-# It runs the ADR, PRD, audit-record, agent-entry and link linters, plus the discipline
+# It runs the ADR, PRD and link linters, plus the discipline
 # self-tests, out of the box (docs-only, no toolchain needed). The
 # lint, test-level, and security steps are ‹…› placeholders you fill for your stack —
 # keep them cheap-first (unit before integration before end-to-end), so a failure
@@ -107,15 +107,6 @@ fi
 #     so the linters themselves are tested (see docs/tests/run-discipline-tests.sh).
 if [ -f docs/tests/run-discipline-tests.sh ]; then
 	sh docs/tests/run-discipline-tests.sh
-fi
-
-# 1e. Agent-entry discipline — keeps the root AGENTS.md and CLAUDE.md honest
-#     against the documents they summarise (see docs/agents/agents-lint.sh).
-#     The `if [ -f ]` guards only whether the SCRIPT runs, which is how a kit
-#     that dropped the entry points still commits; the check itself hard-fails
-#     on every missing input, and CI carries no such guard.
-if [ -f docs/agents/agents-lint.sh ]; then
-	sh docs/agents/agents-lint.sh
 fi
 
 # 1f. Link discipline — resolves every in-tree Markdown link and heading anchor,

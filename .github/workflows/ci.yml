@@ -59,7 +59,7 @@ jobs:
           git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
+                   docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
@@ -99,7 +99,7 @@ jobs:
           git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
+                   docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
@@ -139,7 +139,7 @@ jobs:
           git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
+                   docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
@@ -153,51 +153,6 @@ jobs:
       # Runs each discipline linter against its good/bad fixtures. No toolchain.
       - run: sh docs/tests/run-discipline-tests.sh
 
-  agents-lint:
-    name: agents-lint (root AGENTS.md and CLAUDE.md)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # #84 — the check that judges this pull request comes from the DEFAULT
-      # BRANCH, not from the pull request. Without this, a branch that replaces a
-      # linter with `exit 0` passes its own required check; replace the runner too
-      # and every required job reports green over a defect. Both were measured.
-      #
-      # The scripts root their scan at their OWN directory (`dirname $0`), so
-      # running the default branch's copy from elsewhere lints the WRONG TREE and
-      # passes in silence — measured, and the reason this restores in place rather
-      # than invoking a second copy where it sits.
-      #
-      # LIMIT, stated rather than implied: a `pull_request` event runs the workflow
-      # file from the pull request, so a branch that edits THIS FILE removes this
-      # step. That is closed by review of `.github/**`, not by anything here.
-      - name: Restore the checks from the default branch
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: |
-          set -eu
-          rm -rf .checks-from-default
-          git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
-            "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
-          for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tests/run-discipline-tests.sh \
-                   docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
-            if [ -f ".checks-from-default/$f" ]; then
-              cp ".checks-from-default/$f" "$f"
-              printf 'restored from %s: %s\n' "$DEFAULT_BRANCH" "$f"
-            else
-              printf 'not on %s, kept as written: %s\n' "$DEFAULT_BRANCH" "$f"
-            fi
-          done
-          rm -rf .checks-from-default
-      # Lints the root agent entry points against the documents they summarise,
-      # deriving the gate steps, the rules and the shipped-check set from the
-      # tree rather than holding a second copy of them. Its own job because the
-      # runner is a fixture harness and this check is repo-wide; its fixtures ARE
-      # run there, from docs/agents/tests/. This check DOES apply to an adopter,
-      # so it also ships in both templates under docs/ci/.
-      - run: sh docs/agents/agents-lint.sh
   link-lint:
     name: link-lint (in-tree links and anchors)
     runs-on: ubuntu-latest
@@ -225,7 +180,7 @@ jobs:
           git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
+                   docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then
@@ -271,7 +226,7 @@ jobs:
           git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
+                   docs/links/link-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
             if [ -f ".checks-from-default/$f" ]; then

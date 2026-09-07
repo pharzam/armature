@@ -4,14 +4,14 @@ Date: 2026-08-31
 
 ## Status
 
-Accepted. Amended by [ADR-0007](0007-link-coverage-belongs-to-link-lint.md)
+Superseded by [ADR-0010](0010-cut-the-self-facing-checks.md)
 
 ## Context
 
 [ADR-0005](0005-independent-review-may-be-an-agent.md) closed one half of a review
 recommendation and left the other open. The recommendation, made against
 [#58](https://github.com/pharzam/armature/issues/58), was that
-[`agents/agents-lint.sh`](../agents/agents-lint.sh) — 1051 lines — should replace
+`agents/agents-lint.sh` — 1051 lines — should replace
 its custom shell parsing with **a real Markdown parser or structured metadata**.
 The parser half was rejected there: it spends the zero-toolchain POSIX `sh`
 property that lets the discipline tests be an adopter's first test. The metadata

@@ -14,7 +14,7 @@ into the place it expects.
 **Live example — the kit runs its own.** Armature's repo activates the *ready-as-is*
 subset for itself, under [`.github/workflows/`](../../.github/workflows/):
 [`ci.yml`](../../.github/workflows/ci.yml) (`adr-lint`, `prd-lint`,
-`discipline-tests`, `agents-lint`, `link-lint`),
+`discipline-tests`, `link-lint`),
 [`pr-title.yml`](../../.github/workflows/pr-title.yml), and
 [`pr-link.yml`](../../.github/workflows/pr-link.yml). It omits the `lint`, `tests`,
 and `security` jobs because the kit ships no product code to run them against — a
@@ -48,7 +48,6 @@ Then replace every `‹…›` marker with your stack's command, and
 | `adr-lint` | `docs/adr/` discipline, via [`adr-lint.sh`](../adr/adr-lint.sh). | Ready as-is. |
 | `prd-lint` | `docs/prd/` discipline, via [`prd-lint.sh`](../prd/prd-lint.sh). | Ready as-is. |
 | `discipline-tests` | Runs each discipline linter against its good/bad fixtures, via [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh). | Ready as-is. |
-| `agents-lint` | The root `AGENTS.md` and `CLAUDE.md` against the documents they summarise, via [`agents-lint.sh`](../agents/agents-lint.sh). | Ready as-is — but it **needs a root `AGENTS.md`**. It is the one job here that hard-fails on a slimmed kit; delete it if you drop the [agent entry points](../agents/README.md), and [drop its required check with it](#drop-what-you-did-not-install). |
 | `link-lint` | Every in-tree Markdown link and heading anchor, via [`link-lint.sh`](../links/link-lint.sh). | Ready as-is. |
 | `lint` | Your formatter/linter. | Fill `‹…›`. |
 | `tests` | The test ladder, cheap → expensive — unit → integration → end-to-end (see [`test-levels.md`](../tests/test-levels.md)). | Fill each `‹…›`. |
@@ -111,7 +110,6 @@ gh api -X PUT repos/‹owner›/‹repo›/branches/‹default branch›/protect
       {"context": "adr-lint (docs/adr discipline)",             "app_id": 15368},
       {"context": "prd-lint (docs/prd discipline)",             "app_id": 15368},
       {"context": "discipline-tests (linter fixtures)",         "app_id": 15368},
-      {"context": "agents-lint (root AGENTS.md and CLAUDE.md)", "app_id": 15368},
       {"context": "pr-link (PR body links an issue)",           "app_id": 15368},
       {"context": "conventional-title",                         "app_id": 15368},
       {"context": "link-lint (in-tree links and anchors)",      "app_id": 15368}
@@ -172,13 +170,12 @@ access to the repository, and it is tracked in
 
 ### Drop what you did not install
 
-The seven contexts above are the ones **this** repository requires. Three of them are
+The six contexts above are the ones **this** repository requires. Two of them are
 jobs the kit itself tells you elsewhere that you may leave out, and the array names
 them anyway. Delete the line for each one you did not install:
 
 | Context | Delete it when |
 |---------|----------------|
-| `agents-lint (root AGENTS.md and CLAUDE.md)` | You drop the [agent entry points](../agents/README.md), which the table above says you may. |
 | `pr-link (PR body links an issue)` | You do not copy [`github-actions-pr-link.yml`](github-actions-pr-link.yml), which the Activate block marks optional. |
 | `conventional-title` | You do not copy [`github-actions-pr-title.yml`](github-actions-pr-title.yml), which the Activate block marks optional. |
 | Any other context | You deleted its job under "Delete any job your project does not need". |

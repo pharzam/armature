@@ -46,7 +46,7 @@ the frame that gives a thing its strength.
 |-------|---------------|
 | [`AGENTS.md`](AGENTS.md) | The agent entry point: the quality gate, R1–R12, the checks, and which document is authoritative for each rule — in under 1,500 words. |
 | [`CLAUDE.md`](CLAUDE.md) | One line, `@AGENTS.md`, so Claude Code loads the same guide. No second copy to drift. |
-| [`docs/agents/`](docs/agents/) | What the entry points are and what they may not become, plus [`agents-lint.sh`](docs/agents/agents-lint.sh), the discipline test that derives its expectations from the documents they summarise ([ADR-0004](docs/adr/0004-ship-agent-entry-points.md)). |
+| [`docs/agents/`](docs/agents/) | What the entry points are and what they may not become ([ADR-0004](docs/adr/0004-ship-agent-entry-points.md)). |
 | [`docs/onboarding-for-engineers.md`](docs/onboarding-for-engineers.md) | The first door: the problem statement and a domain crash course. |
 | [`docs/engineering-discipline.md`](docs/engineering-discipline.md) | The quality gate, the reusable solution-selection standard, and every working practice. |
 | [`docs/issue-workflow.md`](docs/issue-workflow.md) | The issue-first workflow (R1–R12): the ticket policy the gate assumes. |
@@ -95,11 +95,9 @@ To stand up a new project:
    `git config core.hooksPath .githooks`, fill their `‹…›` steps, and — if you use
    GitHub or GitLab — activate CI by copying a template from
    [`docs/ci/`](docs/ci/) into place. This makes the quality gate self-enforcing;
-   the [ADR](docs/adr/adr-lint.sh), [PRD](docs/prd/prd-lint.sh) and
-   [agent-entry](docs/agents/agents-lint.sh) linters and their
+   the [ADR](docs/adr/adr-lint.sh) and [PRD](docs/prd/prd-lint.sh) linters and their
    [fixture self-tests](docs/tests/run-discipline-tests.sh) run green out of the
-   box. The agent-entry linter is the one that needs its subject: keep a root
-   `AGENTS.md`, or drop the check with it.
+   box.
 4. Search for `‹` to find everything still unfilled; delete every "How to adapt" note
    when the real content is in.
 5. Grow it — each new practice gets its own short section, with a fuller reference
