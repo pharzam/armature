@@ -49,9 +49,11 @@ decided is retired here, so it is amended, not superseded.
   wording, now read as the history of a decision later amended or superseded.
 - The immutability rule gains one recorded, bounded exception: a link to a removed
   file may be demoted to a code-span. Nothing else in a landed ADR body may change.
-- ADR-0006 and ADR-0007 become `Superseded by ADR-0010`; ADR-0004 becomes
-  `Accepted. Amended by ADR-0010`. These Status edits are the one edit an accepted
-  ADR already permits.
+- The Status edits an accepted ADR permits are split across the two removal pull
+  requests: the group-1 pull request amends ADR-0004 to `Accepted. Amended by
+  ADR-0010` (its "one deterministic check" half retires; the entry-point files
+  stay), and the group-2 pull request supersedes ADR-0006 and ADR-0007 when
+  `agents-lint` goes.
 - The removal itself lands in two reviewed pull requests: the `audit-record`
   mechanism (with `T-3v9q.md`) and the `agents-lint` meta-chain. Each carries its
   own de-links and reference fixes so that `link-lint` is green at every landed head.

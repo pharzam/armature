@@ -685,8 +685,8 @@ Two hooks ship with the kit:
   which every linked worktree reaches too, so a hook left in `.git/hooks` is the
   same fault by another route (see [`guardrails.md`](guardrails.md)). It also
   refuses when it cannot resolve either path, rather than guessing. Then it runs
-  the five repo-file
-  [discipline linters](#testing) — ADR, PRD, audit-record, agent-entry and link —
+  the four repo-file
+  [discipline linters](#testing) — ADR, PRD, agent-entry and link —
   and their fixture self-tests,
   then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
   `‹integration test command›`), and the `‹security scanner›` step you fill in for

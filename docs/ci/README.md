@@ -14,7 +14,7 @@ into the place it expects.
 **Live example — the kit runs its own.** Armature's repo activates the *ready-as-is*
 subset for itself, under [`.github/workflows/`](../../.github/workflows/):
 [`ci.yml`](../../.github/workflows/ci.yml) (`adr-lint`, `prd-lint`,
-`discipline-tests`, `audit-record-lint`, `agents-lint`, `link-lint`),
+`discipline-tests`, `agents-lint`, `link-lint`),
 [`pr-title.yml`](../../.github/workflows/pr-title.yml), and
 [`pr-link.yml`](../../.github/workflows/pr-link.yml). It omits the `lint`, `tests`,
 and `security` jobs because the kit ships no product code to run them against — a
@@ -111,7 +111,6 @@ gh api -X PUT repos/‹owner›/‹repo›/branches/‹default branch›/protect
       {"context": "adr-lint (docs/adr discipline)",             "app_id": 15368},
       {"context": "prd-lint (docs/prd discipline)",             "app_id": 15368},
       {"context": "discipline-tests (linter fixtures)",         "app_id": 15368},
-      {"context": "audit-record-lint (T-3v9q record)",          "app_id": 15368},
       {"context": "agents-lint (root AGENTS.md and CLAUDE.md)", "app_id": 15368},
       {"context": "pr-link (PR body links an issue)",           "app_id": 15368},
       {"context": "conventional-title",                         "app_id": 15368},
@@ -173,13 +172,12 @@ access to the repository, and it is tracked in
 
 ### Drop what you did not install
 
-The eight contexts above are the ones **this** repository requires. Four of them are
+The seven contexts above are the ones **this** repository requires. Three of them are
 jobs the kit itself tells you elsewhere that you may leave out, and the array names
 them anyway. Delete the line for each one you did not install:
 
 | Context | Delete it when |
 |---------|----------------|
-| `audit-record-lint (T-3v9q record)` | Always, unless you install a job like it. No template here ships this one: it is the kit's own job, checking the kit's own record, and it goes with that record. |
 | `agents-lint (root AGENTS.md and CLAUDE.md)` | You drop the [agent entry points](../agents/README.md), which the table above says you may. |
 | `pr-link (PR body links an issue)` | You do not copy [`github-actions-pr-link.yml`](github-actions-pr-link.yml), which the Activate block marks optional. |
 | `conventional-title` | You do not copy [`github-actions-pr-title.yml`](github-actions-pr-title.yml), which the Activate block marks optional. |

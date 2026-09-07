@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR-0010](0010-cut-the-self-facing-checks.md)
 
 ## Context
 

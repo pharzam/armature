@@ -116,16 +116,16 @@ meets them the first time it extends the file:
    literals, so a whole required section could be commented out with the gate
    still green. Same class of hole as constraint 2, closed the same way.
 
-## Two different fives
+## Two different fours
 
 Do not "fix" one of these to match the other; they are both correct.
 
-- **Five discipline linters** — `adr-lint`, `prd-lint`, `pr-link-lint`,
-  `audit-record-lint`, `agents-lint`. This is the count in
+- **Four discipline linters** — `adr-lint`, `prd-lint`, `pr-link-lint` and
+  `agents-lint`. This is the count in
   [`engineering-discipline.md`](../engineering-discipline.md#testing) and
   [`test-levels.md`](../tests/test-levels.md).
-- **Five repo-file checks** — `adr-lint`, `prd-lint`, `audit-record-lint`,
-  `agents-lint`, `run-discipline-tests`. This is the set `AGENTS.md` lists under
+- **Four repo-file checks** — `adr-lint`, `prd-lint`, `agents-lint` and
+  `run-discipline-tests`. This is the set `AGENTS.md` lists under
   `## Checks you can run`, and the set the linter derives from the tree.
   `pr-link-lint` reads a pull-request body, so it has no local run and is
   excluded by construction.

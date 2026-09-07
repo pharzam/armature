@@ -98,7 +98,7 @@ record by number here, and let the index table below do the linking.
 | [0001](0001-record-architecture-decisions.md)   | Record architecture decisions | Accepted |
 | [0002](0002-record-product-requirements.md)     | Record product requirements as PRDs | Accepted |
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
-| [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted |
+| [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Amended by 0010 |
 | [0005](0005-independent-review-may-be-an-agent.md) | Independent review may be an agent | Accepted |
 | [0006](0006-derive-expectations-from-prose.md) | Keep deriving expectations from the prose | Accepted |
 | [0007](0007-link-coverage-belongs-to-link-lint.md) | Link coverage belongs to link-lint | Accepted |

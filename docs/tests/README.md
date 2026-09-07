@@ -54,7 +54,7 @@ adopter to fill. The discipline self-tests are the exceptions because their subj
 | [`traceability-template.md`](traceability-template.md) | The format linking a test to a requirement, guardrail, or ADR. |
 | [`example-fact-to-test.md`](example-fact-to-test.md) | A worked path: fact → requirement → guardrail → test, in kit conventions. |
 | [`run-discipline-tests.sh`](run-discipline-tests.sh) | One of the two executables here: runs each discipline linter against its good/bad fixtures and asserts the outcome. |
-| [`nested-checkout-check.sh`](nested-checkout-check.sh) | The other: builds a throwaway repository holding a nested checkout and proves `audit-record-lint` and `link-lint` never read it. Needs `git`, so CI runs it and the hook does not. |
+| [`nested-checkout-check.sh`](nested-checkout-check.sh) | The other: builds a throwaway repository holding a nested checkout and proves `link-lint` never reads it. Needs `git`, so CI runs it and the hook does not. |
 
 ## How the pieces fit
 
@@ -73,7 +73,7 @@ adopter to fill. The discipline self-tests are the exceptions because their subj
 ## The discipline self-tests
 
 The kit's [discipline tests](test-levels.md#discipline-tests) — `adr-lint`,
-`prd-lint`, `agents-lint`, `audit-record-lint`, `pr-link-lint`, and the
+`prd-lint`, `agents-lint`, `pr-link-lint`, and the
 `commit-msg` hook — are themselves tested.
 Each ships with a fixture suite (a `good` case and one or more `bad-*` cases), and
 [`run-discipline-tests.sh`](run-discipline-tests.sh) runs every case and asserts
@@ -87,7 +87,7 @@ the exit code by a simple naming convention:
 The linters already self-lint the *real* repo green in the hook and CI; the runner
 does the complementary job — it proves each linter correctly *rejects* bad input,
 not just that it passes the kit's own clean files. It dispatches per suite
-(`adr-lint`, `prd-lint`, `audit-record-lint` and `agents-lint` take a fixture
+(`adr-lint`, `prd-lint` and `agents-lint` take a fixture
 directory, `pr-link-lint`/`commit-msg` take a file), skips entries that are neither
 `good*` nor `bad*` (the shared `prd/tests/facts/`
 directory, a suite `README.md`), and skips a suite whose linter or fixtures are

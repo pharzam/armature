@@ -117,21 +117,20 @@
 #   - A rule line ends with ` (written rule)` for every rule the enforcement
 #     table does not back, and contains that phrase nowhere at all for the rest.
 #
-# TWO DIFFERENT FIVES, so a later reader does not "fix" one to match the other.
-# docs/engineering-discipline.md and docs/tests/test-levels.md count five
-# discipline LINTERS: adr-lint, prd-lint, pr-link-lint, audit-record-lint and
-# agents-lint. A21's derived set and AGENTS.md's `## Checks you can run` count
-# five REPO-FILE checks under docs/*/ outside docs/ci/: adr-lint, prd-lint,
-# audit-record-lint, agents-lint and run-discipline-tests. Same size, different
-# membership, both correct. pr-link-lint reads a pull-request body, so it has no
-# local run and is excluded from A21 by construction.
+# TWO DIFFERENT FOURS, so a later reader does not "fix" one to match the other.
+# docs/engineering-discipline.md and docs/tests/test-levels.md count four
+# discipline LINTERS: adr-lint, prd-lint, pr-link-lint and agents-lint. A21's
+# derived set and AGENTS.md's `## Checks you can run` count four REPO-FILE checks
+# under docs/*/ outside docs/ci/: adr-lint, prd-lint, agents-lint and
+# run-discipline-tests. Same size, different membership, both correct.
+# pr-link-lint reads a pull-request body, so it has no local run and is excluded
+# from A21 by construction.
 #
 # Where it runs: .githooks/pre-commit step 1e, the `agents-lint` job in CI, and
 # both inert CI templates. Its own fixtures live under docs/agents/tests/ and
 # ARE run by docs/tests/run-discipline-tests.sh. It is deliberately NOT a suite
 # inside that runner: the runner is a fixture harness with one case directory
-# per assertion, and this check is repo-wide — the same split audit-record-lint
-# documents.
+# per assertion, and this check is repo-wide.
 #
 # Portability: POSIX sh and POSIX awk/sed/grep only. Verified under dash, bash,
 # ksh and busybox ash, and under both LC_ALL=C and a UTF-8 locale. RUN IT WITH
