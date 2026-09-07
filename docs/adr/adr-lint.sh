@@ -142,7 +142,9 @@ nl='
 #      counts after. link-lint no longer decodes `%20` either -- its shrink
 #      dropped the spelling-variant handling -- so the former asymmetry between
 #      the two extractors is gone. An angle destination holding a `)` is cut at
-#      that `)` here; link-lint no longer parses the angle form at all.
+#      that `)` in both scripts. link-lint still strips a plain `<target.md>`
+#      wrapper and resolves it; only the spaced/escaped/`%20` angle variants were
+#      dropped in its shrink.
 #
 # Limits 4, 5 and 6 hold for link-lint too: it is the same reading of the same
 # forms. The sharing is BY HAND, though, not by construction -- the fence and
