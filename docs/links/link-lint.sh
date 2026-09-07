@@ -178,8 +178,7 @@ anchors_of() {
 # plus the L5 floor firing because nothing resolved. A dead gate, on a
 # repository that violates nothing.
 #
-# Making the entries relative is the same shape that already keeps
-# audit-record-lint.sh safe, where the file list is relative to the repository
+# Making the entries relative keeps the file list rooted at the repository
 # root for exactly this reason. It does not make a newline in an IN-TREE
 # filename safe -- nothing here does, and no such file exists -- but the
 # operator's path is not the kit's business to survive by luck.
@@ -200,8 +199,7 @@ anchors_of() {
 # patterns that reached `docs/`; the root test closes the class, because the question is not which files
 # are missing but whose ignore rules decided. The empty-list test stays as a second
 # guard. The walk prunes any directory that holds a `.git` ENTRY: a linked
-# worktree's is a file. The same shape as audit-record-lint.sh's, kept in step by
-# hand (links/README.md limit 9).
+# worktree's is a file (links/README.md limit 9).
 # `[ -f ]` below is DEFENSIVE rather than load-bearing, and #113 measured why no
 # fixture kills it: neither listing path can emit a non-regular file. `git
 # ls-files --cached --others --exclude-standard` does not list a FIFO at all --

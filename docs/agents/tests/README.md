@@ -123,9 +123,9 @@ applied") own that residual.
 
 ## Two rules when you add or edit a fixture
 
-1. **Keep each stub short.** The [audit-record linter](../../tasks/audit-record-lint.sh)
-   resolves a citation by bare filename against any tree path ending in it, so a
-   long fixture file can silently satisfy a citation meant for the real document.
+1. **Keep each stub short.** A linter that resolves a citation by bare filename
+   against any tree path ending in it can let a long fixture file silently satisfy
+   a citation meant for the real document.
    Measured limits: `README.md` under 32 lines, `engineering-discipline.md` under
    7, `issue-workflow.md` under 22. `onboarding-for-engineers.md` is never cited.
    The stub linter is named `demo-lint.sh`, a basename no record cites.

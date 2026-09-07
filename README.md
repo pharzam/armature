@@ -95,9 +95,8 @@ To stand up a new project:
    `git config core.hooksPath .githooks`, fill their `‹…›` steps, and — if you use
    GitHub or GitLab — activate CI by copying a template from
    [`docs/ci/`](docs/ci/) into place. This makes the quality gate self-enforcing;
-   the [ADR](docs/adr/adr-lint.sh), [PRD](docs/prd/prd-lint.sh),
-   [agent-entry](docs/agents/agents-lint.sh) and
-   [audit-record](docs/tasks/audit-record-lint.sh) linters and their
+   the [ADR](docs/adr/adr-lint.sh), [PRD](docs/prd/prd-lint.sh) and
+   [agent-entry](docs/agents/agents-lint.sh) linters and their
    [fixture self-tests](docs/tests/run-discipline-tests.sh) run green out of the
    box. The agent-entry linter is the one that needs its subject: keep a root
    `AGENTS.md`, or drop the check with it.

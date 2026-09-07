@@ -258,9 +258,8 @@ change excluded the repository root from the walk.
    When a decode did change the path, a failure to resolve it prints both
    spellings — `links Design%20Notes/x.md, decoded to Design Notes/x.md` — so the
    author sees the text they wrote and the path that was looked up.
-9. **The file list is the third thing written in two places and kept in step by
-   hand.** This linter and `audit-record-lint.sh` (block 2b) list the repository's
-   files the same way — what git tracks plus what it does not ignore, read
+9. **The file list comes from git, not a hand-written walk.** This linter lists
+   the repository's files as what git tracks plus what it does not ignore, read
    NUL-delimited so no name is quoted and with symlinks refused, so a nested
    checkout is one entry and never read, with a `find` walk that prunes any
    directory holding a `.git` entry whenever this directory is not itself the

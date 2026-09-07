@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR-0010](0010-cut-the-self-facing-checks.md)
 
 ## Context
 
@@ -21,7 +21,7 @@ Three forces shaped the decision.
 issue and pull-request templates *inert* under [`../templates/`](../templates/),
 to be copied into place only when a project adopts that forge. The audit record
 reasoned from that pattern to the opposite conclusion of this record: finding K6
-in [`../tasks/T-3v9q.md`](../tasks/T-3v9q.md) — verdict *Stands* — says "the kit's
+in `../tasks/T-3v9q.md` — verdict *Stands* — says "the kit's
 own pattern is to ship tool-specific files inert under `docs/templates/` … so that
 is where one belongs." [R10](../issue-workflow.md#r10--sync-with-governance) says
 a conflict between governance documents stops work until a decision note or an ADR

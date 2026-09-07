@@ -109,12 +109,6 @@ if [ -f docs/tests/run-discipline-tests.sh ]; then
 	sh docs/tests/run-discipline-tests.sh
 fi
 
-# 1d. Audit-record discipline — the covering test for Definition of Done items 1
-#     to 6 and 9 of docs/tasks/T-3v9q.md (see docs/tasks/audit-record-lint.sh).
-if [ -f docs/tasks/audit-record-lint.sh ]; then
-	sh docs/tasks/audit-record-lint.sh
-fi
-
 # 1e. Agent-entry discipline — keeps the root AGENTS.md and CLAUDE.md honest
 #     against the documents they summarise (see docs/agents/agents-lint.sh).
 #     The `if [ -f ]` guards only whether the SCRIPT runs, which is how a kit

@@ -116,16 +116,16 @@ meets them the first time it extends the file:
    literals, so a whole required section could be commented out with the gate
    still green. Same class of hole as constraint 2, closed the same way.
 
-## Two different fives
+## Two different fours
 
 Do not "fix" one of these to match the other; they are both correct.
 
-- **Five discipline linters** — `adr-lint`, `prd-lint`, `pr-link-lint`,
-  `audit-record-lint`, `agents-lint`. This is the count in
+- **Four discipline linters** — `adr-lint`, `prd-lint`, `pr-link-lint` and
+  `agents-lint`. This is the count in
   [`engineering-discipline.md`](../engineering-discipline.md#testing) and
   [`test-levels.md`](../tests/test-levels.md).
-- **Five repo-file checks** — `adr-lint`, `prd-lint`, `audit-record-lint`,
-  `agents-lint`, `run-discipline-tests`. This is the set `AGENTS.md` lists under
+- **Four repo-file checks** — `adr-lint`, `prd-lint`, `agents-lint` and
+  `run-discipline-tests`. This is the set `AGENTS.md` lists under
   `## Checks you can run`, and the set the linter derives from the tree.
   `pr-link-lint` reads a pull-request body, so it has no local run and is
   excluded by construction.
@@ -139,9 +139,7 @@ a check that skips its own subject proves nothing — but it makes this the firs
 check an adopter *inherits* that a smaller repository does not silently satisfy.
 Compare [`adr-lint.sh`](../adr/adr-lint.sh), which exits 0 on an empty `adr/`, and
 [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh), which skips an
-absent suite. ([`audit-record-lint.sh`](../tasks/audit-record-lint.sh) hard-fails
-the same way, but it is specific to this repository's own audit record, so an
-adopter deletes it rather than inheriting it.)
+absent suite.
 
 So if you drop the agent entry points, drop them together: delete `AGENTS.md`,
 `CLAUDE.md`, this directory, the `pre-commit` step and the CI job in one change.

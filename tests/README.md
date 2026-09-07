@@ -26,7 +26,7 @@ This directory holds the tests; the **conventions** for writing them live in
   the row that ties each test back to the requirement it proves.
 
 The kit's own [discipline tests](../docs/tests/test-levels.md) — the ADR, PRD,
-agent-entry, audit-record and PR-link linters — are not product tests and do
+agent-entry and PR-link linters — are not product tests and do
 **not** live here; they stay beside the conventions they enforce, under
 [`docs/`](../docs/).
 
