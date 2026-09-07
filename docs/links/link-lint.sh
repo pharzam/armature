@@ -133,7 +133,7 @@ anchors_of() {
 # outer repo's, filtered by an ignore file the kit does not own, so the `find`
 # fallback walks instead, pruning any directory that holds a `.git` entry. The
 # empty-list test is a second guard. `[ -f ]` is defensive: neither path emits a
-# non-regular file (links/README.md limit 9).
+# non-regular file (links/README.md limit 7).
 _top=$(cd "$root" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || _top=
 _here=$(cd "$root" 2>/dev/null && pwd -P) || _here=
 files=
