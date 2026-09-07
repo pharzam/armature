@@ -25,11 +25,10 @@ exist."›`
 When a Now item is done, move its line to [completed.md](completed.md) — same ID,
 same summary, dated — rather than deleting it or checking it off.
 
-> **Pivot in progress (2026-09-07).** The project has refocused on the adopter and
-> **stopped the unattended-run milestone** — see
-> [ADR-0009](../adr/0009-refocus-on-the-adopter.md). The Now/Next lists below are
-> **not yet re-sliced**; that re-slice is a later step of the pivot. Read the items
-> below knowing the self-facing ones are being retired, not carried forward.
+> **Re-sliced toward the adopter (2026-09-07)** — see
+> [ADR-0009](../adr/0009-refocus-on-the-adopter.md). Now is adopter-facing and Next
+> starts with the adopter-proving work. The self-facing tasks the pivot retired are
+> recorded on [#156](https://github.com/pharzam/armature/issues/156).
 
 ## Now
 
@@ -37,17 +36,14 @@ same summary, dated — rather than deleting it or checking it off.
 - **‹ID›** — ‹one-sentence summary› ([‹ADR or doc link›](...); [detail](‹id›.md))
 -->
 
-- **T-q22n** — Mechanise the review record: a CI-only record check with chronology, a budget line in the DoD checklist, and required checks on `main` ([#82](https://github.com/pharzam/armature/issues/82))
+- **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23))
 
 ## Next
 
 <!-- Deliberately deferred tasks, same one-line shape. -->
 
-- **T-5h8n** — Triage the 23 issues closed `NOT_PLANNED`: reopen, supersede, or record a decision for each ([#16](https://github.com/pharzam/armature/issues/16))
-- **T-2q7d** — Decide what to do with the two branch-only ADR-0004 records: an `Accepted` record left `main` with no supersession, and the number now holds a different decision on each of two branches and a third on `main` ([#17](https://github.com/pharzam/armature/issues/17))
-- **T-8b4r** — Add fixtures that kill all eleven surviving linter mutants, including a piped standard-input case for `pr-link-lint`, and make the harness prove each mutant applied ([#45](https://github.com/pharzam/armature/issues/45))
-- **T-6f3w** — Fix `adr-lint`: check the index row's status against the record it names (the directory-argument half was closed by `T-8q3f`, which canonicalised the argument rather than stripping a slash — the slash was one of five spellings of one defect) ([#45](https://github.com/pharzam/armature/issues/45))
-- **T-9c5t** — Make a skipped suite fail the gate, and assert why a linter failed rather than only that it did ([#37](https://github.com/pharzam/armature/issues/37))
-- **T-4x2k** — The self-violation sweep: the hook count, the broken link, the enforcement table, the overlong `completed.md` entries ([#40](https://github.com/pharzam/armature/issues/40))
-- **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23))
-- **T-3d9v** — Define "fresh context" and "substantive task", and decide the scope of the abbreviation rule ([#21](https://github.com/pharzam/armature/issues/21))
+- **#22** — Dogfood the kit on one real product repository — the audit's most important finding, the one slice that cannot land inside this repo ([#22](https://github.com/pharzam/armature/issues/22))
+- **#20** — Define core / standard / full adoption profiles ([#20](https://github.com/pharzam/armature/issues/20))
+- **T-6f3w** — Fix `adr-lint`: check an index row's status against the record it names ([#45](https://github.com/pharzam/armature/issues/45))
+- **T-4x2k** — Self-violation sweep, trimmed: the enforcement table and overlong `completed.md` entries ([#40](https://github.com/pharzam/armature/issues/40))
+- **T-5h8n** — Triage the `NOT_PLANNED` issues the Phase 0 closures did not settle ([#16](https://github.com/pharzam/armature/issues/16))
