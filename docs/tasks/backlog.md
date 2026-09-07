@@ -25,6 +25,12 @@ exist."›`
 When a Now item is done, move its line to [completed.md](completed.md) — same ID,
 same summary, dated — rather than deleting it or checking it off.
 
+> **Pivot in progress (2026-09-07).** The project has refocused on the adopter and
+> **stopped the unattended-run milestone** — see
+> [ADR-0009](../adr/0009-refocus-on-the-adopter.md). The Now/Next lists below are
+> **not yet re-sliced**; that re-slice is a later step of the pivot. Read the items
+> below knowing the self-facing ones are being retired, not carried forward.
+
 ## Now
 
 <!-- One line per task. Example shape:
