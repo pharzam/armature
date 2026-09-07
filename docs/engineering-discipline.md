@@ -87,11 +87,8 @@ memory:
   [Continuous integration](#continuous-integration-optional). CI is optional but
   recommended; it is the authority the hooks give you fast feedback against.
 - **Confirm the discipline linters run** — `sh docs/adr/adr-lint.sh` should print
-  `adr-lint: OK`, `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`, and
-  `sh docs/agents/agents-lint.sh` should print `agents-lint: OK`. All three ship
-  wired into the hook and the CI templates. The third needs a root
-  [`AGENTS.md`](../AGENTS.md): keep the [agent entry points](agents/README.md),
-  or drop that check along with them.
+  `adr-lint: OK` and `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`. Both ship
+  wired into the hook and the CI templates.
 
 ## Working a task under the quality gate
 
@@ -394,10 +391,9 @@ finding might owe is not owed until the dispute resolves.
 ## Reviewing for semantic agreement
 
 A check that passes proves what it measures, not what you meant. The kit's own
-linters are explicit about this: [`agents-lint.sh`](agents/agents-lint.sh) proves
-presence, structure and coverage over the agent entry points and
-[says plainly](agents/README.md) that it does *not* prove that a compressed
-sentence means what its source paragraph means.
+linters are explicit about this: they prove presence, structure and coverage over
+the documents they read, and none of them proves that a compressed sentence means
+what its source paragraph means.
 
 So when a change edits a summary, a rule, a checklist or any text that stands in
 for another document, one round reviews it **clause by clause** against its
@@ -630,20 +626,17 @@ on stable interfaces — no brittle selectors or timing. The full list is
 [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
-the kit ships five tests of its own conventions:
+the kit ships three tests of its own conventions:
 [`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
 [ADR](#architecture-decision-records) rules — filenames, sequential numbering,
 required sections, the index, and cross-links —
 [`prd/prd-lint.sh`](prd/prd-lint.sh) lints [`prd/`](prd/) against the
 [PRD](#product-requirements) rules — requirement IDs, a resolvable cited fact per
-requirement, MoSCoW and phase, and the traceability matrix —
-[`agents/agents-lint.sh`](agents/agents-lint.sh) lints the root
-[agent entry points](agents/README.md) against the documents they summarise —
-the gate steps, the rules, the word budget, and the exact Claude import, and
+requirement, MoSCoW and phase, and the traceability matrix — and
 [`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull request's body links
 its issue ([R1](issue-workflow.md#r1--issue-first)). They read only text, so they
 need no toolchain and can be the project's first tests, before any product code
-exists. The four that lint repo files run in the [`pre-commit`](#git-hooks) hook and
+exists. The two that lint repo files run in the [`pre-commit`](#git-hooks) hook and
 in [CI](#continuous-integration-optional); the PR-link check reads the PR body — a
 forge artifact absent at commit time — so it runs in CI only. Add a discipline test
 whenever a convention is worth enforcing automatically rather than by review; wire
@@ -818,12 +811,6 @@ Instruction precedence: a higher-priority platform or operator instruction stays
 higher priority; within its scope the guide governs work in this repository; a
 nested instruction file may add a local constraint and may never weaken the
 [quality gate](#working-a-task-under-the-quality-gate).
-
-[`agents/agents-lint.sh`](agents/agents-lint.sh) keeps the guide honest by
-deriving its expectations from these documents rather than copying them — so a
-renamed rule or a deleted gate step turns the gate red. It checks coverage, not
-semantic agreement; see [`agents/README.md`](agents/README.md) for what that does
-and does not prove.
 
 ## Safety limits
 

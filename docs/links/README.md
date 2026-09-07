@@ -62,8 +62,8 @@ not this script.
 - **Fenced code blocks, HTML comments, and inline code spans**, whose links are
   examples, not navigation. A link-shaped example in backticks is not resolved.
 - **Fixture case directories** — any path with a `good`, `good-*` or `bad-*` component.
-  Their links are deliberately broken: `docs/agents/tests/bad-dead-link/` exists
-  to make `agents-lint` reject a dead link, and linting it would report that
+  Their links are deliberately broken: `docs/links/tests/bad-entry-point-dead-link/`
+  exists to make `link-lint` reject a dead link, and linting it would report that
   suite's success as failure. **The limit is real and named: a genuinely broken
   link in a fixture's own prose goes unseen.** Fixture *suite* READMEs are not
   skipped — they are prose a reader follows, and that is exactly where the one
@@ -136,12 +136,10 @@ change excluded the repository root from the walk.
 
 ## Nine limits, recorded rather than hidden
 
-1. **The slug rule exists in two places and nothing keeps them in step.** It began
-   as a copy of `agents-lint.sh`'s A19; that assertion was removed
-   ([#67](https://github.com/pharzam/armature/issues/67)) and the named function went
-   with it. What survives there is the same rule written inline in the rule-anchor
-   derivation (`agents-lint.sh:540`). If one changes and the other does not, one
-   check resolves anchors the other rejects — **by hand, with no mechanism**. It also
+1. **The slug rule is a hand-maintained approximation of GitHub's, with no mechanism
+   behind it.** `slug()` began as a copy of `agents-lint`'s A19; that assertion was
+   removed ([#67](https://github.com/pharzam/armature/issues/67)) and `agents-lint`
+   itself has since been removed, so `slug()` is now the rule's only home. It also
    drops underscores, which GitHub keeps in an anchor: harmless while no heading in
    the tree uses one, and a defect the day one does.
 2. **Duplicate headings are not disambiguated.** GitHub appends `-1` to the second

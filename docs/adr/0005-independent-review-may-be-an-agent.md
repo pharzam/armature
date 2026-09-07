@@ -4,7 +4,7 @@ Date: 2026-08-31
 
 ## Status
 
-Accepted. Amended by [ADR-0006](0006-derive-expectations-from-prose.md), [ADR-0008](0008-stop-the-gate-on-a-frozen-head.md)
+Accepted. Amended by [ADR-0006](0006-derive-expectations-from-prose.md), [ADR-0008](0008-stop-the-gate-on-a-frozen-head.md), [ADR-0010](0010-cut-the-self-facing-checks.md)
 
 ## Context
 
@@ -16,7 +16,7 @@ Neither said what a reviewer must *be*.
 
 That silence stopped being free when the kit started shipping deterministic
 checks that are honest about their own limits.
-[`agents/agents-lint.sh`](../agents/agents-lint.sh) proves presence, structure and
+`agents/agents-lint.sh` proves presence, structure and
 coverage over the agent entry points, and its
 [README](../agents/README.md) says in as many words that it does **not** prove
 semantic agreement — that a compressed sentence means what its source paragraph

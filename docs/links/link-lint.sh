@@ -76,8 +76,8 @@
 #   - Fixture CASE directories — any path with a `good`, `good-*` or `bad-*`
 #     component,
 #     the naming docs/tests/run-discipline-tests.sh already dispatches on. Their
-#     links are deliberately broken: `docs/agents/tests/bad-dead-link/` exists to
-#     make agents-lint reject a dead link, and linting it would report that
+#     links are deliberately broken: `docs/links/tests/bad-entry-point-dead-link/`
+#     exists to make link-lint reject a dead link, and linting it would report that
 #     suite's success as failure. The limit this leaves is real and named: a
 #     genuinely broken link in a fixture's own prose goes unseen. Fixture SUITE
 #     READMEs are NOT skipped — they are prose a reader follows.
@@ -91,12 +91,8 @@
 # EACH space with a hyphen — it does not collapse runs. So `## R5 — Deterministic
 # over LLM-based` becomes `r5--deterministic-over-llm-based`, with TWO hyphens,
 # because stripping the em-dash leaves two spaces. The slug() below began as a copy
-# of agents-lint.sh's A19. That assertion was removed (#67), and the named function
-# went with it -- what survives there is the same rule written inline in the
-# rule-anchor derivation (`RULES=$(text "$workflow" | awk …`, the `gsub(/[^a-z0-9
-# -]/, "", s)` inside it at agents-lint.sh:540). The two must be
-# kept in step by hand: if one changes, the other resolves anchors the other
-# rejects. Nothing enforces that today. It also drops underscores,
+# of agents-lint's A19; that assertion was removed (#67) and agents-lint itself has
+# since been removed, so slug() is now the rule's only home. It also drops underscores,
 # which GitHub keeps — harmless while no heading in the tree uses one, and stated
 # here rather than left as a surprise.
 #

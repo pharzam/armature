@@ -81,7 +81,7 @@ the [agent entry points](../engineering-discipline.md#agent-entry-points) were
 written into `engineering-discipline.md` first, and only then summarised.
 
 **Drift is mitigated by derived expectations, not by a copied list.**
-[`../agents/agents-lint.sh`](../agents/agents-lint.sh) reads the gate steps out of
+`../agents/agents-lint.sh` reads the gate steps out of
 `engineering-discipline.md`, the rules and their heading anchors and titles out of
 `issue-workflow.md`, the mechanized-rule set out of that document's
 [enforcement table](../issue-workflow.md#what-is-enforced-where), and the

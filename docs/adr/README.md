@@ -100,8 +100,8 @@ record by number here, and let the index table below do the linking.
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 | [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Amended by 0010 |
 | [0005](0005-independent-review-may-be-an-agent.md) | Independent review may be an agent | Accepted |
-| [0006](0006-derive-expectations-from-prose.md) | Keep deriving expectations from the prose | Accepted |
-| [0007](0007-link-coverage-belongs-to-link-lint.md) | Link coverage belongs to link-lint | Accepted |
+| [0006](0006-derive-expectations-from-prose.md) | Keep deriving expectations from the prose | Superseded by 0010 |
+| [0007](0007-link-coverage-belongs-to-link-lint.md) | Link coverage belongs to link-lint | Superseded by 0010 |
 | [0008](0008-stop-the-gate-on-a-frozen-head.md) | Stop the gate on a frozen head | Accepted |
 | [0009](0009-refocus-on-the-adopter.md) | Refocus on the adopter; stop the unattended-run milestone | Accepted |
 | [0010](0010-cut-the-self-facing-checks.md) | Cut the self-facing checks; de-link immutable references | Accepted |

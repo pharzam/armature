@@ -224,7 +224,6 @@ kit already ships the green rows.
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The plan and its confirmation must exist and be in order; whether the slicing is *good* is the reviewer-s |
 | Reviewer independence and the review record (ten named fields, the cycle among them) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md), [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The record is parsed and its chronology checked; **independence is not** and no mechanism can — see the limits in that script |
 | The stopping protocol: a frozen head, the cycle cap and its non-merge verdict, materiality, and where a revealed defect goes | [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The cap is counted from `Cycle` and the verdict matched as a string; materiality and classification stay a reviewer-s judgement |
-| The agent entry points cover the gate and the numbered rules | [ADR-0004](adr/0004-ship-agent-entry-points.md) | [`pre-commit`](../.githooks/pre-commit) | [`agents-lint`](agents/agents-lint.sh) | — | Enforced |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in

@@ -38,9 +38,9 @@ item is unproven.
 Every claim a script can settle is settled by a script
 ([R5](../issue-workflow.md#r5--deterministic-over-llm-based)). One claim resists
 it: that a changed sentence still **means** what its source means. A linter can
-prove a summary covers every rule, in the right order, with the right anchors —
-[`agents-lint.sh`](../agents/agents-lint.sh) does exactly that — and a stub of
-filler words with the right headings would still pass it. Meaning is the residual.
+prove a summary covers every rule, in the right order, with the right anchors, and
+a stub of filler words with the right headings would still pass it. Meaning is the
+residual.
 
 So semantic agreement is a DoD item whose evidence is a **recorded review round**
 rather than an automated test: the clause-by-clause pass described in

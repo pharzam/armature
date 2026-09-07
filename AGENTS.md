@@ -78,7 +78,7 @@ file.
 ## Checks you can run
 
 These read only text, so they need no toolchain. Install the hooks once per clone
-with `git config core.hooksPath .githooks`; the first five then run before every
+with `git config core.hooksPath .githooks`; the first four then run before every
 commit, and in CI. The last one you run yourself. Keep
 [`.gitattributes`](.gitattributes): it holds these scripts at line-feed endings,
 without which none of them runs on a Windows checkout.
@@ -86,7 +86,6 @@ without which none of them runs on a Windows checkout.
 ```
 sh docs/adr/adr-lint.sh
 sh docs/prd/prd-lint.sh
-sh docs/agents/agents-lint.sh
 sh docs/links/link-lint.sh
 sh docs/tests/run-discipline-tests.sh
 sh docs/tests/nested-checkout-check.sh
@@ -152,12 +151,3 @@ time, never directly. An architecturally significant decision becomes an
 | [`docs/tests/`](docs/tests/) | The test levels, a pattern for each, and the Definition-of-Done coverage checklist. |
 | [`docs/facts/`](docs/facts/) and [`docs/prd/`](docs/prd/) | Customer facts kept as evidence, and the requirements derived from them. |
 | [`.githooks/`](.githooks/) and [`docs/ci/`](docs/ci/) | What the gate enforces locally, and what CI enforces as the authority. |
-
-## Keeping this file honest
-
-`docs/agents/agents-lint.sh` derives its expectations from the documents above —
-the gate steps, the rules, their anchors and titles, and which rules a mechanism
-backs — so a change there turns this file red rather than quietly stale. It proves
-coverage, not semantic agreement: a reviewer still has to check that each summary
-means what its source means. See
-[`docs/agents/README.md`](docs/agents/README.md).

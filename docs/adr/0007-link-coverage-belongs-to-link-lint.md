@@ -4,7 +4,7 @@ Date: 2026-09-01
 
 ## Status
 
-Accepted
+Superseded by [ADR-0010](0010-cut-the-self-facing-checks.md)
 
 ## Context
 
