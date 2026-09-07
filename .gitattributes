@@ -132,7 +132,6 @@
 docs/adr/tests/good-crlf/**    eol=crlf
 docs/links/tests/good-crlf/**  eol=crlf
 docs/agents/tests/good-crlf/** eol=crlf
-docs/tasks/tests/good-crlf/**  eol=crlf
 # A bad case that is CRLF throughout, EXPECT file included, so expect-check.sh's
 # own carriage-return strip has a case. It reads EXPECT and demands that id in
 # the linter's output; without the strip the id is `L1` plus a return, which

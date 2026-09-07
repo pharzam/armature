@@ -139,9 +139,7 @@ a check that skips its own subject proves nothing — but it makes this the firs
 check an adopter *inherits* that a smaller repository does not silently satisfy.
 Compare [`adr-lint.sh`](../adr/adr-lint.sh), which exits 0 on an empty `adr/`, and
 [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh), which skips an
-absent suite. ([`audit-record-lint.sh`](../tasks/audit-record-lint.sh) hard-fails
-the same way, but it is specific to this repository's own audit record, so an
-adopter deletes it rather than inheriting it.)
+absent suite.
 
 So if you drop the agent entry points, drop them together: delete `AGENTS.md`,
 `CLAUDE.md`, this directory, the `pre-commit` step and the CI job in one change.

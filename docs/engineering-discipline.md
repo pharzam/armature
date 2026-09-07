@@ -639,9 +639,7 @@ required sections, the index, and cross-links —
 requirement, MoSCoW and phase, and the traceability matrix —
 [`agents/agents-lint.sh`](agents/agents-lint.sh) lints the root
 [agent entry points](agents/README.md) against the documents they summarise —
-the gate steps, the rules, the word budget, and the exact Claude import —
-[`tasks/audit-record-lint.sh`](tasks/audit-record-lint.sh) lints this repository's
-own audit record against its Definition of Done, and
+the gate steps, the rules, the word budget, and the exact Claude import, and
 [`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull request's body links
 its issue ([R1](issue-workflow.md#r1--issue-first)). They read only text, so they
 need no toolchain and can be the project's first tests, before any product code

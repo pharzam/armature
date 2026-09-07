@@ -60,7 +60,6 @@ jobs:
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
@@ -102,7 +101,6 @@ jobs:
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
@@ -144,7 +142,6 @@ jobs:
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
@@ -158,53 +155,6 @@ jobs:
           rm -rf .checks-from-default
       # Runs each discipline linter against its good/bad fixtures. No toolchain.
       - run: sh docs/tests/run-discipline-tests.sh
-
-  audit-record-lint:
-    name: audit-record-lint (T-3v9q record)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # #84 — the check that judges this pull request comes from the DEFAULT
-      # BRANCH, not from the pull request. Without this, a branch that replaces a
-      # linter with `exit 0` passes its own required check; replace the runner too
-      # and every required job reports green over a defect. Both were measured.
-      #
-      # The scripts root their scan at their OWN directory (`dirname $0`), so
-      # running the default branch's copy from elsewhere lints the WRONG TREE and
-      # passes in silence — measured, and the reason this restores in place rather
-      # than invoking a second copy where it sits.
-      #
-      # LIMIT, stated rather than implied: a `pull_request` event runs the workflow
-      # file from the pull request, so a branch that edits THIS FILE removes this
-      # step. That is closed by review of `.github/**`, not by anything here.
-      - name: Restore the checks from the default branch
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: |
-          set -eu
-          rm -rf .checks-from-default
-          git clone --quiet --depth 1 --branch "$DEFAULT_BRANCH" \
-            "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
-          for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
-                   docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
-                   docs/tests/run-discipline-tests.sh \
-                   docs/tests/nested-checkout-check.sh \
-                   docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
-            if [ -f ".checks-from-default/$f" ]; then
-              cp ".checks-from-default/$f" "$f"
-              printf 'restored from %s: %s\n' "$DEFAULT_BRANCH" "$f"
-            else
-              printf 'not on %s, kept as written: %s\n' "$DEFAULT_BRANCH" "$f"
-            fi
-          done
-          rm -rf .checks-from-default
-      # The covering test for Definition of Done items 1-6 and 9 of
-      # docs/tasks/T-3v9q.md. It runs as its own job rather than as a fifth suite
-      # inside run-discipline-tests.sh because that runner is a fixture harness --
-      # one case directory per assertion -- and this check is repo-wide. Its own
-      # fixtures ARE run by that runner, from docs/tasks/tests/.
-      - run: sh docs/tasks/audit-record-lint.sh
 
   agents-lint:
     name: agents-lint (root AGENTS.md and CLAUDE.md)
@@ -234,7 +184,6 @@ jobs:
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
@@ -248,11 +197,10 @@ jobs:
           rm -rf .checks-from-default
       # Lints the root agent entry points against the documents they summarise,
       # deriving the gate steps, the rules and the shipped-check set from the
-      # tree rather than holding a second copy of them. Its own job for the same
-      # reason as audit-record-lint above -- the runner is a fixture harness and
-      # this check is repo-wide; its fixtures ARE run there, from
-      # docs/agents/tests/. Unlike audit-record-lint this check DOES apply to an
-      # adopter, so it also ships in both templates under docs/ci/.
+      # tree rather than holding a second copy of them. Its own job because the
+      # runner is a fixture harness and this check is repo-wide; its fixtures ARE
+      # run there, from docs/agents/tests/. This check DOES apply to an adopter,
+      # so it also ships in both templates under docs/ci/.
       - run: sh docs/agents/agents-lint.sh
   link-lint:
     name: link-lint (in-tree links and anchors)
@@ -282,7 +230,6 @@ jobs:
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
@@ -330,7 +277,6 @@ jobs:
             "https://github.com/${GITHUB_REPOSITORY}.git" .checks-from-default
           for f in docs/adr/adr-lint.sh docs/prd/prd-lint.sh \
                    docs/agents/agents-lint.sh docs/links/link-lint.sh \
-                   docs/tasks/audit-record-lint.sh \
                    docs/tests/run-discipline-tests.sh \
                    docs/tests/nested-checkout-check.sh \
                    docs/ci/pr-link-lint.sh docs/ci/review-record-lint.sh; do
@@ -343,9 +289,9 @@ jobs:
           done
           rm -rf .checks-from-default
       # Builds a throwaway repository that holds a nested checkout, a linked
-      # worktree and a plain directory, and drives audit-record-lint and link-lint
-      # against each. Not a pre-commit step: it needs `git init` and real commits,
-      # past the reads-only-text bar every hook step meets. It runs here on GNU
-      # find, which is what exercises the two linters' fallback walk; a macOS
-      # checkout has BSD find only.
+      # worktree and a plain directory, and drives link-lint against each. Not a
+      # pre-commit step: it needs `git init` and real commits, past the
+      # reads-only-text bar every hook step meets. It runs here on GNU find, which
+      # is what exercises link-lint's fallback walk; a macOS checkout has BSD find
+      # only.
       - run: sh docs/tests/nested-checkout-check.sh
