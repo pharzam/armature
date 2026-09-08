@@ -25,8 +25,8 @@ exist."›`
 When a Now item is done, move its line to [completed.md](completed.md) — same ID,
 same summary, dated — rather than deleting it or checking it off.
 
-> **Re-sliced toward the adopter (2026-09-07)** — see
-> [ADR-0009](../adr/0009-refocus-on-the-adopter.md). Now is adopter-facing and Next
+> **Re-sliced toward the adopter (2026-09-07)** — see the archived pivot decision
+> ADR-0009 (now under `docs/decisions/`). Now is adopter-facing and Next
 > starts with the adopter-proving work. The self-facing tasks the pivot retired are
 > recorded on [#156](https://github.com/pharzam/armature/issues/156).
 

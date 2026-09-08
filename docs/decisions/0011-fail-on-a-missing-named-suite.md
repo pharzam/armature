@@ -11,7 +11,7 @@ Accepted
 [`run-discipline-tests.sh`](../tests/run-discipline-tests.sh) dispatches a fixed list
 of named suites, and **skipped** any whose linter file or fixture directory was absent,
 so a slimmed adopter kit — one that dropped `prd/` or ships no ADRs — still ran green
-without editing the runner. [ADR-0004](0004-ship-agent-entry-points.md) describes that
+without editing the runner. [ADR-0004](../adr/0004-ship-agent-entry-points.md) describes that
 choice ("the fixture runner skips an absent suite").
 
 The skip made the dispatch list non-binding. A suite could vanish — its fixtures

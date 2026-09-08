@@ -46,7 +46,7 @@ So semantic agreement is a DoD item whose evidence is a **recorded review round*
 rather than an automated test: the clause-by-clause pass described in
 [Reviewing for semantic agreement](../engineering-discipline.md#reviewing-for-semantic-agreement),
 reviewed by an independent reviewer — a person or a fresh agent session — under
-[ADR-0005](../adr/0005-independent-review-may-be-an-agent.md).
+[Who may review](../engineering-discipline.md#who-may-review).
 
 Its traceability row cites that review record: the commit reviewed, the reviewer,
 the lens, and the verdict. This is the **only** item the checklist closes on a
@@ -85,12 +85,12 @@ Run this at task close, before the change is called done:
   against its source, and the review record is on the issue.
 - [ ] That review was **independent**: a fresh context that did not see the
   author's reasoning or an earlier verdict, at the levels
-  [ADR-0005](../adr/0005-independent-review-may-be-an-agent.md) requires for this
+  [Who may review](../engineering-discipline.md#who-may-review) requires for this
   task's risk.
 - [ ] No deterministic check that *could* have settled a claim was left to that
   review instead (R5).
 - [ ] The budget declared in the plan-review confirmation was **held**, or the
   overrun is reported on the issue and answered there — an operator's approval or
   a child issue, per
-  [ADR-0008](../adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record).
+  [Reviewing until findings decay](../engineering-discipline.md#reviewing-until-findings-decay).
   A budget that was never declared is the plan review's gap, not this task's.

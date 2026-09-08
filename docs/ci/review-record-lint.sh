@@ -3,7 +3,7 @@
 # review-record-lint.sh — enforce the review record and its chronology.
 #
 # A domain-free discipline test, the CI twin of
-# docs/adr/0008-stop-the-gate-on-a-frozen-head.md section 6 (the review record)
+# docs/decisions/0008-stop-the-gate-on-a-frozen-head.md section 6 (the review record)
 # and docs/issue-workflow.md (R12, the plan and its one review). It reads an
 # issue's comments as text and passes only when the record a task leaves behind
 # can be parsed and its chronology holds.

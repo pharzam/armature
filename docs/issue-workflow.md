@@ -180,8 +180,8 @@ its own.
   is a review of the *plan* — lighter than, and separate from, the
   [code review rounds](engineering-discipline.md#reviewing-until-findings-decay)
   that come after the code works and run inside the cycle cap
-  [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#2-the-cycle-cap-and-the-non-merge-verdict)
-  sets. **Comment the plan and the confirmation on the
+  [the review rounds](engineering-discipline.md#reviewing-until-findings-decay)
+  set. **Comment the plan and the confirmation on the
   issue**, so the next context sees both the plan and that it was checked. The
   reviewer may be a person or a fresh agent session; see
   [Who may review](engineering-discipline.md#who-may-review).
@@ -199,8 +199,8 @@ its own.
 - **State the budget in the confirmation.** The plan-review comment carries a
   `Budget maximum` and a `Cycle cap` by those names, so a later reader — and
   [`review-record-lint`](ci/review-record-lint.sh) — can find them without
-  reading the prose around them. The unit and the base are
-  [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record)'s.
+  reading the prose around them. The unit and the base are set out in
+  [Reviewing until findings decay](engineering-discipline.md#reviewing-until-findings-decay).
 
 R12 makes [R8](#r8--test-driven-strict-red-then-green)'s "plan first" concrete: R8
 says a plan goes on the issue before the first test; R12 says what that plan is — an
@@ -222,8 +222,8 @@ kit already ships the green rows.
 | A PR links an issue (`Closes`/`Refs #N`) | R1 | — | [`pr-link-lint`](ci/pr-link-lint.sh) | ‹require the check before merge› | Check ships; branch protection is your step — the kit ships [the command](ci/README.md#make-the-checks-required) and runs it on its own repository |
 | Test coverage bar | R8 | — | ‹add a coverage gate› | — | Written rule until wired |
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The plan and its confirmation must exist and be in order; whether the slicing is *good* is the reviewer-s |
-| Reviewer independence and the review record (ten named fields, the cycle among them) | [ADR-0005](adr/0005-independent-review-may-be-an-agent.md), [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The record is parsed and its chronology checked; **independence is not** and no mechanism can — see the limits in that script |
-| The stopping protocol: a frozen head, the cycle cap and its non-merge verdict, materiality, and where a revealed defect goes | [ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The cap is counted from `Cycle` and the verdict matched as a string; materiality and classification stay a reviewer-s judgement |
+| Reviewer independence and the review record (ten named fields, the cycle among them) | [Who may review](engineering-discipline.md#who-may-review), [What a round records](engineering-discipline.md#what-a-round-records) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The record is parsed and its chronology checked; **independence is not** and no mechanism can — see the limits in that script |
+| The stopping protocol: a frozen head, the cycle cap and its non-merge verdict, materiality, and where a revealed defect goes | [Reviewing until findings decay](engineering-discipline.md#reviewing-until-findings-decay) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The cap is counted from `Cycle` and the verdict matched as a string; materiality and classification stay a reviewer-s judgement |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in

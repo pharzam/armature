@@ -18,7 +18,7 @@ Two of those files are the target of resolvable Markdown links that sit inside
 **immutable ADR bodies**: `docs/agents/agents-lint.sh` is linked from ADR-0004,
 ADR-0005 and ADR-0006, and `docs/tasks/T-3v9q.md` from ADR-0004. The ADR convention
 holds everything below an ADR's Status line immutable
-([`README.md`](README.md)). `link-lint` fails on a link whose target is gone. So
+([`README.md`](../adr/README.md)). `link-lint` fails on a link whose target is gone. So
 there is no state that both deletes these files and keeps the gate green without
 touching an immutable body — the rule against a broken link and the rule against
 editing a landed ADR cannot both hold once the file is deleted.

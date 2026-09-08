@@ -2,7 +2,7 @@
 
 This directory holds the independent assessment that motivated the project's pivot
 back to the adopter, recorded in
-[ADR-0009](../adr/0009-refocus-on-the-adopter.md).
+[ADR-0009](../decisions/0009-refocus-on-the-adopter.md).
 
 - [`you-are-an-independent-swirling-whistle.md`](you-are-an-independent-swirling-whistle.md)
   — the assessment: findings F1–F13, verdicts Q1–Q4, and the KEEP / CUT / SIMPLIFY

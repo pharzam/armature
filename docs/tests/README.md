@@ -91,7 +91,7 @@ not just that it passes the kit's own clean files. It dispatches per suite
 directory, `pr-link-lint`/`commit-msg` take a file), skips entries that are neither
 `good*` nor `bad*` (the shared `prd/tests/facts/`
 directory, a suite `README.md`), and **fails** a suite named here whose linter or
-fixtures are absent ([ADR-0011](../adr/0011-fail-on-a-missing-named-suite.md)) — an
+fixtures are absent — an
 adopter slims the kit by dropping a suite's dispatch line.
 
 A test that never runs proves nothing, so the runner also enforces a **coverage
