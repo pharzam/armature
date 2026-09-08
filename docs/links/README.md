@@ -116,7 +116,7 @@ skip list above.
 `agents-lint` once carried its own assertion **A19**, resolving the root
 `AGENTS.md`'s links. It was removed ([#67](https://github.com/pharzam/armature/issues/67))
 because this check walks every Markdown file in the tree and `AGENTS.md` is one of
-them ([ADR-0007](../adr/0007-link-coverage-belongs-to-link-lint.md)) — the same work, done once instead of twice, across four link forms instead
+them — the same work, done once instead of twice, across four link forms instead
 of one.
 
 One branch of A19 was **not** redundant: it rejected an **absolute** target, and

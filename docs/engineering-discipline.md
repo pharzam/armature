@@ -209,8 +209,7 @@ reasoning — and each round applies a different lens:
   means? See [Reviewing for semantic agreement](#reviewing-for-semantic-agreement).
 
 One pass is never enough. Each round catches a different class of error. The
-protocol that bounds the rounds is
-[ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head):
+protocol that bounds the rounds is:
 
 - **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
   the next round names it. The close-out bookkeeping lands as a head no round
@@ -262,9 +261,9 @@ protocol that bounds the rounds is
   an independent reviewer does; otherwise the classification is recorded
   disputed and the branch does not merge.
 - **The budget is R12's bound.** The plan states it and the plan review sets
-  the maximum — [R12](issue-workflow.md#r12--slice-and-prioritize) says so, and
-  [the ADR](adr/0008-stop-the-gate-on-a-frozen-head.md#5-the-budget-record)
-  fixes the unit and its base. An overrun is a finding reported on the issue,
+  the maximum — [R12](issue-workflow.md#r12--slice-and-prioritize) says so. The
+  unit is lines added plus lines removed on the whole branch diff, plus files
+  touched, measured against a named base SHA. An overrun is a finding reported on the issue,
   never a revision; the growth becomes a child issue unless the operator approves
   it once, on the issue. An overrun the operator has not approved blocks the
   merge: the last round carries it as a finding and returns
@@ -284,8 +283,7 @@ protocol that bounds the rounds is
 ### Who may review
 
 A reviewer is a **human or a fresh agent session**. The requirement is
-independence, not the reviewer's species —
-[ADR-0005](adr/0005-independent-review-may-be-an-agent.md). Human review is an
+independence, not the reviewer's species. Human review is an
 escalation, not a universal requirement.
 
 Independence has four levels. A review claims only the ones it actually had:
@@ -335,8 +333,7 @@ mechanizable claim to judgement.
 
 A verdict that does not say what it read is not evidence. Each round is one
 comment on the issue, headed `## Review record — round N`, with these fields
-under these names
-([ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#6-the-review-record)):
+under these names:
 
 - `Commit reviewed` — the frozen head, by SHA; a moving target cannot be
   reviewed,
@@ -445,7 +442,9 @@ lightweight format described by Michael Nygard. Copy
 [`adr/template.md`](adr/template.md) for each new record; the process and the
 index live in [`adr/README.md`](adr/README.md), and
 [`adr/0001-record-architecture-decisions.md`](adr/0001-record-architecture-decisions.md)
-records the decision to use ADRs.
+records the decision to use ADRs. `adr/` holds only records that constitute a
+project; this repository's own past governance decisions are archived under
+`docs/decisions/`, which an adopter deletes.
 
 A decision is "architecturally significant" if it affects structure,
 non-functional characteristics, dependencies, interfaces, or construction
@@ -769,8 +768,7 @@ plain merge (not a squash-merge).
 One exception, and it runs the other way: a branch already carrying a
 [frozen-head verdict](#reviewing-until-findings-decay) merges `origin/main` into
 itself instead of rebasing, because a rebase rewrites the frozen head the verdict
-names and leaves the review pointing at a commit that no longer exists
-([ADR-0008](adr/0008-stop-the-gate-on-a-frozen-head.md#1-the-frozen-head)).
+names and leaves the review pointing at a commit that no longer exists.
 
 ## Completing a task
 

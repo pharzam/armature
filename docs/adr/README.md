@@ -4,6 +4,37 @@ This directory holds the project's Architecture Decision Records (ADRs), in the
 lightweight format described by Michael Nygard — see ADR-0001 in the index below
 for the full rationale.
 
+## What belongs in this directory
+
+`docs/adr/` is the **living constitution** an adopter copies: it holds only
+records that constitute *a project*, generic enough to carry onto any domain. Two
+rules keep it that way, and both are **written rules** — no linter enforces them
+(`link-lint` checks that a link resolves, not which way it points; `adr-lint`
+reads only this directory), so the [plan review](../issue-workflow.md#r12--slice-and-prioritize)
+and the [decay rounds](../engineering-discipline.md#reviewing-until-findings-decay)
+are their enforcement:
+
+1. **A record here references no issue or pull request of this repository.** It
+   cites only sibling constitutive documents — another ADR, an
+   [`engineering-discipline.md`](../engineering-discipline.md) section,
+   [`issue-workflow.md`](../issue-workflow.md), the [`glossary`](../glossary.md), a
+   template. A forge number resolves to a different issue, or to nothing, in the
+   adopter's repository; a link to a sibling document travels with the copy.
+2. **A record here never links into `docs/decisions/`** (a bare textual mention is
+   the most it may make). That directory is this repository's own past governance
+   decisions — the records that shaped *the kit* rather than a project built with
+   it — kept as a **closed archive** an adopter deletes. A constitutional record
+   that linked into it would turn an adopter's tree red the moment they removed the
+   archive; that is why this very rule names the directory without linking it. (A
+   record inside `docs/decisions/` *may* link up to a record here — that direction
+   survives the deletion.)
+
+**Numbering.** `docs/adr/` is the single living ADR sequence, numbered
+contiguously from `0001`, and it grows — the next constitutional ADR is `0005`.
+The archive keeps its records' original numeric filenames (`0005`–`0012`) as
+provenance and is cited **by path**; a bare "ADR-NNNN" means this directory's
+sequence.
+
 ## Adding a new ADR
 
 1. Copy [`template.md`](template.md) to `NNNN-short-title.md`, using the next
@@ -71,8 +102,8 @@ warning then goes quietest for a newly written record, which is the one most
 likely to be discussed before anyone links it.
 
 The check matches link syntax; it does not **resolve** it. Whether a link lands
-on a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job, given to
-it by ADR-0007, and the two compose: this one proves a link to the record exists, that one proves
+on a real file is [`link-lint.sh`](../links/link-lint.sh)'s single job, and the
+two compose: this one proves a link to the record exists, that one proves
 it points at something. Neither, on its own, proves the link is the *right* one —
 that stays a review responsibility.
 
@@ -98,13 +129,10 @@ record by number here, and let the index table below do the linking.
 | [0001](0001-record-architecture-decisions.md)   | Record architecture decisions | Accepted |
 | [0002](0002-record-product-requirements.md)     | Record product requirements as PRDs | Accepted |
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
-| [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Amended by 0010, 0011 |
-| [0005](0005-independent-review-may-be-an-agent.md) | Independent review may be an agent | Accepted |
-| [0006](0006-derive-expectations-from-prose.md) | Keep deriving expectations from the prose | Superseded by 0010 |
-| [0007](0007-link-coverage-belongs-to-link-lint.md) | Link coverage belongs to link-lint | Superseded by 0010 |
-| [0008](0008-stop-the-gate-on-a-frozen-head.md) | Stop the gate on a frozen head | Accepted |
-| [0009](0009-refocus-on-the-adopter.md) | Refocus on the adopter; stop the unattended-run milestone | Accepted |
-| [0010](0010-cut-the-self-facing-checks.md) | Cut the self-facing checks; de-link immutable references | Accepted |
-| [0011](0011-fail-on-a-missing-named-suite.md) | Fail on a missing named suite | Accepted |
+| [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted; amended |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
+
+This repository's own past governance decisions — records `0005`–`0012` — are
+archived under `docs/decisions/`; see the index there. They are not part of the
+constitution an adopter adopts.
