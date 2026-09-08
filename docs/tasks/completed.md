@@ -16,6 +16,7 @@ here directly, in the shape above.
 
 ## Log
 
+- **2026-09-08** — **T-3g7v** — Ignored the local `output/` directory so a generated report such as `output/artifact.html` stops showing as untracked, mirroring the `.obsidian/` entry — local tooling output, not project content ([#158](https://github.com/pharzam/armature/issues/158))
 - **2026-09-07** — **T-9c5t** — Made `run-discipline-tests` fail on a missing named suite: the dispatch list is the contract, so a vanished suite reds the gate instead of skipping silently, and an adopter slims by dropping a dispatch line ([#149](https://github.com/pharzam/armature/issues/149); [ADR-0011](../adr/0011-fail-on-a-missing-named-suite.md))
 - **2026-09-07** — **T-6vxc** — Sharpened R11 so a Definition of Done is counted by goal class, not only by the demo sentence: N independent, separately-tested classes are N goals, with the "one mechanism and one test" exception pinned to the failure mode via the "test per item" tell so #126's six-class DoD cannot pass as one; added a "goal class" glossary row, with no mechanism and no `AGENTS.md` edit ([#141](https://github.com/pharzam/armature/issues/141))
 - **2026-09-03** — **T-q22n** — Mechanised the review record: a CI-only record check with chronology, a budget line in the DoD checklist, and required checks on `main` ([#82](https://github.com/pharzam/armature/issues/82))
