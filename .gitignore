@@ -1,2 +1,5 @@
 # Obsidian: local editor config, not project content
 .obsidian/
+
+# Local build/report output, not project content
+output/
