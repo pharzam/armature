@@ -55,7 +55,8 @@ self-contained, without citing this archive.
 **The numbering policy.** `docs/adr/` is the single **living** ADR sequence,
 contiguous from `0001`, and it grows — the next constitutional ADR is `0005`.
 `docs/decisions/` is a **closed archive**: its records keep the numeric filenames
-they had in `docs/adr/` (`0005`–`0012`) as provenance and are cited by path. A bare
+they had in `docs/adr/` (`0005`–`0011`), plus `0012` written here, as provenance,
+and are cited by path. A bare
 "ADR-NNNN" henceforth means the `docs/adr/` sequence. This drops the former "global,
 no-reuse" invariant in favour of one living sequence and one frozen archive, cited
 by path.
@@ -74,8 +75,8 @@ a strictly smaller breach than the de-link ADR-0010 already accepted.
 archive. `0004` keeps them as **bare mentions** in its Status line — no link, since a
 constitutional record may not link into `docs/decisions/` — and the archived records
 point back to `0004`: `0011` links up to it, and `0010` names it in prose (its own
-immutable body links only the ADR-convention README). So the relationship stays
-legible from both ends.
+immutable body links into `docs/adr/` only the ADR-convention README, not `0004`).
+So the relationship stays legible from both ends.
 
 We reject three alternatives, recorded so none is reopened without new information:
 

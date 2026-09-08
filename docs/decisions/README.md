@@ -11,8 +11,9 @@ document links into it — that is a
 [rule of the constitution](../adr/README.md#what-belongs-in-this-directory) — so an
 adopter's *live rules* stay green when it is removed. It leaves together with the
 rest of this repository's own history: [`docs/audit/`](../audit/README.md) and the
-historical entries in the [completed-task log](../tasks/completed.md), which link
-in here and which an adopter clears on adoption. These records may link *up* to a
+historical entries in the [completed-task log](../tasks/completed.md) and
+[`T-k4vm.md`](../tasks/T-k4vm.md), which link in here and which an adopter clears on
+adoption. These records may link *up* to a
 constitutional record in [`docs/adr/`](../adr/README.md); that direction survives
 the deletion.
 
