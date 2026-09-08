@@ -72,8 +72,10 @@ a strictly smaller breach than the de-link ADR-0010 already accepted.
 
 **The amendment trace.** `0004`'s "Amended by" records (`0010`, `0011`) moved to the
 archive. `0004` keeps them as **bare mentions** in its Status line — no link, since a
-constitutional record may not link into `docs/decisions/` — and the two archived
-records link up to `0004`, so the relationship stays legible from both ends.
+constitutional record may not link into `docs/decisions/` — and the archived records
+point back to `0004`: `0011` links up to it, and `0010` names it in prose (its own
+immutable body links only the ADR-convention README). So the relationship stays
+legible from both ends.
 
 We reject three alternatives, recorded so none is reopened without new information:
 
@@ -88,9 +90,15 @@ We reject three alternatives, recorded so none is reopened without new informati
 
 ## Consequences
 
-- **An adopter can delete `docs/decisions/` and the gate stays green.** No kept
-  document links into it. Verified: `link-lint` passes on a tree with the directory
-  removed.
+- **An adopter's live rules stay green when `docs/decisions/` is removed.** No
+  constitutional or core-convention document links into the archive — verified:
+  `link-lint` finds zero resolvable links into `docs/decisions/` from the
+  constitution or any core convention doc. The archive is not deleted alone: it
+  leaves together with the rest of this repository's own history — `docs/audit/`
+  and the historical entries in `docs/tasks/completed.md` and `docs/tasks/T-k4vm.md`,
+  which link in and which an adopter clears on adoption. Removing that whole set
+  keeps every linter green; removing the archive *alone* would red the nine links
+  those kit-history files still carry.
 - **`docs/adr/` is now four records an adopter adopts**, contiguous and growable,
   and the two reference rules keep it that way — enforced by review, stated honestly
   as written rules with no mechanism.
