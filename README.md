@@ -1,9 +1,4 @@
-<p align="center">
-  <img src="assets/armature-logo.jpg" width="360"
-       alt="Armature logo: a low-poly human figure rendered as a wireframe armature, ringed by the kit's icons — a shield, documents, a book, a person, and a checklist.">
-</p>
-
-# Armature
+<h1><img src="assets/armature-logo.jpg" alt="Armature logo: a low-poly human figure rendered as a wireframe armature, ringed by the kit's icons — a shield, documents, a book, a person, and a checklist." width="48" align="middle"> Armature</h1>
 
 *The engineering-discipline kit.*
 
@@ -14,18 +9,6 @@
 a new project a ready-made engineering-discipline system — a quality gate,
 guardrails, ADRs, a glossary, a customer-facts convention, and a task backlog — that
 you adapt to your domain and grow over time.
-
-## About the name
-
-**Armature** — say it *AR-mə-chər* (`/ˈɑːr.mə.tʃər/`), three syllables: *ar·ma·ture*.
-In sculpture, an armature is the internal wire-and-metal frame a figure is built
-around: the skeleton holds the shape, and the clay goes on top. This kit is that
-skeleton for a software project — it holds the engineering discipline, and your
-domain is the clay you add.
-
-The word traces to Latin *armatura*, "armor, equipment," from *armare* "to arm"
-(from *arma*, "weapons, tools") — the same root as *arm* and *armor*. An armature is
-the frame that gives a thing its strength.
 
 ## Start here
 
@@ -102,3 +85,15 @@ To stand up a new project:
    when the real content is in.
 5. Grow it — each new practice gets its own short section, with a fuller reference
    document where one earns its place.
+
+## About the name
+
+**Armature** — say it *AR-mə-chər* (`/ˈɑːr.mə.tʃər/`), three syllables: *ar·ma·ture*.
+In sculpture, an armature is the internal wire-and-metal frame a figure is built
+around: the skeleton holds the shape, and the clay goes on top. This kit is that
+skeleton for a software project — it holds the engineering discipline, and your
+domain is the clay you add.
+
+The word traces to Latin *armatura*, "armor, equipment," from *armare* "to arm"
+(from *arma*, "weapons, tools") — the same root as *arm* and *armor*. An armature is
+the frame that gives a thing its strength.
