@@ -6,7 +6,7 @@ constitution ([`docs/adr/`](../adr/README.md)) by
 [ADR-0012](0012-split-adr-archive-kit-decisions.md), so that `docs/adr/` ships only
 records an adopter would adopt.
 
-**An adopter deletes this whole directory.** No constitutional or core-convention
+**An adopter deletes this whole directory** — it is step 4 of [*How to adapt this kit*](../engineering-discipline.md#how-to-adapt-this-kit). No constitutional or core-convention
 document links into it — that is a
 [rule of the constitution](../adr/README.md#what-belongs-in-this-directory) — so an
 adopter's *live rules* stay green when it is removed. It leaves together with the

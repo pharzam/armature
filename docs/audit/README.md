@@ -10,4 +10,4 @@ back to the adopter, recorded in
 
 This is **repo-specific history**, not reusable scaffolding. An adopter who lifts the
 kit deletes this directory: like the rest of the audit record, it is about *this*
-repository's own past, not the adopter's project.
+repository's own past, not the adopter's project — [*How to adapt this kit*](../engineering-discipline.md#how-to-adapt-this-kit), step 4, names it among the deletions.

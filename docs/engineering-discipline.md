@@ -20,9 +20,10 @@ project solves — see the
 **Before you fill anything, start from a clean history.** Your project is a *new*
 repository, not a fork of the kit — do not keep Armature's git history or remote.
 Use GitHub's *Use this template*, or detach by hand: delete `.git`, run `git init`,
-commit, and add your own remote. Then do the two things below.
+commit, and add your own remote. Then work through the steps below.
 
-Three kinds of thing need your input. Do all three, then delete this section.
+Four things need doing, then delete this section. The first three add your
+input; the fourth removes the kit's own history.
 
 **1. Fill the sibling documents.** Each is a generic template with its own
 "How to adapt" notes:
@@ -48,7 +49,9 @@ Three kinds of thing need your input. Do all three, then delete this section.
 - [`onboarding-for-engineers.md`](onboarding-for-engineers.md) — the first
   document a new engineer reads.
 - [`tasks/backlog.md`](tasks/backlog.md) and
-  [`tasks/completed.md`](tasks/completed.md) — your task index.
+  [`tasks/completed.md`](tasks/completed.md) — your task index. Keep both files and
+  fill them with your own tasks in place of the kit's; step 4 clears the kit's
+  completed-log history and deletes its `T-*.md` detail files.
 - [`issue-workflow.md`](issue-workflow.md) — the issue-first rules (R1–R12), the
   ticket policy the gate assumes.
 - [`templates/`](templates/) — inert forge issue/PR templates; copy into place
@@ -89,6 +92,20 @@ memory:
 - **Confirm the discipline linters run** — `sh docs/adr/adr-lint.sh` should print
   `adr-lint: OK` and `sh docs/prd/prd-lint.sh` should print `prd-lint: OK`. Both ship
   wired into the hook and the CI templates.
+
+**4. Clear this repository's own history.** Detaching from git (above) drops the
+commit log, but these files are the kit's *content* — a fresh `git init` keeps
+them. They record how Armature itself was built, not your project, so remove them
+by hand:
+
+- Delete `docs/decisions/` — the kit's own Architecture Decision Records, archived
+  out of the constitution so [`adr/`](adr/) ships only the records you adopt. No
+  adopter-facing rule links into it, so your live rules stay green without it.
+- Delete `docs/audit/` — the independent assessment of *this* repository, not a
+  document your project reuses.
+- Clear the kit's own entries from `docs/tasks/completed.md` — keep the file, it is
+  your task index (step 1) — and delete the kit's `docs/tasks/T-*.md` detail files,
+  each wholly one kit task's record. Then log your own.
 
 ## Working a task under the quality gate
 
