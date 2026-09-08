@@ -292,8 +292,7 @@ protocol that bounds the rounds is:
   and it is the figure at landing** — the reviewed head plus the close-out line.
   It reaches that figure and no further: there is no **ceiling**, no multiple and
   no kind of growth an approval covers in advance. Three review rounds wrote three
-  such reaches and a later round falsified each, so
-  [#99](https://github.com/pharzam/armature/issues/99) decided the reach does not
+  such reaches and a later round falsified each, so the reach does not
   exist. Growth past the figure is absorbed, routed to a child issue where the
   finding is non-material, or ends at the cap in a split.
 
@@ -377,7 +376,7 @@ The plan-review confirmation carries `Verdict` — `approve`,
 `approve-with-conditions` or `reject` — with `Budget maximum` and `Cycle cap`.
 The names are fixed here; the exact syntax a check would match — how a heading is
 matched, how the fields are rendered, what value `Cycle` takes — is fixed by that
-check, in [#82](https://github.com/pharzam/armature/issues/82). Until one lands,
+check. Until one lands,
 a record is read by a person. Three things no record proves: that a reviewer did not read a barred comment,
 that the model named is the model used, and that every round which ran was
 recorded — a round that ran and was not posted leaves no trace, so the stopping

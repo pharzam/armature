@@ -57,7 +57,7 @@ Then replace every `‹…›` marker with your stack's command, and
 | Review record | The linked issue carries a plan, a plan review with its budget and cycle cap, and a parseable review record per round whose chronology holds (see [What a round records](../engineering-discipline.md#what-a-round-records)), via [`review-record-lint.sh`](review-record-lint.sh). Its own PR-event workflow ([`github-actions-review-record.yml`](github-actions-review-record.yml)). **Make this one required last** — it fails a pull request whose issue carries no record, so turning it on before your team writes records blocks every merge. |
 
 **Every job restores its check scripts from the default branch before running
-them** ([#84](https://github.com/pharzam/armature/issues/84)). Without that, a pull
+them**. Without that, a pull
 request that replaces a linter with `exit 0` passes that linter's own required
 check — and replacing `run-discipline-tests.sh` as well turns the whole required
 set green over a real defect. Both were measured. The limit that remains is that
@@ -165,8 +165,7 @@ re-run, merge. And a required check is only as trustworthy as the script it runs
 seven of the eight jobs check out the pull request's own head and run a linter from
 it, so a pull request that edits a check to `exit 0` passes its own required check;
 only the PR-title check runs no in-tree script. That is pre-existing, it needs write
-access to the repository, and it is tracked in
-[#84](https://github.com/pharzam/armature/issues/84).
+access to the repository.
 
 ### Drop what you did not install
 
