@@ -37,7 +37,6 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23))
-- **T-7v4m** — Convene a panel to generate options, not to vote: record ADR-0006 and hook Solution selection + R12 ([#172](https://github.com/pharzam/armature/issues/172); [detail](T-7v4m.md))
 
 ## Next
 

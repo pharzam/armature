@@ -44,4 +44,25 @@ ADR, not a prose edit.
 
 ## Verdict
 
-_(Filled at close-out, after the decay rounds settle.)_
+The panel-consensus conflict is resolved by [ADR-0006](../adr/0006-convene-a-panel-to-generate-options.md)
+along Option 1: a panel is a **generator of options, not a voter**. Its output is a
+compared candidate set with tradeoffs that feeds
+[`Solution selection`](../engineering-discipline.md#solution-selection) and the R12
+plan; it does not vote or average, and where it does not converge the disagreement is
+recorded, so [`When reviewers disagree`](../engineering-discipline.md#when-reviewers-disagree)
+is **left intact** and never contradicted. The ADR names Option 2 (a consensus verdict
+amending the clause) and Option 3 (informal panels) as rejected, states the panel's
+output type and when one is required versus optional under an iteration bound, and
+keeps the panel's composition a `‹…›` marker.
+
+The rule is hooked into `Solution selection` (which supplies the inbound relative link
+to the record) and R12's *Select the plan*; a `Panel` glossary entry and the ADR index
+row land with it, and the README next-ADR pointer moved to `0007` (R10). The ADR cites
+only sibling constitutive documents — no forge issue/PR/URL, no link into
+`docs/decisions/`.
+
+Reviewed under a frozen head: round 1 (three lenses on `9c652c6` — guardrails, semantic
+agreement, adversarial) returned `nothing material in scope`; no fix was needed
+(cycle cap 2, used 0). Evidence: `adr-lint`, `prd-lint`, `link-lint` (810 links),
+`run-discipline-tests` (81 passed) and `git diff --check` all pass. Budget: 142 changed
+lines across 7 files, against base `4b544fe` (max 260 / ≤10).
