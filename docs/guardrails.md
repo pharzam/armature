@@ -48,6 +48,31 @@ kind of thing that goes here:›`
 - ❌ `‹pitfall 3 — e.g. an environment or scale difference between test and
   production›`
 
+### Writing a lesson back (kit-wide — keep this)
+
+A trap caught once should not be re-derived by the next task, so a lesson does not
+stay on the issue that learned it. When a task ends, its author asks whether the task
+taught a trap the next reader could hit; if it did, the lesson is written **here** as a
+new `❌` pitfall — the trap, why it is silent, and the check that catches it — in the
+same pull request. Gate step 7 asks the question, so the rule is applied rather than
+merely written (see [Keeping documentation current](engineering-discipline.md#keeping-documentation-current)).
+
+This is the one **cross-task** reach the kit adds on purpose.
+[R6](issue-workflow.md#r6--agent-to-agent-communication-through-the-issue) and
+[R7](issue-workflow.md#r7--decision-transparency-on-every-action) already keep the
+coordination and the reasoning on the issue, and
+[Honesty and evidence](engineering-discipline.md#honesty-and-evidence) already reports a
+failure as a failure — but each is scoped to *one* issue thread. A lesson on issue #N is
+discoverable only by someone who reads #N; §2 is where it reaches issue #N+1.
+
+**The filter — or §2 grows until nobody reads it.** Write back only a trap that would
+**catch the next reader**: a silent failure mode, a check that looked green for the
+wrong reason, a footgun in the kit or the domain. Do **not** write back a one-off with
+no general lesson, a restatement of a rule that already lives elsewhere, or the
+blow-by-blow of the task — those belong to the issue thread and the commit history.
+Volume is the failure mode here, not absence: a pitfall list nobody finishes reading
+guards nothing.
+
 ### Gate pitfalls (kit-wide — keep these)
 
 The gate is only as real as the thing that runs it. These traps let it report

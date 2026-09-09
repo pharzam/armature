@@ -156,8 +156,10 @@ the plan, the tests, or another technical part of the task.
    [Review before a costly or irreversible action](#review-before-a-costly-or-irreversible-action).
 
 7. **Keep the documentation current.** Update every doc and code comment that the
-   change touches or leaves stale, in the same PR — see
-   [Keeping documentation current](#keeping-documentation-current).
+   change touches or leaves stale, in the same PR — and write back any lesson the
+   task taught that the next reader could hit, into
+   [`guardrails.md` §2](guardrails.md#2-known-pitfalls--the-traps-specific-to-this-domain).
+   See [Keeping documentation current](#keeping-documentation-current).
 
 8. **Close out in the same PR.** Tick the acceptance boxes, write the verdict,
    and record the ticket in the completed log — see
@@ -822,6 +824,12 @@ documentation is a defect, and the [review rounds](#reviewing-until-findings-dec
 treat it as one. The same-change rules for the [glossary](#glossary),
 [plain-language summaries](#plain-language-summaries), and
 [onboarding](onboarding-for-engineers.md) are specific cases of this general one.
+
+A change also **writes a lesson back**. Gate step 7 asks: did this task teach a trap
+the next reader could hit — a silent failure, a green that meant nothing, a footgun? If
+so, that lesson lands in [`guardrails.md` §2, Known pitfalls](guardrails.md#2-known-pitfalls--the-traps-specific-to-this-domain),
+in the same PR, so it outlives this issue thread. The rule there names who writes it and
+the filter that keeps §2 readable — write back only what would catch the next reader.
 
 ## Starting a task
 
