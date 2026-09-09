@@ -43,4 +43,24 @@ says how a trap gets into it.
 
 ## Verdict
 
-_(Filled at close-out, after the decay rounds settle.)_
+The cross-task-reach gap is closed. A write-back rule in
+[`guardrails.md`](../guardrails.md) §2 states how a pitfall gets there and by whom —
+when a task ends, its author writes back any trap the task taught that the next reader
+could hit, as a new `❌` pitfall (the trap, why it is silent, the check), in the same
+PR — and names the **filter** (silent failures and footguns are worth it; one-offs,
+restatements and the blow-by-blow are not) so §2 does not grow without bound. R6, R7
+and `Honesty and evidence` are linked, not restated, and the rule draws the boundary
+between per-issue transparency and cross-task write-back.
+
+The rule is hooked from **gate step 7** ("Keep the documentation current") in the
+quality-gate list and the [`Keeping documentation current`](../engineering-discipline.md#keeping-documentation-current)
+section, mirrored in [`AGENTS.md`](../../AGENTS.md) step 7, so it is applied rather than
+merely written. **No ninth step** — the eight-step gate count is unchanged (the literal
+"eight" lives only in `AGENTS.md` and is untouched; onboarding states no count, so it is
+not edited). No new document type and no infrastructure.
+
+Reviewed under a frozen head: round 1 (three lenses on `c1d717c` — guardrails, semantic
+agreement, adversarial) returned `nothing material in scope`; no fix was needed (cycle
+cap 2, used 0). Evidence: `link-lint` (841 links), `run-discipline-tests` (81 passed),
+`adr-lint`, `prd-lint` and `git diff --check` all pass. Budget: 85 changed lines across
+5 files, against base `bf566d2` (max 150 / ≤8).

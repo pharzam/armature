@@ -37,7 +37,6 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23))
-- **T-5t2q** — Require a post-mortem lesson to be written back into guardrails.md §2, hooked from gate step 7 ([#174](https://github.com/pharzam/armature/issues/174); [detail](T-5t2q.md))
 
 ## Next
 
