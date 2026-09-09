@@ -58,7 +58,7 @@ repo's summary of its own rules is accurate,"* not at anything an adopter's proj
 does. It is also the least liftable artifact in the kit: it derives its
 expectations from *this* repo's exact structure — "**eight** ordered steps,
 **twelve** numbered rules" (`docs/agents/README.md:69`) — so an adopter with
-different governance must rewrite it, not adopt it. ADR-0006 and ADR-0007 are
+different governance must rewrite it, not adopt it. D-0001 and D-0002 are
 decisions *about this linter*, i.e. decisions about the decision-checking process.
 
 ### F3 — The same rules are represented three times; the repo has twice caught itself duplicating enforcement — *material* (Q2: duplicated enforcement)
@@ -66,7 +66,7 @@ The R1–R12 rules live in `issue-workflow.md` (source), are re-stated in prose 
 `AGENTS.md`, and have their presence asserted by `agents-lint`. The repo itself
 documents the recurring pattern: `A19` "resolved this file's links while
 `link-lint` resolved every file's… **A19 has since been removed**"
-(`docs/agents/README.md:61`, ADR-0007), and ADR-0006 records measuring another
+(`docs/agents/README.md:61`, D-0002), and D-0001 records measuring another
 duplication. A pattern the kit keeps re-discovering in itself is evidence the
 mechanism outran the need.
 
@@ -136,9 +136,9 @@ additive and removable, this is **drifted, recoverable**.
 
 **Q2 — Over-engineering.** All four named forms are present, each as a pattern, not
 a single instance: **meta-recursion** (F2 — the `agents-lint` chain, ≥4 levels, plus
-ADR-0006/0007 as decisions about the linter of the linter), **mechanism without
+D-0001/D-0002 as decisions about the linter of the linter), **mechanism without
 mission** (F1 — `audit-record-lint`, which the repo tells the adopter to delete),
-**duplicated enforcement** (F3 — rules stated thrice; A19 and the ADR-0006
+**duplicated enforcement** (F3 — rules stated thrice; A19 and the D-0001
 measurement are the repo's own catches), and **complexity that taxes the adopter**
 (F4 — hard-fail inheritance, "Five constraints," "Two different fives"). These two
 self-facing linters are 54% of the shell and their fixtures are 51% of the corpus;
@@ -148,7 +148,7 @@ in §4).
 
 **Q3 — The self-governance loop.** Both readings have real evidence. Calibration is
 genuine and must be credited: the gate caught actual bugs, not just typos (F8), and
-ADR-0003/0005 generalise into discipline an adopter could want. But capture dominates
+ADR-0003/D-0000 generalise into discipline an adopter could want. But capture dominates
 the *recent* record: by 2026-09-03 the work is the rulebook refining itself in
 ever-finer increments — the spelling of an angle bracket in a link linter, whether a
 close-out commit may carry a corrected link count, a four-round task to conclude a
@@ -172,7 +172,7 @@ structural.**
   genuinely reusable discipline an adopter keeps.
 - The `issue-workflow.md` enforcement-honesty table — the kit's strongest feature;
   it tells the truth about what is and isn't enforced.
-- ADR-0003 (issue-first) and ADR-0005 (independent review may be an agent) —
+- ADR-0003 (issue-first) and D-0000 (independent review may be an agent) —
   generalizable decisions, not repo-navel-gazing.
 - The dogfooding *practice* and its early bug-find record (F8) — the credibility.
 
@@ -181,7 +181,7 @@ structural.**
   (12 trees) — repo-specific; the adopter deletes them anyway, so don't ship them.
 - The `agents-lint` meta-chain: `docs/agents/agents-lint.sh`, `docs/agents/tests/`
   (39 trees), `docs/agents/tests/README.md` — or replace with the shrunk version
-  below. With it go ADR-0006 and ADR-0007, which only justify it.
+  below. With it go D-0001 and D-0002, which only justify it.
 
 **SIMPLIFY — merge or shrink**
 - `link-lint.sh`: drop the CommonMark spaced-destination / angle / `%20` handling
@@ -204,7 +204,7 @@ is roughly **2–3× a minimal kit's**.
 ## 5. Honest uncertainty
 
 - **Issue threads unseen.** I read the tree, not the GitHub issue/PR discussions.
-  Whether the ADR-0008 review rounds catch adopter-relevant defects or mostly police
+  Whether the D-0003 review rounds catch adopter-relevant defects or mostly police
   the repo's own text — the completed log suggests the latter *recently* — would be
   settled by reading the round records on the issues.
 - **No evidence of real adopters.** The README's `degit`/"Use this template"
@@ -214,7 +214,7 @@ is roughly **2–3× a minimal kit's**.
 - **Was "lean" ever a firm goal?** The README says "lean" but also "grow it over
   time"; the tension in F5 may be intended rather than drift.
 - **Partial full-text read.** My "not lean" and inventory judgements rest on line/byte
-  counts and sampled reads of `engineering-discipline.md` and ADR-0008, not a
+  counts and sampled reads of `engineering-discipline.md` and D-0003, not a
   line-by-line pass of every doc; the size conclusions are robust, a semantic audit of
   every page is not claimed.
 
@@ -247,7 +247,7 @@ three and moves one verdict. **Nothing here softens the first pass; it hardens i
   a "stop control and whole-milestone budget." The chain of "why does this exist"
   terminates at *the loop running itself*.
 - **F11 — The repo re-decides its own just-landed decisions — *material* (Q3).** #123
-  supersedes ADR-0008 (landed 6 days earlier, 09-02). By its own words the prior
+  supersedes D-0003 (landed 6 days earlier, 09-02). By its own words the prior
   stopping-protocol chain #81→#89→#95→#101 "spent **11 rounds and 114 findings on one
   file and found no behaviour defect**." The stopping protocol has now cycled ≥5 times.
 - **F12 — The self-measured payoff is thin, and the repo says so — *material* (Q3).**

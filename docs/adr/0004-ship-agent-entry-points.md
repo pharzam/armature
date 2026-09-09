@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Accepted. Amended by ADR-0010 and ADR-0011 (both later archived under `docs/decisions/`)
+Accepted. Amended by D-0005 and D-0006 (both later archived under `docs/decisions/`)
 
 ## Context
 

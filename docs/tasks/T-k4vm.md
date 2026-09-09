@@ -2,7 +2,7 @@
 
 Tracks [issue #89](https://github.com/pharzam/armature/issues/89), the successor to
 [#81](https://github.com/pharzam/armature/issues/81). Index line: [completed.md](completed.md); this task never sat in the backlog. The record it lands is
-[ADR-0008](../decisions/0008-stop-the-gate-on-a-frozen-head.md).
+[D-0003](../decisions/D-0003-stop-the-gate-on-a-frozen-head.md).
 
 Written on 2026-09-02 from the two threads and the branch history. Every number below
 is copied from a record that already carries it, with its source named.
@@ -24,7 +24,7 @@ the thing the kit ships, not in the prose that describes it.
 ## What the record decides
 
 Six decisions, each with its rejected alternatives, in
-[ADR-0008](../decisions/0008-stop-the-gate-on-a-frozen-head.md):
+[D-0003](../decisions/D-0003-stop-the-gate-on-a-frozen-head.md):
 
 1. **A frozen head.** A round reviews a named commit; a fix re-freezes it. Integration
    with the default branch takes the merge route, because a rebase rewrites the SHA a
@@ -112,7 +112,7 @@ when it rests on one case is the defect this record exists to catch.
 
 ## Verdict
 
-Delivered the stopping protocol as ADR-0008, with `docs/engineering-discipline.md`,
+Delivered the stopping protocol as D-0003, with `docs/engineering-discipline.md`,
 `docs/glossary.md` and `AGENTS.md` made to say the same thing, on a branch carrying
 eleven of the twelve fixes the predecessor's round 2 produced — the twelfth, the
 record's exact syntax, is #82's.

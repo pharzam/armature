@@ -164,6 +164,30 @@ kit ships them filled. Keep them, and add your own above.
   cheap levels fast and cheap-first, push slow ones to CI, and bound each with
   `‹test timeout›` — see [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
+### Reference-sweep pitfalls (kit-wide — keep these)
+
+A rename or renumbering that repoints citations across the tree has one silent
+failure mode worth keeping.
+
+- ❌ **A blanket find-and-replace over a renamed record's citations.** When a record
+  moves or a directory is renumbered, the same bare token can name *different*
+  records in two places — a bare `ADR-0005` is the living `docs/adr/` record to one
+  reader and the archived `docs/decisions/` one to another, because the two sequences
+  once shared numbers. A global replace of the token silently rewrites the citations
+  you must **not** touch alongside the ones you must; and the reverse — a citation the
+  sweep's pattern never matched (a compound like `ADR-0003/0005`, a token in a code
+  span or a `.sh`/`.yml` comment, one split across a line break) — is silently *left*
+  pointing at the wrong record. It is silent because **no linter catches it**:
+  `link-lint` checks only that a *link* resolves, and a bare textual mention resolves
+  to nothing, so a citation that now sends a reader to the wrong record still passes
+  every check. **The check:** classify each occurrence by its **link target**, not its
+  token — a link into `../adr/` is the living record and stays, a link into
+  `../decisions/` is the archive and is rewritten — and read every *bare* mention by
+  hand, in every token shape, since it carries no path to classify it. A
+  pre-registered grep that must finish returning only the intended survivors (the
+  mapping table and deliberate historical prose) is the closest thing to a gate; run
+  it against the whole tree, not only the files you expected to touch.
+
 ## 3. Validation — how you check you are not fooling yourself
 
 A result is **untrusted** until it passes the checks below, and the pass is a

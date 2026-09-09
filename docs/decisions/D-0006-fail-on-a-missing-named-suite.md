@@ -1,4 +1,4 @@
-# 0011. Fail on a missing named suite
+# D-0006. Fail on a missing named suite
 
 Date: 2026-09-07
 
@@ -29,7 +29,7 @@ line, rather than relying on a silent skip.
 We reject keeping the skip — it is the `#37` defect, a named suite disappearing under a
 green gate. We reject a committed meta-test of the runner: a fixture that deletes a suite
 to prove the runner fails would reintroduce the self-facing meta-recursion
-[ADR-0010](0010-cut-the-self-facing-checks.md) removed. The behaviour is demonstrated
+[D-0005](D-0005-cut-the-self-facing-checks.md) removed. The behaviour is demonstrated
 red→green on `#149` instead.
 
 ## Consequences
@@ -40,6 +40,6 @@ red→green on `#149` instead.
   ADR-0004's description of the skip; ADR-0004's Status now points here.
 - The runner's `skipped` counter, which only ever counted an absent suite, is removed.
 - **Transparency.** `T-9c5t` is a self-facing task by the independent assessment's reading
-  (finding F7), and the pivot's default ([ADR-0009](0009-refocus-on-the-adopter.md)) is to
+  (finding F7), and the pivot's default ([D-0004](D-0004-refocus-on-the-adopter.md)) is to
   record such a task rather than work it. It is implemented here by the repository owner's
   explicit decision over that default, with the disagreement reported on `#149`.

@@ -32,7 +32,7 @@
 # names within good*/bad*, and see each suite's README for the cases it expects.
 #
 # A suite NAMED here whose linter or fixtures are ABSENT is a FAILURE, not a skip
-# (ADR-0011): the dispatch list is the contract, so a vanished suite turns the gate
+# (D-0006): the dispatch list is the contract, so a vanished suite turns the gate
 # red rather than passing green. An adopter who drops a suite removes its dispatch
 # line below to slim the kit. Entries that are neither good* nor bad* — the shared
 # prd facts/ dir, a suite README — are skipped silently.
@@ -95,7 +95,7 @@ check_floor() {
 }
 
 # suite_available LINTER FIXTURE_ROOT LABEL — true if both exist; a NAMED suite whose
-# linter or fixtures are absent is a FAILURE, not a skip (ADR-0011): drop its dispatch
+# linter or fixtures are absent is a FAILURE, not a skip (D-0006): drop its dispatch
 # line to slim the kit.
 suite_available() {
 	if [ -f "$1" ] && [ -d "$2" ]; then

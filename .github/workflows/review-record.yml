@@ -1,4 +1,4 @@
-# Review record — ADR-0008 section 6 (ACTIVE workflow for the Armature repo).
+# Review record — D-0003 section 6 (ACTIVE workflow for the Armature repo).
 #
 # The activated copy of docs/ci/github-actions-review-record.yml. It enforces the
 # record a task leaves on its issue: a plan, a plan review carrying its budget and
@@ -14,7 +14,7 @@
 # for the issue a pull request answers, and a `Refs` to a parent does not carry
 # the record.
 
-name: Review record (ADR-0008)
+name: Review record (D-0003)
 
 on:
   pull_request:

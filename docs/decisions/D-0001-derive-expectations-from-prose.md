@@ -1,14 +1,14 @@
-# 0006. Keep deriving expectations from the prose, not from declared metadata
+# D-0001. Keep deriving expectations from the prose, not from declared metadata
 
 Date: 2026-08-31
 
 ## Status
 
-Superseded by [ADR-0010](0010-cut-the-self-facing-checks.md)
+Superseded by [D-0005](D-0005-cut-the-self-facing-checks.md)
 
 ## Context
 
-[ADR-0005](0005-independent-review-may-be-an-agent.md) closed one half of a review
+[D-0000](D-0000-independent-review-may-be-an-agent.md) closed one half of a review
 recommendation and left the other open. The recommendation, made against
 [#58](https://github.com/pharzam/armature/issues/58), was that
 `agents/agents-lint.sh` — 1051 lines — should replace

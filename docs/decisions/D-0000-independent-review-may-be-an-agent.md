@@ -1,10 +1,10 @@
-# 0005. Independent review may be an agent
+# D-0000. Independent review may be an agent
 
 Date: 2026-08-31
 
 ## Status
 
-Accepted. Amended by [ADR-0006](0006-derive-expectations-from-prose.md), [ADR-0008](0008-stop-the-gate-on-a-frozen-head.md), [ADR-0010](0010-cut-the-self-facing-checks.md)
+Accepted. Amended by [D-0001](D-0001-derive-expectations-from-prose.md), [D-0003](D-0003-stop-the-gate-on-a-frozen-head.md), [D-0005](D-0005-cut-the-self-facing-checks.md)
 
 ## Context
 
