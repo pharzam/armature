@@ -2,9 +2,9 @@
 #
 # review-record-lint.sh — enforce the review record and its chronology.
 #
-# A domain-free discipline test, the CI twin of
-# docs/decisions/D-0003-stop-the-gate-on-a-frozen-head.md section 6 (the review record)
-# and docs/issue-workflow.md (R12, the plan and its one review). It reads an
+# A domain-free discipline test, the CI twin of engineering-discipline.md's
+# "What a round records" (the review record) and docs/issue-workflow.md (R12, the
+# plan and its one review). It reads an
 # issue's comments as text and passes only when the record a task leaves behind
 # can be parsed and its chronology holds.
 #
@@ -21,8 +21,9 @@
 #
 # Exit status: 0 = the record parses and its chronology holds, 1 = it does not.
 #
-# INPUT CONTRACT. D-0003 section 6 leaves the contract to this check, and this
-# is it. The stream is the issue's comments oldest-first, each introduced by a
+# INPUT CONTRACT. engineering-discipline.md's "What a round records" fixes the
+# record's field names and leaves the exact syntax to this check — and this is it.
+# The stream is the issue's comments oldest-first, each introduced by a
 # separator line:
 #
 #   === comment created=<ISO-8601> updated=<ISO-8601> ===
@@ -47,8 +48,8 @@
 # WHAT IT ASSERTS.
 #   RR1  a plan comment exists                      — R12
 #   RR2  a plan-review confirmation exists, carrying `Verdict`, `Budget maximum`
-#        and `Cycle cap`                             — R12, D-0003 section 6
-#   RR3  at least one review record exists           — D-0003 section 6
+#        and `Cycle cap`                             — R12; What a round records
+#   RR3  at least one review record exists           — What a round records
 #   RR4  every record carries the reviewer's nine fields
 #   RR5  `Commit reviewed` is a hexadecimal SHA, 7 to 40 characters
 #   RR6  `Cycle` is a non-negative integer
@@ -64,19 +65,19 @@
 # comment. That the model named is the model used. That a round which ran was
 # posted at all — a round that ran and was not posted leaves no trace here. It
 # makes the record parseable and its chronology checkable; it claims nothing
-# more, which is what D-0003 section 6 says of the record itself.
+# more, which is what "What a round records" says of the record itself.
 #
-# An edited comment (updated later than created) is REPORTED, not failed:
-# D-0003 section 5 says a later change is a new comment rather than an edit, so
-# an edit is worth a reader's eye but is not by itself a broken record.
+# An edited comment (updated later than created) is REPORTED, not failed: a later
+# change to a review comment should be posted as a NEW comment, not an edit, so an
+# edit is worth a reader's eye but is not by itself a broken record.
 #
 # `Fixes` is the author's field and lands as a reply after the round, so RR4 does
-# not require it: section 6 says a record with no `Fixes` is complete until the
-# fixes land.
+# not require it: "What a round records" says a record with no `Fixes` is complete
+# until the fixes land.
 #
 # How to adapt: the field names, the verdict values and the heading come from
-# D-0003 section 6. If you change that section, change this script in the SAME
-# change — the record and its parser must always agree.
+# engineering-discipline.md's "What a round records". If you change that section,
+# change this script in the SAME change — the record and its parser must always agree.
 
 set -u
 
@@ -287,7 +288,7 @@ END {
 	if (bad > 0) exit 1
 
 	if (edited > 0)
-		note(edited " comment(s) edited after posting; D-0003 section 5 asks for a new comment rather than an edit")
+		note(edited " comment(s) edited after posting; a later change should be a new comment, not an edit")
 	# Print the cap this check PARSED, not the prose it came from: the summary is
 	# where a reader confirms the cap assertion was live, and echoing the raw text
 	# hides whether a number was found in it at all.

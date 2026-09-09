@@ -166,8 +166,8 @@ kit ships them filled. Keep them, and add your own above.
 
 ### Reference-sweep pitfalls (kit-wide — keep these)
 
-A rename or renumbering that repoints citations across the tree has one silent
-failure mode worth keeping.
+A rename or renumbering that repoints citations across the tree has two silent
+failure modes worth keeping.
 
 - ❌ **A blanket find-and-replace over a renamed record's citations.** When a record
   moves or a directory is renumbered, the same bare token can name *different*
@@ -187,6 +187,17 @@ failure mode worth keeping.
   pre-registered grep that must finish returning only the intended survivors (the
   mapping table and deliberate historical prose) is the closest thing to a gate; run
   it against the whole tree, not only the files you expected to touch.
+- ❌ **A repoint that orphans a bare back-reference.** Repointing a citation can
+  strand a *different* reference that named the target only through it. A comment
+  reading `section 6 says …` leaned on a nearby `D-0003 section 6` for its antecedent;
+  repoint every `D-0003 section 6` and the bare `section 6` is left pointing at a
+  structure only the deleted record holds — wrong on the adopter's tree, and sharing
+  **no token** with the thing you renamed. It is silent because a grep keyed on the
+  obvious token (`D-000N`) cannot match a bare `section 6`, so the pre-registered
+  check goes green over the survivor. **The check:** grep for the *shapes* a reference
+  takes, not only the token — a bare `section N`, a `§`, a pronoun (`that section`,
+  `the record`) whose antecedent you removed — and read the neighbourhood of every
+  citation you changed, not the citation alone.
 
 ## 3. Validation — how you check you are not fooling yourself
 

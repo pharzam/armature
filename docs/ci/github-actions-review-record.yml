@@ -1,9 +1,9 @@
-# Review record (D-0003) — a GitHub Actions workflow you can copy.
+# Review record — a GitHub Actions workflow you can copy.
 #
 # Copy to .github/workflows/review-record.yml in your own repository. It enforces
 # the record a task leaves on its issue: a plan, a plan review carrying its budget
 # and cycle cap, and a parseable review record per round whose chronology holds.
-# See docs/decisions/D-0003-stop-the-gate-on-a-frozen-head.md section 6 for the fields and
+# See engineering-discipline.md's "What a round records" for the fields and
 # docs/ci/review-record-lint.sh for the input contract this reads.
 #
 # It is separate from ci.yml because issue comments are a forge artifact rather
@@ -15,7 +15,7 @@
 # issue carries no record, so turning it on before your team writes records will
 # block every merge. Land it, watch it, then require it.
 
-name: Review record (D-0003)
+name: Review record
 
 on:
   pull_request:
