@@ -54,10 +54,12 @@ and **link it nowhere**:
 [ADR-0001](0001-mentioned-only.md)
 ```
 
-This case exists because the shape it holds is not hypothetical. ADR-0007 read as
-cross-linked on the day it was written, before anything linked it: the audit record
-had used `ADR-0007` as a hypothetical counter-example back when no such record
-existed, and the token match counted that sentence as an inbound link. An audit record about this
+This case exists because the shape it holds is not hypothetical. The archived
+link-coverage record — filed as `0007` then, `D-0002` now — read as cross-linked on
+the day it was written, before anything linked it: the audit record had used the
+literal token `ADR-0007` as a hypothetical counter-example back when no record,
+living or archived, held that number, and the token match counted that sentence as
+an inbound link. An audit record about this
 linter's loose matching was the thing that defeated this linter's loose matching.
 
 None of the three is a link, so the `WARN` fires — with or without a trailing

@@ -112,7 +112,7 @@ when it rests on one case is the defect this record exists to catch.
 
 ## Verdict
 
-Delivered the stopping protocol as ADR-0008, with `docs/engineering-discipline.md`,
+Delivered the stopping protocol as D-0003, with `docs/engineering-discipline.md`,
 `docs/glossary.md` and `AGENTS.md` made to say the same thing, on a branch carrying
 eleven of the twelve fixes the predecessor's round 2 produced — the twelfth, the
 record's exact syntax, is #82's.
