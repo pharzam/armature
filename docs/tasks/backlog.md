@@ -37,7 +37,6 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23))
-- **T-9k2p** — Route work by model tier: record ADR-0005 and write the `Model tiers` rule ([#171](https://github.com/pharzam/armature/issues/171); [detail](T-9k2p.md))
 
 ## Next
 

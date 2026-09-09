@@ -45,4 +45,25 @@ preference or that one independence level.
 
 ## Verdict
 
-_(Filled at close-out, after the decay rounds settle.)_
+The kit now has one rule for which class of model does which class of work.
+[ADR-0005](../adr/0005-route-work-by-model-tier.md) records the decision and its
+rejected alternatives; a new `## Model tiers` section in
+[`engineering-discipline.md`](../engineering-discipline.md#model-tiers) carries the
+operative rule and maps each tier to the gate steps it owns. The rule subordinates
+on both axes — it applies only after `Solution selection`'s Determinism criterion
+warrants a model, a deterministic check still outranks any tier, and the Model
+independence level wins where it meets routing — and a one-tier adopter records the
+limit. Which models fill a tier stays a `‹…›` marker; no vendor is named.
+
+The ADR cites only sibling constitutive documents (no forge issue, PR or URL, no
+link into `docs/decisions/`); its index row is in `docs/adr/README.md`, and the
+`Model tiers` section supplies the inbound link. A `Model tier` glossary entry and a
+concise `AGENTS.md` pointer keep the summary layer in step (R10).
+
+Reviewed under a frozen head: round 1 (three lenses on `4c08068`) found one material
+defect — the README's "next constitutional ADR" pointer still said `0005` after this
+change consumed it — fixed to `0006` in `c077d55`; round 2 (`c077d55`, completeness
+lens) returned `nothing material in scope`. Evidence: `adr-lint`, `prd-lint`,
+`link-lint` (784 links), `run-discipline-tests` (81 passed) and `git diff --check`
+all pass. Budget: 175 changed lines across 7 files, against base `12a1358` (max 260 /
+≤10).
