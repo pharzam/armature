@@ -90,8 +90,7 @@ success without having done its job.
 
 - ❌ **A check the change supplies is not a control.** CI checks out the pull
   request's own head and then runs the check from that checkout, so **the script
-  that judges the change comes from the change**. Measured on
-  [#84](https://github.com/pharzam/armature/issues/84): a branch that replaces
+  that judges the change comes from the change**. Measured: a branch that replaces
   `docs/links/link-lint.sh` with `exit 0` passes that job — and replacing
   `docs/tests/run-discipline-tests.sh` as well turns **every** required job green
   over a dead link in the tree. Gutting a linter alone does not, because the

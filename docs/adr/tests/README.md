@@ -13,7 +13,7 @@ drives every case below and asserts the exit code.
 | ---- | -------- | --------- |
 | `good` | `adr-lint: OK`, exit 0 | two contiguous, well-formed ADRs with an index |
 | `good-mention-not-link` | exit 0 — all the runner checks | a record this file names three ways and links nowhere. By eye it draws the no-orphan `WARN`; the runner cannot see that, so the case pins the exit code and no more |
-| `good-path with space` | `adr-lint: OK`, exit 0 | a **space in the case directory's own name**. The record list was a space-joined string looped over unquoted, so one path split into the three words `good-path`, `with` and the filename. Measured against the pre-fix linter: `[: good: integer expression expected` on the numbering test, `awk: can't open file …/good-path`, and five "missing" failures per fragment — a `Date:` line and four sections — against a fragment that is not a file, none of them true ([#76](https://github.com/pharzam/armature/issues/76)). It does **not** report a duplicate number: that symptom needs several records whose first fragments share four characters, which a spaced *checkout prefix* produces and this case does not |
+| `good-path with space` | `adr-lint: OK`, exit 0 | a **space in the case directory's own name**. The record list was a space-joined string looped over unquoted, so one path split into the three words `good-path`, `with` and the filename. Measured against the pre-fix linter: `[: good: integer expression expected` on the numbering test, `awk: can't open file …/good-path`, and five "missing" failures per fragment — a `Date:` line and four sections — against a fragment that is not a file, none of them true. It does **not** report a duplicate number: that symptom needs several records whose first fragments share four characters, which a spaced *checkout prefix* produces and this case does not |
 | `good-crlf` | `adr-lint: OK`, exit 0 | records with **Windows line endings**, reaching all three checks the carriage return broke. `Date:` and `## Status` compare a whole string, so it failed both — reporting `got 'YYYY-MM-DD'` for a record whose date *is* the placeholder, because the character does not print. The **title** check breaks differently and needs `0002`'s deliberate leading blank line: it selects the first non-blank line by field count, and an empty CRLF line holds a `\r`, whose field count is 1 — so the blank line was chosen as the title. Two records, to reach both date branches, both title positions and two status values. Endings pinned by [`.gitattributes`](../../../.gitattributes) |
 | `bad-filename` | FAIL, exit 1 | a filename that is not `NNNN-kebab-case.md` |
 | `bad-numbering` | FAIL, exit 1 | a gap in the sequence (0001 then 0003) |
@@ -57,15 +57,13 @@ and **link it nowhere**:
 This case exists because the shape it holds is not hypothetical. ADR-0007 read as
 cross-linked on the day it was written, before anything linked it: `T-3v9q.md`
 had used `ADR-0007` as a hypothetical counter-example back when no such record
-existed, and the token match counted that sentence as an inbound link
-([#73](https://github.com/pharzam/armature/issues/73)). An audit record about this
+existed, and the token match counted that sentence as an inbound link. An audit record about this
 linter's loose matching was the thing that defeated this linter's loose matching.
 
 None of the three is a link, so the `WARN` fires — with or without a trailing
 slash on the argument, since the case directory is excluded by its `good-*` name
 as well as by the self-exclusion, which `T-8q3f` made independent of how the
-directory argument is spelled. Before
-[#73](https://github.com/pharzam/armature/issues/73) **any one of the three**
+directory argument is spelled. Before the match was tightened, **any one of the three**
 silenced it: the check matched the record's stem or its `ADR-NNNN` shorthand as a
 plain string anywhere in a file, so the fenced example counted as much as the
 sentence, and a document that merely discusses a record was read as one that

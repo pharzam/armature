@@ -1,6 +1,6 @@
 ## Linked issue (R1)
 
-Fixes https://github.com/pharzam/armature/issues/88
+Fixes https://github.com/owner/repo/issues/88
 
 ## What & why (R7)
 

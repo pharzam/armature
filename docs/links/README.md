@@ -15,7 +15,7 @@ heading anchors. Rename a heading and every anchor pointing at it dies silently:
 the page still renders, the link still looks like a link, and a reader following
 it lands nowhere. Nothing in the kit caught that until this check.
 
-The gap was found the honest way. A review of [#61](https://github.com/pharzam/armature/issues/61)
+The gap was found the honest way. A review
 noticed that a "311 links resolve" claim had been cited beside the committed
 linters as if it were one of them, when it came from a throwaway script. It was
 not repeatable, so it was not evidence —
@@ -114,7 +114,7 @@ skip list above.
 ## Why A19 was removed, and what replaced it
 
 `agents-lint` once carried its own assertion **A19**, resolving the root
-`AGENTS.md`'s links. It was removed ([#67](https://github.com/pharzam/armature/issues/67))
+`AGENTS.md`'s links. It was removed
 because this check walks every Markdown file in the tree and `AGENTS.md` is one of
 them — the same work, done once instead of twice, across four link forms instead
 of one.
@@ -132,7 +132,7 @@ change excluded the repository root from the walk.
 
 1. **The slug rule is a hand-maintained approximation of GitHub's, with no mechanism
    behind it.** `slug()` began as a copy of `agents-lint`'s A19; that assertion was
-   removed ([#67](https://github.com/pharzam/armature/issues/67)) and `agents-lint`
+   removed and `agents-lint`
    itself has since been removed, so `slug()` is now the rule's only home. It also
    drops underscores, which GitHub keeps in an anchor: harmless while no heading in
    the tree uses one, and a defect the day one does.
@@ -159,15 +159,13 @@ change excluded the repository root from the walk.
    definition this reads it as; the label it appears to define therefore counts
    toward `L6` when it should not. No such line exists in the tree.
 6. **A second link extractor lives in `adr-lint.sh`.** Its `links_to_record()`
-   reads Markdown destinations to decide whether an ADR record has an inbound link
-   ([#73](https://github.com/pharzam/armature/issues/73)); it resolves nothing —
+   reads Markdown destinations to decide whether an ADR record has an inbound link; it resolves nothing —
    that stays this linter's job — but the two must broadly agree about what a link
    *is*, and nothing but a hand check keeps them in step. They have diverged before,
    each time found by reading one against the other: this one stripped a CommonMark
-   angle wrapper and that one did not ([#78](https://github.com/pharzam/armature/issues/78)),
+   angle wrapper and that one did not,
    and that one stripped a trailing carriage return while this one did not, so every
-   reference definition in a CRLF file reported as broken here and resolved there
-   ([#76](https://github.com/pharzam/armature/issues/76)). Both are fixed. The two
+   reference definition in a CRLF file reported as broken here and resolved there. Both are fixed. The two
    now part on the CommonMark spelling variants this linter dropped (spaced, angle
    and percent-encoded destinations): `links_to_record()` still reads them, because
    it compares **basenames** only and an ADR filename forbids a space, so a spelling
@@ -178,8 +176,7 @@ change excluded the repository root from the walk.
    NUL-delimited so no name is quoted and with symlinks refused, so a nested
    checkout is one entry and never read, with a `find` walk that prunes any
    directory holding a `.git` entry whenever this directory is not itself the
-   repository root, or git lists nothing
-   ([#80](https://github.com/pharzam/armature/issues/80)). The same shape as limits
+   repository root, or git lists nothing. The same shape as limits
    1 and 6, **by hand, with no mechanism**:
    [`nested-checkout-check.sh`](../tests/nested-checkout-check.sh) drives both
    copies but does not compare them. The shape's own limit: `--exclude-standard`
@@ -200,7 +197,7 @@ harness that compares only exit codes — which is why a close-out that turns on
 specific assertion id pastes this script's output beside the runner's.
 
 It is a script rather than a copy-paste loop, but it is **not yet a gate** — it is
-not wired into the runner. Backlog task `T-9c5t` ([#37](https://github.com/pharzam/armature/issues/37))
+not wired into the runner. Backlog task `T-9c5t`
 owns generalizing `EXPECT` across every suite; this suite is ready for it.
 
 ## The cases
