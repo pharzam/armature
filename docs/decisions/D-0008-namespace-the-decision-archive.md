@@ -64,9 +64,9 @@ split decision itself still holds.
    *deleted* file to a code-span; D-0007 permitted a **path-repoint of a moved link,
    the visible text unchanged**, and closed with "applied exactly twice … Nothing else
    in a landed body may change." Renaming the archive breaks that bound: every
-   intra-archive cross-link and two living `docs/adr/` Status lines must
-   **re-identify** — the visible identifier `ADR-0010` becomes `D-0005`, not only its
-   path. This is a **third, genuinely wider** shape than the two before it, which both
+   intra-archive cross-link — and the one living `docs/adr/` Status line that names
+   archived records (`0004`'s) — must **re-identify**: the visible identifier
+   `ADR-0010` becomes `D-0005`, not only its path. This is a **third, genuinely wider** shape than the two before it, which both
    deliberately preserved the visible text; it is recorded here plainly, not dressed
    as "no larger" than its predecessors. It stays bounded and meaning-preserving: it
    is *forced* (leaving the old identifier would manufacture the very false-mention

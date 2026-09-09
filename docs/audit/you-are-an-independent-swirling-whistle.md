@@ -148,7 +148,7 @@ in §4).
 
 **Q3 — The self-governance loop.** Both readings have real evidence. Calibration is
 genuine and must be credited: the gate caught actual bugs, not just typos (F8), and
-ADR-0003/0005 generalise into discipline an adopter could want. But capture dominates
+ADR-0003/D-0000 generalise into discipline an adopter could want. But capture dominates
 the *recent* record: by 2026-09-03 the work is the rulebook refining itself in
 ever-finer increments — the spelling of an angle bracket in a link linter, whether a
 close-out commit may carry a corrected link count, a four-round task to conclude a

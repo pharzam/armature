@@ -136,6 +136,6 @@ record by number here, and let the index table below do the linking.
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
 
-This repository's own past governance decisions — records `0005`–`0012` — are
-archived under `docs/decisions/`; see the index there. They are not part of the
-constitution an adopter adopts.
+This repository's own past governance decisions — the archive's `D-0000`–`D-0007`
+sequence — are archived under `docs/decisions/`; see the index there. They are not
+part of the constitution an adopter adopts.
