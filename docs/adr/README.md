@@ -130,6 +130,7 @@ record by number here, and let the index table below do the linking.
 | [0002](0002-record-product-requirements.md)     | Record product requirements as PRDs | Accepted |
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 | [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted; amended |
+| [0005](0005-route-work-by-model-tier.md)        | Route work by model tier      | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
 

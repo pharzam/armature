@@ -54,6 +54,17 @@ plan review is architecture and scope, never implementation approval.
 7. **Keep the documentation current.** Every document the change leaves stale is fixed in the same pull request.
 8. **Close out in the same PR.** Tick the boxes, write the verdict, and record the task line in the completed log.
 
+**Model tiers.** Where a step needs a model, a **reasoning tier** does the deciding
+and judging — the plan and its review, solution selection, the review rounds, the
+verdict — and an **execution tier** does tactical execution and coding once the plan
+is fixed. Routing applies only after
+[Determinism](docs/engineering-discipline.md#solution-selection) warrants a model at
+all, a deterministic check still outranks any tier, and reviewer
+[independence](docs/engineering-discipline.md#who-may-review) wins where it meets
+routing. The rule and its tier-to-step map live in
+[Model tiers](docs/engineering-discipline.md#model-tiers), recorded in
+[ADR-0005](docs/adr/0005-route-work-by-model-tier.md).
+
 ## The issue rules
 
 The workflow defines **twelve** numbered rules, R1–R12; cite one by number in a

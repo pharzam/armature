@@ -198,6 +198,43 @@ fits the task and its constraints. Record the selected option, the rejected
 alternatives, and the important tradeoffs. If the selection is architecturally
 significant, record it in an [ADR](adr/). Otherwise, record it on the issue.
 
+## Model tiers
+
+Some work needs a model; some does not. [Solution selection](#solution-selection)'s
+**Determinism** criterion settles that first — prefer plain code, rules, and
+algorithms to an LLM call, and [R5](issue-workflow.md#r5--deterministic-over-llm-based)
+repeats it. Model tiering begins only **after** that criterion has been applied and
+the work is known to need a model; it never overturns the preference, and a
+deterministic check still outranks a model of any tier.
+
+Where a model is warranted, route by **tier**. Which concrete models fill each tier
+is the adopter's to set — `‹name your reasoning-tier models›` and
+`‹name your execution-tier models›`; the kit names none.
+
+| Tier | Class of model | Owns the gate steps that … |
+| ---- | -------------- | -------------------------- |
+| **Reasoning tier** | frontier / reasoning models | **decide or judge**: the [ordered plan and its review](issue-workflow.md#r12--slice-and-prioritize), [solution selection](#solution-selection), the [review rounds](#reviewing-until-findings-decay), the [review before a costly or irreversible action](#review-before-a-costly-or-irreversible-action), and the verdict. |
+| **Execution tier** | lighter, faster, cheaper models | **carry out a fixed plan**: writing the tests and the code once the plan is set, and routine mechanical edits. |
+
+Two bounds keep the routing from weakening a rule that already holds:
+
+- **Independence wins where it meets routing.** Routing says which tier *executes* a
+  step. The [Model independence level](#who-may-review) says a reviewer's model
+  *differs from the author's* — for high-risk work, where the adopter has a second
+  model. Where the two meet, independence wins: a reviewer never drops to the
+  author's model to satisfy routing. Routing extends model choice from review to the
+  whole gate; it does not weaken the one place model choice already bit.
+- **An adopter with one tier records the limit.** A single model cannot route. That
+  is a limit of the adopter, not a failure of the gate: run the work on the tier you
+  have, and name the tier you could not reach — the same answer
+  [Who may review](#who-may-review) gives when an adopter runs out of independence
+  levels. A limit recorded can be judged; a limit implied cannot.
+
+A deterministic check still outranks any reviewer and any tier alike: tiering is
+what is left **after** Determinism, never a route around it. This decision, its
+rejected alternatives and its consequences are recorded in
+[ADR-0005](adr/0005-route-work-by-model-tier.md).
+
 ## Issue-first workflow
 
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
