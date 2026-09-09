@@ -4,7 +4,7 @@ Date: YYYY-MM-DD
 
 ## Status
 
-Accepted
+Accepted. Amended by ADR-0007
 
 ## Context
 
