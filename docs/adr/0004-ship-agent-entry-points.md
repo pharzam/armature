@@ -19,19 +19,14 @@ Three forces shaped the decision.
 
 **The kit is vendor-neutral and forge-free.** It already ships forge-specific
 issue and pull-request templates *inert* under [`../templates/`](../templates/),
-to be copied into place only when a project adopts that forge. The audit record
-reasoned from that pattern to the opposite conclusion of this record: finding K6
-in `../tasks/T-3v9q.md` — verdict *Stands* — says "the kit's
-own pattern is to ship tool-specific files inert under `docs/templates/` … so that
-is where one belongs." [R10](../issue-workflow.md#r10--sync-with-governance) says
-a conflict between governance documents stops work until a decision note or an ADR
-resolves it. **This record is that resolution.** The K6 row itself is left
-unedited — it is dated evidence of what the tree held when it was audited, and
-the audit record's own linter reads the verdict counts out of its prose — so this
-record, not an edit to that row, is where its conclusion is superseded. The
-pattern does not transfer:
-an inert copy is never loaded at agent startup, and startup discoverability is the
-entire gap. `docs/templates/` exists for files that change a forge's live
+to be copied into place only when a project adopts that forge. That pattern
+reasons toward the opposite conclusion of this record — that agent entry points,
+being tool-specific, belong inert under `docs/templates/` too, "so that is where
+one belongs." [R10](../issue-workflow.md#r10--sync-with-governance) says a conflict
+between governance documents stops work until a decision note or an ADR resolves
+it. **This record is that resolution.** The pattern does not transfer: an inert
+copy is never loaded at agent startup, and startup discoverability is the entire
+gap. `docs/templates/` exists for files that change a forge's live
 behaviour the moment they land; a root instruction file changes nothing but what a
 reader is told.
 

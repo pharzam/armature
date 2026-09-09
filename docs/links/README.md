@@ -197,8 +197,8 @@ harness that compares only exit codes — which is why a close-out that turns on
 specific assertion id pastes this script's output beside the runner's.
 
 It is a script rather than a copy-paste loop, but it is **not yet a gate** — it is
-not wired into the runner. Backlog task `T-9c5t`
-owns generalizing `EXPECT` across every suite; this suite is ready for it.
+not wired into the runner. Generalizing `EXPECT` across every suite is future
+work; this suite is ready for it.
 
 ## The cases
 
