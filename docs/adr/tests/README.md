@@ -55,14 +55,14 @@ and **link it nowhere**:
 ```
 
 This case exists because the shape it holds is not hypothetical. ADR-0007 read as
-cross-linked on the day it was written, before anything linked it: `T-3v9q.md`
+cross-linked on the day it was written, before anything linked it: the audit record
 had used `ADR-0007` as a hypothetical counter-example back when no such record
 existed, and the token match counted that sentence as an inbound link. An audit record about this
 linter's loose matching was the thing that defeated this linter's loose matching.
 
 None of the three is a link, so the `WARN` fires — with or without a trailing
 slash on the argument, since the case directory is excluded by its `good-*` name
-as well as by the self-exclusion, which `T-8q3f` made independent of how the
+as well as by the self-exclusion, which was made independent of how the
 directory argument is spelled. Before the match was tightened, **any one of the three**
 silenced it: the check matched the record's stem or its `ADR-NNNN` shorthand as a
 plain string anywhere in a file, so the fenced example counted as much as the
@@ -88,7 +88,6 @@ at 0, and the warning beside it is checked by eye.
 sh docs/adr/adr-lint.sh docs/adr/tests/good-mention-not-link
 ```
 
-`T-9c5t` in the [backlog](../../tasks/backlog.md#next) — assert *why* a linter
-failed, not only that it did — is the one thing that would close this gap, for
+Asserting *why* a linter failed, not only that it did, is the one thing that would close this gap, for
 this suite and for every other. Until it lands, treat the row above as a claim
 this file makes, not one the runner proves.

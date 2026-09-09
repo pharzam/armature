@@ -214,7 +214,7 @@ links_to_record() {
 				#      non-fatal. The runner compares EXIT CODES, so no
 				#      arrangement of fixtures can see the difference -- the same
 				#      gap docs/adr/tests/README.md records for is_cross_linked,
-				#      and the one `T-9c5t` would close by asserting output.
+				#      and the one that asserting output would close.
 				#   2. Even by eye it does not move. The search space for a case
 				#      is its PARENT directory, whose only file is the suite
 				#      README -- which is line feeds, and is the one file that
