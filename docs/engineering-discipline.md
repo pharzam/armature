@@ -278,6 +278,23 @@ reasoning — and each round applies a different lens:
 - semantic agreement — does each changed sentence still mean what its source
   means? See [Reviewing for semantic agreement](#reviewing-for-semantic-agreement).
 
+**Every reviewer argues as an objective scientist** — curious, empirical,
+hypothesis-driven, and intellectually humble. Not as a **preacher**, who defends a
+convention because it is the convention; not as an **inquisitor**, who presses a
+finding by the force of interrogation rather than by its basis. This is checkable at
+the grain the record already exposes: a finding's **basis** is an observation, a test,
+or a **cited clause in the tree** — a claim precise enough to be checked and found
+**false**. Citing a written rule by its number and showing the clause is broken is a
+basis; an appeal to *unwritten* convention — a preference, or "this is not how it is
+done" — is not, and the [record](#what-a-round-records) shows the difference. The
+adversarial bug-hunt lens is not an inquisition: it hunts by evidence, and a finding
+it raises still stands or falls on its basis. A round that finds nothing says so —
+`nothing material in scope` is a valid outcome, not a sign the reviewer did not try;
+reaching for a finding that is not there is the inquisitor's failure, the mirror of
+the preacher's. The standard buys a **vocabulary for a dispute, not a check**: no
+mechanism reads a finding and judges its basis, and claiming one did would be the same
+overstatement [Who may review](#who-may-review) exists to catch.
+
 One pass is never enough. Each round catches a different class of error. The
 protocol that bounds the rounds is:
 
@@ -317,7 +334,9 @@ protocol that bounds the rounds is:
   Definition-of-Done item. Wording, style and layout are not. A claim in the
   tree counts only when a reader could act on it and the change makes it false
   or leaves it false; a sentence that changed and still holds is wording. Each
-  finding records its basis in one line.
+  finding records its basis in one line — an observation, a test, or a cited clause
+  that could have come out the other way, as the objective-scientist standard above
+  requires, never a bare preference.
 - **A finding is classified before it is fixed.** *In the change* — introduced
   by this branch, or pre-existing on the path the Definition of Done names — is
   fixed here inside the budget, else it becomes a child issue. *Revealed* —
@@ -479,6 +498,11 @@ answers with the round:
 
 This is the review the [DoD checklist](tests/dod-checklist.md) collects, and it is
 the residual the deterministic checks hand over by design.
+
+The [objective-scientist standard](#reviewing-until-findings-decay) governs this
+round most of all: a clause-by-clause judgement is where dogma hides, so a finding
+here carries the same basis — an observation or a cited clause that could be wrong,
+never a preference.
 
 ## Review before a costly or irreversible action
 
