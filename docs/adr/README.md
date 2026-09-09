@@ -30,7 +30,7 @@ are their enforcement:
    survives the deletion.)
 
 **Numbering.** `docs/adr/` is the single living ADR sequence, numbered
-contiguously from `0001`, and it grows — the next constitutional ADR is `0006`.
+contiguously from `0001`, and it grows — the next constitutional ADR is `0007`.
 The archive keeps its records' original numeric filenames (`0005`–`0012`) as
 provenance and is cited **by path**; a bare "ADR-NNNN" means this directory's
 sequence.
@@ -131,6 +131,7 @@ record by number here, and let the index table below do the linking.
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 | [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted; amended |
 | [0005](0005-route-work-by-model-tier.md)        | Route work by model tier      | Accepted |
+| [0006](0006-convene-a-panel-to-generate-options.md) | Convene a panel to generate options | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
 

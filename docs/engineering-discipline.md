@@ -198,6 +198,22 @@ fits the task and its constraints. Record the selected option, the rejected
 alternatives, and the important tradeoffs. If the selection is architecturally
 significant, record it in an [ADR](adr/). Otherwise, record it on the issue.
 
+For a complex challenge — a novel solution, firm requirements, an implementation
+roadmap — a **panel** of diverse specialists may be convened to generate and compare
+candidate options *before* this selection is made. A panel is a generator of options
+and falsifiable arguments, not a second verdict: its output is the compared candidate
+set with the tradeoffs recorded, which then feeds the selection above and the
+[R12 plan](issue-workflow.md#r12--slice-and-prioritize). A panel does not vote and
+does not average; where it does not converge, the disagreement is recorded and
+[When reviewers disagree](#when-reviewers-disagree) runs unchanged. A panel of
+identical agents is none — two agents given the same prompt, context and model are
+"one reviewer run twice, and they share every blind spot" — so a panel's members
+differ in domain, and which domains sit on one is a `‹…›` marker. A panel costs model
+calls: convene one only where the challenge earns it, under an iteration bound, and
+required only for the architecturally-significant or novel decisions
+`‹your project treats as panel-worthy›` — never on every task. This is recorded in
+[ADR-0006](adr/0006-convene-a-panel-to-generate-options.md).
+
 ## Model tiers
 
 Some work needs a model; some does not. [Solution selection](#solution-selection)'s
