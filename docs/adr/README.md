@@ -30,10 +30,11 @@ are their enforcement:
    survives the deletion.)
 
 **Numbering.** `docs/adr/` is the single living ADR sequence, numbered
-contiguously from `0001`, and it grows — the next constitutional ADR is `0007`.
-The archive keeps its records' original numeric filenames (`0005`–`0012`) as
-provenance and is cited **by path**; a bare "ADR-NNNN" means this directory's
-sequence.
+contiguously from `0001`, and it grows — the next constitutional ADR is `0007`. A
+bare "ADR-NNNN" means this directory's sequence. The archive under `docs/decisions/`
+has its **own namespace**: a prefixed, zero-based sequence `D-0000`–`D-0007` that
+shares no number with this one and is cited **by its `D-NNNN` identifier** — named
+here without a link, since a constitutional record never links into the archive.
 
 ## Adding a new ADR
 

@@ -1,4 +1,4 @@
-# 0008. Stop the gate on a frozen head
+# D-0003. Stop the gate on a frozen head
 
 Date: 2026-09-02
 
@@ -10,7 +10,7 @@ Accepted
 
 [Gate step 5](../engineering-discipline.md#working-a-task-under-the-quality-gate)
 runs review rounds until one round finds nothing material, and
-[ADR-0005](0005-independent-review-may-be-an-agent.md) says what a round is: an
+[D-0000](D-0000-independent-review-may-be-an-agent.md) says what a round is: an
 independent reviewer reading a fixed commit. Neither says what happens between
 rounds. Each round's fixes change the branch, the next round reads a larger
 diff, and "nothing material" is measured against a surface that moves.
@@ -266,7 +266,7 @@ Each round is one comment on the issue under the heading
 | `Lens` | the one question the round asked |
 | `Briefed on` | what the reviewer was handed |
 | `Barred from` | what the brief excluded |
-| `Independence claimed` | the ADR-0005 levels held, and those not reached |
+| `Independence claimed` | the D-0000 levels held, and those not reached |
 | `Cycle` | `0` on this branch's first frozen head for this issue; `k` for the k-th fix-and-review cycle after it |
 | `Raw findings` | before triage, each with its one-line basis and its classification |
 | `Fixes` | what landed, and the new frozen head if one |

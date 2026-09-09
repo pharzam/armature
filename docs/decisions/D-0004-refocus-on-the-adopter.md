@@ -1,4 +1,4 @@
-# 0009. Refocus on the adopter; stop the unattended-run milestone
+# D-0004. Refocus on the adopter; stop the unattended-run milestone
 
 Date: 2026-09-07
 
@@ -63,7 +63,7 @@ progress, so a genuinely useful self-check must now justify itself as adopter va
 wait.
 
 What this creates: three follow-on efforts, each its own attended phase — CUT the
-self-facing mechanism (superseding ADR-0006 and ADR-0007), SIMPLIFY what stays, and
+self-facing mechanism (superseding D-0001 and D-0002), SIMPLIFY what stays, and
 re-slice the backlog toward the adopter by re-recording `#22` (dogfood on one real
 product repository) and `#20` (adoption profiles).
 

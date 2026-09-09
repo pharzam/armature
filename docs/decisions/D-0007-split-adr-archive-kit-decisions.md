@@ -1,10 +1,10 @@
-# 0012. Split docs/adr/: archive the kit's own governance decisions
+# D-0007. Split docs/adr/: archive the kit's own governance decisions
 
 Date: 2026-09-08
 
 ## Status
 
-Accepted
+Accepted. Amended by [D-0008](D-0008-namespace-the-decision-archive.md)
 
 ## Context
 
@@ -40,7 +40,7 @@ Two collisions had to be resolved, not stepped around:
 `0001`–`0004`. Records `0005`–`0011` move to `docs/decisions/`, and this record,
 `0012`, is written there. `adr-lint` reads only `docs/adr/`, so the archive is
 unlinted — deliberately: a checker whose only subject is this repository's own past
-is the self-facing mechanism [ADR-0009](0009-refocus-on-the-adopter.md) turned away
+is the self-facing mechanism [D-0004](D-0004-refocus-on-the-adopter.md) turned away
 from.
 
 **The constitutional-reference rule.** A record in `docs/adr/` references no issue
@@ -61,7 +61,7 @@ and are cited by path. A bare
 no-reuse" invariant in favour of one living sequence and one frozen archive, cited
 by path.
 
-**The immutability exception, extended.** [ADR-0010](0010-cut-the-self-facing-checks.md)
+**The immutability exception, extended.** [D-0005](D-0005-cut-the-self-facing-checks.md)
 permitted one bounded edit to an immutable body: demoting a link to a **deleted**
 file to a code-span. This record permits one more, no larger: a **mechanical
 path-repoint of a link whose target moved within the tree** — the visible text
@@ -69,7 +69,7 @@ unchanged, only the relative path corrected so the link keeps resolving. It is
 applied exactly twice, to the two cross-boundary links above
 (`docs/decisions/0010`'s link to the ADR-convention README, and
 `docs/decisions/0011`'s link to `0004`). A repoint that preserves a working link is
-a strictly smaller breach than the de-link ADR-0010 already accepted.
+a strictly smaller breach than the de-link D-0005 already accepted.
 
 **The amendment trace.** `0004`'s "Amended by" records (`0010`, `0011`) moved to the
 archive. `0004` keeps them as **bare mentions** in its Status line — no link, since a
@@ -112,5 +112,5 @@ We reject three alternatives, recorded so none is reopened without new informati
 - **`0006` and `0007` stay superseded; `0008`–`0011` keep their statuses.** The move
   changes where the records live, not what they decided.
 - **The immutability exception now has two recorded shapes** — a de-link of a deleted
-  target (ADR-0010) and a path-repoint of a moved target (this record). Nothing else
+  target (D-0005) and a path-repoint of a moved target (this record). Nothing else
   in a landed body may change.

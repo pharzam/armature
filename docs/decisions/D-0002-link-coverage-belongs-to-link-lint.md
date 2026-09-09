@@ -1,14 +1,14 @@
-# 0007. Link coverage belongs to link-lint, not to the entry-point check
+# D-0002. Link coverage belongs to link-lint, not to the entry-point check
 
 Date: 2026-09-01
 
 ## Status
 
-Superseded by [ADR-0010](0010-cut-the-self-facing-checks.md)
+Superseded by [D-0005](D-0005-cut-the-self-facing-checks.md)
 
 ## Context
 
-[ADR-0006](0006-derive-expectations-from-prose.md) measured `agents-lint.sh` while
+[D-0001](D-0001-derive-expectations-from-prose.md) measured `agents-lint.sh` while
 rejecting a metadata layer, and found the larger saving elsewhere: assertion
 **A19** resolved the root `AGENTS.md`'s own links, while
 [`link-lint.sh`](../links/link-lint.sh) — shipped later — resolves links and
