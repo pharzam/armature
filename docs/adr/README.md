@@ -30,7 +30,7 @@ are their enforcement:
    survives the deletion.)
 
 **Numbering.** `docs/adr/` is the single living ADR sequence, numbered
-contiguously from `0001`, and it grows — the next constitutional ADR is `0005`.
+contiguously from `0001`, and it grows — the next constitutional ADR is `0006`.
 The archive keeps its records' original numeric filenames (`0005`–`0012`) as
 provenance and is cited **by path**; a bare "ADR-NNNN" means this directory's
 sequence.
