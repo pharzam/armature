@@ -72,8 +72,8 @@
 # edit is worth a reader's eye but is not by itself a broken record.
 #
 # `Fixes` is the author's field and lands as a reply after the round, so RR4 does
-# not require it: section 6 says a record with no `Fixes` is complete until the
-# fixes land.
+# not require it: "What a round records" says a record with no `Fixes` is complete
+# until the fixes land.
 #
 # How to adapt: the field names, the verdict values and the heading come from
 # engineering-discipline.md's "What a round records". If you change that section,
