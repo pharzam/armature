@@ -4,7 +4,7 @@ Date: 2026-09-02
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR-0007](../adr/0007-record-task-resource-use.md)
 
 ## Context
 

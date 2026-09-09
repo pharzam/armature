@@ -23,7 +23,7 @@ independence levels.
 ## Decision
 
 Every task **started after this record lands** closes with a **resource record**: a
-fifth section of its `docs/tasks/<id>.md` file, after `## Verdict`, giving for each
+further section of its `docs/tasks/<id>.md` file, after `## Verdict`, giving for each
 part of the work the model, the effort, the tokens and the elapsed time, with the
 totals at the foot. The shape is defined once, in an adopter-copyable form, in
 [Completing a task](../engineering-discipline.md#completing-a-task); gate step 8 asks

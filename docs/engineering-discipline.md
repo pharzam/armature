@@ -899,7 +899,7 @@ moves; its detail file stays where it is, and — for a task started under
 [ADR-0007](adr/0007-record-task-resource-use.md) — gains its resource record here.
 
 Gate step 8 also asks, for such a task: where is this task's **resource record**?
-It is a fifth section of the task's `docs/tasks/<id>.md` detail file, after
+It is a further section of the task's `docs/tasks/<id>.md` detail file, after
 `## Verdict`, and — like the verdict and the completed-log line — it is close-out
 bookkeeping, produced only once the rounds finish and carrying nothing a round
 acts on (see [Reviewing until findings decay](#reviewing-until-findings-decay)).
@@ -915,12 +915,13 @@ they carry no approval number and no cap, and an overrun is not a finding.
 
 Copy this shape. Fill each cell from `‹how the harness reports model, effort,
 tokens and elapsed time›`; write `not reported` where it cannot (never a guess),
-and `not applicable` in a human-worked part's model columns. `Elapsed` is
-wall-clock, so model and human rows compare.
+and `not applicable` in a human-worked part's model, effort and tokens columns.
+`Elapsed` is wall-clock, so model and human rows compare.
 
 | Part | Expected tier | Model | Effort | Tokens | Elapsed |
 | ---- | ------------- | ----- | ------ | ------ | ------- |
 | ‹the plan and its review› | reasoning | ‹model› | ‹effort› | ‹tokens› | ‹wall-clock› |
+| ‹the decay review rounds› | reasoning | ‹model› | ‹effort› | ‹tokens› | ‹wall-clock› |
 | ‹writing the tests and the code› | execution | ‹model› | ‹effort› | ‹tokens› | ‹wall-clock› |
 | ‹isolate, guardrails, docs, close-out› | `—` | ‹model / `not applicable`› | ‹…› | ‹…› | ‹wall-clock› |
 | **Total** | | | | ‹sum› | ‹sum› |
