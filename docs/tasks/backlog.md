@@ -37,7 +37,6 @@ same summary, dated — rather than deleting it or checking it off.
 -->
 
 - **T-7m6s** — Adopter day one: ignore the worktree directory, mark `LICENSE`, pin every floating action reference ([#23](https://github.com/pharzam/armature/issues/23))
-- **T-3n8w** — Write the objective-scientist conduct standard into the review sections, with a checkable finding basis ([#173](https://github.com/pharzam/armature/issues/173); [detail](T-3n8w.md))
 
 ## Next
 

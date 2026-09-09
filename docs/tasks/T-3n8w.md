@@ -42,4 +42,22 @@ exposes — a finding's *basis*.
 
 ## Verdict
 
-_(Filled at close-out, after the decay rounds settle.)_
+The objective-scientist conduct standard is stated inside
+[`Reviewing until findings decay`](../engineering-discipline.md#reviewing-until-findings-decay)
+— a rule next to its use, not a new section — naming both anti-patterns, the preacher
+and the inquisitor. It is made checkable at the grain the record already exposes: a
+finding's *basis* is an observation, a test, or a cited clause that could have come out
+the other way. Two reconciliations the plan review called for are written in: citing a
+written rule by number **is** a basis (only an appeal to unwritten convention is
+preaching), and the adversarial bug-hunt lens is **not** an inquisition (it hunts by
+evidence). The text states plainly that `nothing material in scope` is a valid outcome,
+and — in the honest register `Who may review` uses — that the standard buys a vocabulary
+for a dispute, not a mechanized check. A one-line pointer carries it into the
+semantic-agreement round; an `Objective-scientist standard` glossary entry lands with
+it; **no field is added** to the ten-field review record.
+
+Reviewed under a frozen head: round 1 (three lenses on `5337b60` — guardrails, semantic
+agreement, adversarial) returned `nothing material in scope`; no fix was needed (cycle
+cap 2, used 0). Evidence: `link-lint` (826 links), `run-discipline-tests` (81 passed),
+`adr-lint`, `prd-lint` and `git diff --check` all pass. Budget: 73 changed lines across
+4 files, against base `9ef7f18` (max 150 / ≤8).
