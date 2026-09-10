@@ -234,7 +234,7 @@ is the adopter's to set — `‹name your reasoning-tier models›` and
 | Tier | Class of model | Owns the gate steps that … |
 | ---- | -------------- | -------------------------- |
 | **Reasoning tier** | frontier / reasoning models | **decide or judge**: the [ordered plan and its review](issue-workflow.md#r12--slice-and-prioritize), [solution selection](#solution-selection), the [review rounds](#reviewing-until-findings-decay), the [review before a costly or irreversible action](#review-before-a-costly-or-irreversible-action), and the verdict. |
-| **Execution tier** | lighter, faster, cheaper models | **carry out a fixed plan**: writing the tests and the code once the plan is set, and routine mechanical edits. |
+| **Execution tier** | lighter, faster, cheaper models | **perform tactical execution and coding**: writing the tests and the code once the plan is fixed, and routine mechanical edits. |
 
 Two bounds keep the routing from weakening a rule that already holds:
 
