@@ -106,8 +106,42 @@ and fallback notes, `engineering-discipline.md`'s `core.hooksPath` fallback text
 
 ## Verdict
 
-_Filled at close-out._
+Mergeable, with the operator's one-time budget overrun approved on
+[#191](https://github.com/pharzam/armature/issues/191). `.githooks/install.sh` pins
+`core.hooksPath` to the relative `.githooks` (guarded — it refuses outside a work
+tree, including a bare repo; idempotent; non-destructive); a committed, hand-run
+`.githooks/tests/install-check.sh` covers it; and every human-facing install
+instruction in the tree now runs the script, the raw command kept only at the
+classified mechanism/internal/history sites. Two decay rounds: round 1 (four
+independent lenses on a second model) found two material defects — the reference
+sweep had missed the three **extensionless** git-hook scripts (including
+`pre-commit`'s runtime fix message), and `install.sh`'s work-tree guard read only the
+exit status of `git rev-parse --is-inside-work-tree`, letting a bare repo through
+with a wrong diagnostic; both fixed in cycle 1 (the guard now tests the output, and a
+bare-repo case was added to the test). Round 2 (fresh, blind, a different lens on a
+second model) returned `nothing material in scope`; `provenance-check.sh` still passes
+7/7, confirming the hook edits changed no logic. One of the two cycles was used. The
+branch diff exceeded the plan-review Budget maximum (260 / ≤10 files); the overrun is
+review-driven (the hook-script sweep), and the operator approved it once on the issue.
 
 ## Resource record
 
-_Filled at close-out._
+Per [ADR-0007](../adr/0007-record-task-resource-use.md). This harness reports tokens
+and elapsed time for the independent **agent** sessions but not per part for the main
+loop, so the main-loop cells read `not reported` (the degradation ADR-0007
+anticipates, never a guess). Every review ran on a different frontier model (Sonnet 5)
+to reach **Model** independence for this governance-document-and-executable change; no
+part was routed to a genuinely lighter **execution tier** — the execution parts (the
+implementation and the fixes) ran on the reasoning-tier main-loop model, the
+single-tier limit [ADR-0005](../adr/0005-route-work-by-model-tier.md) says to record.
+
+| Part | Expected tier | Model | Effort | Tokens | Elapsed |
+| ---- | ------------- | ----- | ------ | ------ | ------- |
+| the plan | reasoning | Opus 4.8 (main loop) | not reported | not reported | not reported |
+| the plan review | reasoning | an independent agent session (Sonnet 5) | not reported | 79,148 | ~4 min |
+| the implementation (script, test, doc sweep) | execution | Opus 4.8 (reasoning tier — single-tier limit) | not reported | not reported | not reported |
+| decay review round 1 (four lenses, a workflow) | reasoning | four independent agent sessions (Sonnet 5) | not reported | 283,906 | ~7 min |
+| the round-1 fixes | execution | Opus 4.8 (reasoning tier — single-tier limit) | not reported | not reported | not reported |
+| decay review round 2 | reasoning | an independent agent session (Sonnet 5) | not reported | 87,767 | ~6 min |
+| isolate + close-out | `—` | Opus 4.8 (main loop) | not reported | not reported | not reported |
+| **Total** | | | | not reported (main-loop parts unmeasured; the measured agent parts ≈ 451K) | not reported |
