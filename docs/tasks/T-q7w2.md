@@ -77,8 +77,37 @@ the resource record, the completed line, and the verdict, in the landing PR.
 
 ## Verdict
 
-_Filled at close-out._
+Mergeable. The `## Model tiers` table's Execution-tier row now states the partition
+in ADR-0005's canonical wording — "**perform tactical execution and coding**:
+writing the tests and the code once the plan is fixed, and routine mechanical edits"
+— so all four homes (ADR-0005 Decision, the table, the `Model tier` glossary entry,
+and the `AGENTS.md` pointer) agree on the execution-tier clause (R10), and
+ADR-0005's immutable body is untouched. The plan was reviewed once and approved
+(approve-with-conditions; Option A confirmed independently, conditions applied) on
+[#185](https://github.com/pharzam/armature/issues/185); one independent,
+Model-independent semantic-agreement decay round on frozen head `396a4d7` returned
+`nothing material in scope`. The off-path glossary "faster" gloss difference is
+tracked as follow-up [#188](https://github.com/pharzam/armature/issues/188). The
+discipline checks, the pre-registered consistency grep, and `review-record-lint`
+(3 comments, 1 round, cap 2) all pass.
 
 ## Resource record
 
-_Filled at close-out._
+Per [ADR-0007](../adr/0007-record-task-resource-use.md). This harness reports tokens
+and elapsed time for the independent **agent** sessions but not per part for the main
+loop, so the main-loop cells read `not reported` (the degradation ADR-0007
+anticipates, never a guess). The two review sessions ran on a different frontier
+model (Sonnet 5) to reach **Model** independence for this governance change; no part
+was routed to a genuinely lighter **execution tier** — the execution part (the fix)
+ran on the reasoning-tier main-loop model, the single-tier limit
+[ADR-0005](../adr/0005-route-work-by-model-tier.md) says to record.
+
+| Part | Expected tier | Model | Effort | Tokens | Elapsed |
+| ---- | ------------- | ----- | ------ | ------ | ------- |
+| the plan | reasoning | Opus 4.8 (main loop) | not reported | not reported | not reported |
+| guardrails / convention survey | reasoning | an independent agent session (Opus 4.8) | not reported | ~121,900 | ~7 min |
+| the plan review | reasoning | an independent agent session (Sonnet 5) | not reported | 79,645 | ~4 min |
+| the fix | execution | Opus 4.8 (reasoning tier — single-tier limit) | not reported | not reported | not reported |
+| the decay review round | reasoning | an independent agent session (Sonnet 5) | not reported | 57,647 | ~2 min |
+| isolate + close-out | `—` | Opus 4.8 (main loop) | not reported | not reported | not reported |
+| **Total** | | | | not reported (main-loop parts unmeasured) | not reported |
