@@ -8,7 +8,7 @@
 # lint, test-level, and security steps are ‹…› placeholders you fill for your stack —
 # keep them cheap-first (unit before integration before end-to-end), so a failure
 # stops the expensive checks; see docs/tests/test-levels.md. This hook is inert until
-# you run `git config core.hooksPath .githooks` (see .githooks/README.md).
+# you run `sh .githooks/install.sh` (see .githooks/README.md).
 #
 # How to adapt: replace each ‹…› with your project's command and uncomment the
 # line. Delete any step you do not use. Run only the fast subset here; the full
@@ -88,7 +88,7 @@ if [ -n "$_hooks" ]; then
 			printf '      shares through the common git directory, so a check added on this branch\n' >&2
 			printf '      does not run on this branch either.\n' >&2
 		fi
-		printf '      Fix with a path inside the tree:  git config core.hooksPath .githooks\n' >&2
+		printf '      Fix by running:  sh .githooks/install.sh  (it pins core.hooksPath to the relative .githooks)\n' >&2
 		exit 1 ;;
 	esac
 fi

@@ -74,9 +74,10 @@ of their own:
 Wire in the two enforcement layers so a violation is caught automatically, not by
 memory:
 
-- **Install the git hooks** — run `git config core.hooksPath .githooks` once per
-  clone, and **keep that path relative**: `.git/config` is shared by every
-  worktree, so an absolute value binds them all to one checkout's hooks. This turns
+- **Install the git hooks** — run `sh .githooks/install.sh` once per clone. It pins
+  `core.hooksPath` to the relative `.githooks` — and **that path must stay
+  relative**: `.git/config` is shared by every worktree, so an absolute value binds
+  them all to one checkout's hooks. This turns
   on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
   [commit format](#commit-messages), and the `pre-commit` hook runs the five
   repo-file [discipline linters](#testing) and their self-tests, plus the fast
@@ -767,10 +768,10 @@ directory holds them, shared by the whole team (unlike the local, untracked
 `.git/hooks`). Install once per clone:
 
 ```bash
-git config core.hooksPath .githooks
+sh .githooks/install.sh
 ```
 
-Two hooks ship with the kit:
+It pins `core.hooksPath` to the relative `.githooks`. Two hooks ship with the kit:
 
 - **`commit-msg`** — rejects a subject line that does not follow
   [Conventional Commits](#commit-messages). Ready as-is.
