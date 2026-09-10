@@ -676,7 +676,12 @@ The standard is testable, not a matter of taste:
 - **One reading.** If a reader can state two honest readings of the statement, that
   is a defect **in the text**, not in the reader — it is rewritten, never silently
   resolved by picking a reading. A reader who picked one and was wrong was not
-  careless; the text was ambiguous.
+  careless; the text was ambiguous. A reading is **honest** when a competent reader,
+  in good faith and with the project's [glossary](#glossary) and the surrounding
+  text, could actually arrive at it; a strained reading the words and the context do
+  not support is not a second reading. The reviewer states both readings and the
+  words that carry each, so the claim that a statement reads two ways is itself
+  falsifiable — which is what keeps this a test rather than a matter of taste.
 - **Falsifiable.** You can name the observation that would show the statement
   unmet. A statement no outcome could violate decides nothing — this is the
   [objective-scientist standard](#reviewing-until-findings-decay) applied to the
