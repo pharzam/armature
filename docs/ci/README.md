@@ -91,7 +91,7 @@ the two `‹…›` rows of the
 
 **GitHub.** One `PUT` to the branch-protection endpoint sets the whole protection
 object. The body goes on standard input with `--input -`, because `gh api` flag
-syntax cannot express an array of objects. The `checks` below are the eight the
+syntax cannot express an array of objects. The `checks` below are the six the
 kit's own repository requires — a context is the check's displayed name, the job's
 `name:` or its id when it has none, which is why `conventional-title` carries no
 parenthesis —
