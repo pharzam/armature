@@ -166,7 +166,7 @@ kit ships them filled. Keep them, and add your own above.
 
 ### Reference-sweep pitfalls (kit-wide — keep these)
 
-A rename or renumbering that repoints citations across the tree has two silent
+A change that edits references or a rule's wording across the tree has three silent
 failure modes worth keeping.
 
 - ❌ **A blanket find-and-replace over a renamed record's citations.** When a record
@@ -198,6 +198,15 @@ failure modes worth keeping.
   takes, not only the token — a bare `section N`, a `§`, a pronoun (`that section`,
   `the record`) whose antecedent you removed — and read the neighbourhood of every
   citation you changed, not the citation alone.
+- ❌ **Editing a rule whose decision record is archived.** A rule lives in two places
+  — its operative statement in a living doc, and the immutable decision record that
+  first set it under `docs/decisions/`. Change the living one and the archived one
+  still asserts the old, and **no check compares them** (`adr-lint` never reads
+  `docs/decisions/`; `link-lint` checks resolution, not agreement). You cannot rewrite
+  the immutable body to match; discharge the divergence with a `Status`-line
+  **amendment pointer** on the archived record. **The check:** grep the whole tree —
+  archive and forge templates included — for the old wording, and reconcile each living
+  mirror or point each immutable one; a dated log entry recording history stays.
 
 ## 3. Validation — how you check you are not fooling yourself
 

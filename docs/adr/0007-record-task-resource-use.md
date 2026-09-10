@@ -15,10 +15,9 @@ model ran which step, and none can, so the rule "buys a claim precise enough to 
 unobservable. "The reasoning tier owned the plan review" is a claim a later reader
 should be able to check, and today there is nothing to check it against.
 
-This record adds the missing **evidence**. It does not mechanize the routing and must
-not read as if it did — the figures are self-reported, and that honesty is the same
-one [Who may review](../engineering-discipline.md#who-may-review) states about its own
-independence levels.
+This record adds the missing **evidence** — self-reported, not a mechanism, the same
+honesty [Who may review](../engineering-discipline.md#who-may-review) states of its own
+independence levels; it must not read as if it verified the routing.
 
 ## Decision
 
@@ -64,11 +63,10 @@ ADR-0007`, per [Adding a new ADR](README.md#adding-a-new-adr) step 4. It changes
 nothing else in that record's immutable body.
 
 We reject the alternatives, recorded so none is reopened: rows in `completed.md`
-(breaks its one-line index rule); a new metrics document or store (needs infrastructure
-the kit defers until the problem requires it, and the kit is toolchain-free); no ADR
-(the budget-and-Ceiling tension goes unrecorded and gets relitigated); and extending
-the review record's fields (those are review-round fields, and most parts of a task
-are not review rounds).
+(breaks its one-line rule); a new metrics store (needs the infrastructure the kit
+defers); no ADR (the budget-and-Ceiling tension goes unrecorded and gets relitigated);
+and extending the review record's fields (those are review-round fields, and most parts
+of a task are not review rounds).
 
 ## Consequences
 

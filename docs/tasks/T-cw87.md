@@ -54,3 +54,11 @@ See the acceptance criteria on [issue #179](https://github.com/pharzam/armature/
 
 The pre-existing ADR-0005 ↔ `#model-tiers` ↔ glossary wording drift — off this path and
 unreconcilable here (ADR-0005's body is immutable); ADR-0007 cites rather than re-quotes.
+
+## Verdict
+
+Delivered ADR-0007 and the resource-record section (gate step 8, recorded not budgeted);
+three decay rounds converged after fixing a stale `D-0003` close-out mirror and an 8-line
+budget overrun. All lints and 13 acceptance criteria pass; the tier-wording drift is its
+own issue.
+
