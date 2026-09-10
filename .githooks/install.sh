@@ -10,8 +10,10 @@
 # requires (see docs/guardrails.md).
 set -eu
 
-# 1. Must run inside a git work tree.
-if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+# 1. Must run inside a git work tree. Test the OUTPUT, not just the exit status:
+#    inside a bare repository (or under .git/) `--is-inside-work-tree` prints
+#    "false" and still exits 0, so an exit-status-only guard would wave it through.
+if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null || echo false)" != "true" ]; then
 	echo "install.sh: not inside a git work tree — run it from a clone of this repository." >&2
 	exit 1
 fi

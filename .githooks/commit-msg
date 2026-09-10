@@ -9,7 +9,7 @@
 # Types: feat fix docs refactor perf test build ci chore revert
 #
 # This hook is language-agnostic — it reads only the commit message. It is
-# inert until you run `git config core.hooksPath .githooks` (see .githooks/README.md).
+# inert until you run `sh .githooks/install.sh` (see .githooks/README.md).
 #
 # How to adapt: this file is ready to use as-is. Widen the type list below only
 # if your project agrees a new type in §"Commit messages" first.

@@ -41,17 +41,28 @@ else
 	fail=1
 fi
 
-# Case 3 — outside a git work tree: refuse with a non-zero exit.
+# Case 3 — no git repository at all (git rev-parse fails outright): refuse.
 nonrepo=$(mktemp -d)
 ( cd "$nonrepo" && sh "$install" >/dev/null 2>&1 ); rc=$?
 if [ "$rc" -ne 0 ]; then
-	printf 'ok    refuses outside a git work tree (exit %s)\n' "$rc"
+	printf 'ok    refuses with no git repository (exit %s)\n' "$rc"
 else
-	printf 'FAIL  did not refuse outside a git work tree\n' >&2
+	printf 'FAIL  did not refuse with no git repository\n' >&2
 	fail=1
 fi
 
-rm -rf "$repo" "$nonrepo"
+# Case 4 — a bare repository (inside a git dir but with no work tree):
+# `git rev-parse --is-inside-work-tree` prints "false" yet exits 0, so refuse.
+bare=$(mktemp -d)
+( cd "$bare" && git init -q --bare && sh "$install" >/dev/null 2>&1 ); rc=$?
+if [ "$rc" -ne 0 ]; then
+	printf 'ok    refuses in a bare repository (no work tree, exit %s)\n' "$rc"
+else
+	printf 'FAIL  did not refuse in a bare repository\n' >&2
+	fail=1
+fi
+
+rm -rf "$repo" "$nonrepo" "$bare"
 
 if [ "$fail" -eq 0 ]; then
 	printf 'install-check: OK\n'

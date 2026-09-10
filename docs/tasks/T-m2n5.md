@@ -50,8 +50,12 @@ the raw `git config core.hooksPath .githooks` install step appears in several
 human-facing docs. Update the **install-instruction** sites to run the script —
 `README.md` (the `.githooks/` row and the adopt-the-template walkthrough step),
 `AGENTS.md` ("Checks you can run"), `.githooks/README.md` ("Install (one command)"),
-and `docs/engineering-discipline.md` (the "Install the git hooks" bullet and the
-"Git hooks" reference block). **Keep** the mechanism / internal / historical mentions
+`docs/engineering-discipline.md` (the "Install the git hooks" bullet and the
+"Git hooks" reference block), and — caught by decay round 1 — the three hook scripts'
+"inert until you run …" header comments (`.githooks/pre-commit`, `commit-msg`,
+`pre-push`) plus `pre-commit`'s runtime provenance-fix message, which now point at the
+script (the inventory grep first missed these because git hook files carry no `.sh`
+extension). **Keep** the mechanism / internal / historical mentions
 (`docs/guardrails.md`'s absolute-vs-relative pitfall, `.githooks/README.md`'s uninstall
 and fallback notes, `engineering-discipline.md`'s `core.hooksPath` fallback text, the
 `provenance-check.sh` internals, and the dated `completed.md` / audit entries).
