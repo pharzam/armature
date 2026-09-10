@@ -17,8 +17,8 @@ not a claim taken on trust. The figures are **recorded, not budgeted**.
 
 ## What
 
-A new constitutional **ADR-0007** decides it; the record is a fifth section of
-`docs/tasks/<id>.md` (after `## Verdict`), hooked from gate **step 8** (close-out).
+A new constitutional **ADR-0007** decides it; the record is a section of
+`docs/tasks/<id>.md` after `## Verdict`, hooked from gate **step 8** (close-out).
 
 - **The part** is ADR-0005's routing partition — **reasoning**-tier parts, **execution**-tier
   parts, and **`—`** for the gate steps neither tier routes — cited from
