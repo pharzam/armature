@@ -67,7 +67,7 @@ routing. The rule and its tier-to-step map live in
 
 ## The issue rules
 
-The workflow defines **twelve** numbered rules, R1–R12; cite one by number in a
+The workflow defines **thirteen** numbered rules, R1–R13; cite one by number in a
 review or a commit. They are defined once, in
 [`docs/issue-workflow.md`](docs/issue-workflow.md) — this file points there rather
 than restating them, so there is a single source to keep in step. Which rule a

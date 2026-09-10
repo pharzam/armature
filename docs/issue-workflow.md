@@ -20,7 +20,7 @@ criteria"; this document says how those tickets are opened, scoped, and linked.
 > this note. The decision to work this way is [ADR-0003](adr/0003-adopt-issue-first-workflow.md).
 
 These rules bind **every operator — each human and each LLM coding agent.** They
-are numbered R1–R12 so a review or a commit can cite one by number.
+are numbered R1–R13 so a review or a commit can cite one by number.
 
 ## R1 — Issue first
 
@@ -211,6 +211,23 @@ says a plan goes on the issue before the first test; R12 says what that plan is 
 ordered, DoD-covering, test-first slicing — and that it is reviewed once and
 recorded before the red/green cycle begins.
 
+## R13 — One reading, not two
+
+Decision-driving text admits **one honest reading, not two.** This binds the text an
+operator acts on — the issue statement, the acceptance criteria and the Definition
+of Done, a directive to another operator, a plan step, and a review finding. A
+statement that reads two ways is acted on two ways; the ambiguity is a defect in the
+text, not in the reader, and it is rewritten rather than resolved by a guess.
+
+The standard — its three parts (one reading; falsifiable; no unquantified vague word
+carrying a decision) and its tripwire (in the plan review and each review round, the
+reviewer records a second honest reading or confirms there is one) — is defined once
+in [One reading, not two](engineering-discipline.md#one-reading-not-two). This rule
+points there rather than restating it, and gives a review a number to cite. Like
+reviewer independence and a finding's materiality, ambiguity is a judgement no check
+settles; the [enforcement table](#what-is-enforced-where) says so, and the decision
+is [ADR-0008](adr/0008-require-one-reading-in-decision-driving-text.md).
+
 ## What is enforced where
 
 A rule is only as real as what enforces it. This table is honest about which rules
@@ -228,6 +245,7 @@ kit already ships the green rows.
 | Slice + prioritize the plan before building (test-first), reviewed once on the issue | R12 | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The plan and its confirmation must exist and be in order; whether the slicing is *good* is the reviewer-s |
 | Reviewer independence and the review record (ten named fields, the cycle among them) | [Who may review](engineering-discipline.md#who-may-review), [What a round records](engineering-discipline.md#what-a-round-records) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The record is parsed and its chronology checked; **independence is not** and no mechanism can — see the limits in that script |
 | The stopping protocol: a frozen head, the cycle cap and its non-merge verdict, materiality, and where a revealed defect goes | [Reviewing until findings decay](engineering-discipline.md#reviewing-until-findings-decay) | — | [`review-record-lint`](ci/review-record-lint.sh) | ‹require the check before merge› | The cap is counted from `Cycle` and the verdict matched as a string; materiality and classification stay a reviewer-s judgement |
+| Decision-driving text admits one reading, not two | R13, [One reading, not two](engineering-discipline.md#one-reading-not-two) | — | — | — | Written rule — reviewer judgement; ambiguity is semantic (like independence and materiality), and no deterministic check settles it |
 
 This layers **on top of** the [`tasks/`](tasks/) backlog, it does not replace it:
 the issue is the outward ticket, the `‹task-ID scheme›` card in

@@ -52,7 +52,7 @@ input; the fourth removes the kit's own history.
   [`tasks/completed.md`](tasks/completed.md) — your task index. Keep both files and
   fill them with your own tasks in place of the kit's; step 4 clears the kit's
   completed-log history and deletes its `T-*.md` detail files.
-- [`issue-workflow.md`](issue-workflow.md) — the issue-first rules (R1–R12), the
+- [`issue-workflow.md`](issue-workflow.md) — the issue-first rules (R1–R13), the
   ticket policy the gate assumes.
 - [`templates/`](templates/) — inert forge issue/PR templates; copy into place
   only if you adopt that forge.
@@ -260,7 +260,7 @@ rejected alternatives and its consequences are recorded in
 Before a task reaches step 1 of the gate, an **issue is open for it** — one
 actionable, demoable goal per issue. The change then lands through a pull request
 whose body links that issue (`Closes`/`Refs #N`), while the task ID stays in the
-commit subject, so the two namespaces coexist. The full rules — R1–R12, and the
+commit subject, so the two namespaces coexist. The full rules — R1–R13, and the
 honest table of what is enforced where — live in
 [`issue-workflow.md`](issue-workflow.md); the decision is
 [ADR-0003](adr/0003-adopt-issue-first-workflow.md). The kit is forge-free, so an
@@ -281,6 +281,8 @@ reasoning — and each round applies a different lens:
 - adversarial bug-hunt,
 - semantic agreement — does each changed sentence still mean what its source
   means? See [Reviewing for semantic agreement](#reviewing-for-semantic-agreement).
+- one reading — does each decision-driving statement admit one honest reading?
+  See [One reading, not two](#one-reading-not-two).
 
 **Every reviewer argues as an objective scientist** — curious, empirical,
 hypothesis-driven, and intellectually humble. Not as a **preacher**, who defends a
@@ -659,6 +661,55 @@ the person who decides whether to spend money necessarily is.
 version of the same idea. Keep it in step whenever a headline number changes — it
 is the first document a new engineer reads, so a stale number there is worse than
 a stale number anywhere else.
+
+## One reading, not two
+
+A statement that drives a decision must admit **one honest reading, not two.** This
+binds the text an operator acts on — the issue statement, the acceptance criteria
+and the Definition of Done, a directive to another operator, a plan step, and a
+review finding. A statement that reads two ways is acted on two ways, and the
+defect is silent, because each reader believes the text was clear and only the
+outcomes disagree.
+
+The standard is testable, not a matter of taste:
+
+- **One reading.** If a reader can state two honest readings of the statement, that
+  is a defect **in the text**, not in the reader — it is rewritten, never silently
+  resolved by picking a reading. A reader who picked one and was wrong was not
+  careless; the text was ambiguous. A reading is **honest** when a competent reader,
+  in good faith and with the project's [glossary](#glossary) and the surrounding
+  text, could actually arrive at it; a strained reading the words and the context do
+  not support is not a second reading. The reviewer states both readings and the
+  words that carry each, so the claim that a statement reads two ways is itself
+  falsifiable — which is what keeps this a test rather than a matter of taste.
+- **Falsifiable.** You can name the observation that would show the statement
+  unmet. A statement no outcome could violate decides nothing — this is the
+  [objective-scientist standard](#reviewing-until-findings-decay) applied to the
+  text a finding is raised against, and it is what the
+  [Definition of Done](tests/dod-checklist.md) turns a goal into.
+- **No unquantified vague word carries a decision.** "fast", "robust", "soon",
+  "clean", "better", "handle" and their kind get a number, a threshold, or a
+  [glossary](#glossary) term **before** a decision rests on them. The
+  [guardrails bands](guardrails.md#1-pre-registered-decisions--or-the-goalposts-move)
+  are where the number is frozen; the glossary is where the word is pinned.
+
+**The tripwire** — a statement is not *assumed* clear, the way
+[R11](issue-workflow.md#r11--single-goal-issues) does not assume a demo is one
+goal. In the [plan review](issue-workflow.md#r12--slice-and-prioritize) and in each
+[review round](#reviewing-until-findings-decay), the reviewer either **records a
+second honest reading** — a finding, cited like any other against
+[R13](issue-workflow.md#r13--one-reading-not-two) — or confirms there is exactly
+one. Ambiguity caught is logged against the text; it is never worked around by the
+reader's own guess.
+
+This is not the [semantic-agreement](#reviewing-for-semantic-agreement) round, which
+asks whether a *summary* still means its *source*; this asks whether the source
+itself reads one way. Nothing mechanizes it — ambiguity is a judgement, like
+reviewer [independence](#who-may-review) and a finding's
+[materiality](#reviewing-until-findings-decay), and a grep over a banned word list
+would be a check that cannot fail rather than a check that catches the defect. The
+decision, its rejected alternatives and this limit are recorded in
+[ADR-0008](adr/0008-require-one-reading-in-decision-driving-text.md).
 
 ## Commit messages
 
