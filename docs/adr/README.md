@@ -131,8 +131,9 @@ record by number here, and let the index table below do the linking.
 | [0002](0002-record-product-requirements.md)     | Record product requirements as PRDs | Accepted |
 | [0003](0003-adopt-issue-first-workflow.md)      | Adopt an issue-first workflow | Accepted |
 | [0004](0004-ship-agent-entry-points.md)         | Ship agent entry points       | Accepted; amended |
-| [0005](0005-route-work-by-model-tier.md)        | Route work by model tier      | Accepted |
+| [0005](0005-route-work-by-model-tier.md)        | Route work by model tier      | Accepted; amended |
 | [0006](0006-convene-a-panel-to-generate-options.md) | Convene a panel to generate options | Accepted |
+| [0007](0007-record-task-resource-use.md)        | Record each task's resource use | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
 

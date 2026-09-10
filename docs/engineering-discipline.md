@@ -162,8 +162,10 @@ the plan, the tests, or another technical part of the task.
    See [Keeping documentation current](#keeping-documentation-current).
 
 8. **Close out in the same PR.** Tick the acceptance boxes, write the verdict,
-   and record the ticket in the completed log — see
-   [Completing a task](#completing-a-task). Then take the next logical task.
+   record the ticket in the completed log, and — for a task started under
+   [ADR-0007](adr/0007-record-task-resource-use.md) — write the task's resource
+   record — see [Completing a task](#completing-a-task). Then take the next
+   logical task.
 
 ## Solution selection
 
@@ -301,14 +303,19 @@ One pass is never enough. Each round catches a different class of error. The
 protocol that bounds the rounds is:
 
 - **A fix re-freezes.** Any fix after a round lands as a new frozen head, and
-  the next round names it. The close-out bookkeeping lands as a head no round
-  names — the task line arriving in the completed log, which gate step 8
-  requires of the landing pull request and which cannot exist before the rounds
-  finish. The exception covers that bookkeeping **alone**: the close-out commit
-  changes the task indexes and no other file. A correction that is needed lands
-  as an ordinary fix *before* it, where it re-freezes and a round reads it.
-  Saying no round read the close-out is only safe of a commit that carries
-  nothing to read.
+  the next round names it. The **close-out bookkeeping** lands as a head no round
+  names — the task line arriving in the completed log, the task's verdict, and,
+  for a task started under [ADR-0007](adr/0007-record-task-resource-use.md), its
+  resource record — each required by gate step 8 of the landing pull request, and
+  each of which cannot exist before the rounds finish. The exception covers that
+  bookkeeping **alone**: the close-out commit changes the task indexes and the
+  task's own detail file (its verdict and resource record), and no other file. A
+  **correction** — anything a round would read and act on — is not bookkeeping:
+  it lands as an ordinary fix *before* close-out, where it re-freezes and a round
+  reads it. Saying no round read the close-out is only safe of a commit that
+  carries nothing a round **acts on** — and a verdict and a recorded figure are
+  read, not acted on: an unread or even wrong one changes no exit code, assertion
+  or verdict, where an unread correction would.
 - **The last round carries the verdict.** The round that ends the work runs on a
   frozen head that no fix followed. Its verdict is `nothing material in scope`
   when nothing material in scope remains, and `not mergeable, findings recorded`
@@ -363,7 +370,8 @@ protocol that bounds the rounds is:
   issue starts with an approval of its own; nothing forbids that, and what the
   rule relies on is that the successor's plan review sets its maximum with the
   carried size already measured — a discipline, not a mechanism. An approval is **one number, named once,
-  and it is the figure at landing** — the reviewed head plus the close-out line.
+  and it is the figure at landing** — the reviewed head plus the close-out
+  bookkeeping (the completed-log line, the verdict, and any resource record).
   It reaches that figure and no further: there is no **ceiling**, no multiple and
   no kind of growth an approval covers in advance. Three review rounds wrote three
   such reaches and a later round falsified each, so the reach does not
@@ -886,8 +894,37 @@ arrival in the completed log that gate step 8 requires, not the move. This is
 not a separate
 follow-up. Doing the move in the landing PR keeps the two files from ever drifting
 (a task is never both "Now" and done at once), and the reviewer sees the backlog
-bookkeeping alongside the change that earns it. The task's own detail file stays
-where it is — only the one-line index entry moves.
+bookkeeping alongside the change that earns it. The task's one-line index entry
+moves; its detail file stays where it is, and — for a task started under
+[ADR-0007](adr/0007-record-task-resource-use.md) — gains its resource record here.
+
+Gate step 8 also asks, for such a task: where is this task's **resource record**?
+It is a further section of the task's `docs/tasks/<id>.md` detail file, after
+`## Verdict`, and — like the verdict and the completed-log line — it is close-out
+bookkeeping, produced only once the rounds finish and carrying nothing a round
+acts on (see [Reviewing until findings decay](#reviewing-until-findings-decay)).
+The record names, for each **part** of the work, which model ran it, at what
+effort, for how many tokens and how long, with the totals at the foot. A part is
+classified by the routing partition of [Model tiers](#model-tiers): a
+**reasoning**-tier part, an **execution**-tier part, or **`—`** where the gate
+step neither tier routes. The expected-tier column lets a reader raise a mismatch
+— an execution-tier model on a reasoning part — as a finding; the `—` rows carry
+no expectation but are still summed, so the `Total` is a true total. The figures
+are **recorded, not budgeted** ([ADR-0007](adr/0007-record-task-resource-use.md)):
+they carry no approval number and no cap, and an overrun is not a finding.
+
+Copy this shape. Fill each cell from `‹how the harness reports model, effort,
+tokens and elapsed time›`; write `not reported` where it cannot (never a guess),
+and `not applicable` in a human-worked part's model, effort and tokens columns.
+`Elapsed` is wall-clock, so model and human rows compare.
+
+| Part | Expected tier | Model | Effort | Tokens | Elapsed |
+| ---- | ------------- | ----- | ------ | ------ | ------- |
+| ‹the plan and its review› | reasoning | ‹model› | ‹effort› | ‹tokens› | ‹wall-clock› |
+| ‹the decay review rounds› | reasoning | ‹model› | ‹effort› | ‹tokens› | ‹wall-clock› |
+| ‹writing the tests and the code› | execution | ‹model› | ‹effort› | ‹tokens› | ‹wall-clock› |
+| ‹isolate, guardrails, docs, close-out› | `—` | ‹model / `not applicable`› | ‹…› | ‹…› | ‹wall-clock› |
+| **Total** | | | | ‹sum› | ‹sum› |
 
 ## Agent entry points
 
