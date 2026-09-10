@@ -38,3 +38,29 @@ See the acceptance criteria on [issue #184](https://github.com/pharzam/armature/
 `:94` reads six; the job-count and optional-count are untouched and true; every count in
 the file is internally consistent; all lints and `git diff --check` pass; the task
 carries a resource record (ADR-0007).
+
+## Verdict
+
+Corrected `docs/ci/README.md:94` (`eight` → `six`), leaving the distinct job-count
+(`:165`) and optional-count (`:172`) untouched and verified true. One independent decay
+round returned `nothing material in scope`; all lints pass; 42 changed lines / 2 files,
+within budget.
+
+## Resource record
+
+Per [ADR-0007](../adr/0007-record-task-resource-use.md) — the first task recorded under
+it. This harness reports tokens and elapsed time for the independent **agent** sessions
+(the reviews) but not per part for the main loop, so those cells read `not reported` (the
+degradation ADR-0007 anticipates, never a guess); no execution part was routed to a
+lighter tier, so the whole task ran on the reasoning-tier model — the single-tier limit
+[ADR-0005](../adr/0005-route-work-by-model-tier.md) says to record.
+
+| Part | Expected tier | Model | Effort | Tokens | Elapsed |
+| ---- | ------------- | ----- | ------ | ------ | ------- |
+| the plan | reasoning | Opus 4.8 | not reported | not reported | not reported |
+| the plan review | reasoning | an independent agent session | not reported | 63,342 | ~3 min |
+| the fix | execution | Opus 4.8 | not reported | not reported | not reported |
+| the decay review round | reasoning | an independent agent session | not reported | 49,514 | ~2 min |
+| isolate + close-out | `—` | Opus 4.8 | not reported | not reported | not reported |
+| **Total** | | | | not reported (main-loop parts unmeasured) | not reported |
+
