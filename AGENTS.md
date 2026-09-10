@@ -78,7 +78,8 @@ file.
 ## Checks you can run
 
 These read only text, so they need no toolchain. Install the hooks once per clone
-with `git config core.hooksPath .githooks`; the first four then run before every
+by running `sh .githooks/install.sh` (it pins `core.hooksPath` to the relative
+`.githooks`); the first four then run before every
 commit, and in CI; `nested-checkout-check.sh` needs `git`, so it runs in CI only;
 and `git diff --check` you run yourself. Keep
 [`.gitattributes`](.gitattributes): it holds these scripts at line-feed endings,

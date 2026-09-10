@@ -11,11 +11,13 @@ the whole team shares one set.
 ## Install (one command)
 
 ```bash
-git config core.hooksPath .githooks
+sh .githooks/install.sh
 ```
 
-Until you run this, the hooks are inert. Run it once per clone. To stop using
-them, `git config --unset core.hooksPath`.
+This pins `core.hooksPath` to the relative `.githooks` for you — the script runs
+`git config core.hooksPath .githooks` behind a guard and prints a confirmation.
+Until you run it, the hooks are inert. Run it once per clone. To stop using them,
+`git config --unset core.hooksPath`.
 
 **Keep the path relative.** `.git/config` is **shared by every worktree**, so an
 absolute value binds them all to one checkout's hooks — and a check added on a
