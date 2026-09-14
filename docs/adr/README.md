@@ -30,7 +30,7 @@ are their enforcement:
    survives the deletion.)
 
 **Numbering.** `docs/adr/` is the single living ADR sequence, numbered
-contiguously from `0001`, and it grows — the next constitutional ADR is `0007`. A
+contiguously from `0001`, and it grows — the next constitutional ADR is `0009`. A
 bare "ADR-NNNN" means this directory's sequence. The archive under `docs/decisions/`
 has its **own namespace**: a prefixed, zero-based sequence `D-0000`–`D-0007` that
 shares no number with this one and is cited **by its `D-NNNN` identifier** — named
@@ -134,6 +134,7 @@ record by number here, and let the index table below do the linking.
 | [0005](0005-route-work-by-model-tier.md)        | Route work by model tier      | Accepted; amended |
 | [0006](0006-convene-a-panel-to-generate-options.md) | Convene a panel to generate options | Accepted |
 | [0007](0007-record-task-resource-use.md)        | Record each task's resource use | Accepted |
+| [0008](0008-require-one-reading-in-decision-driving-text.md) | Require one reading in decision-driving text | Accepted |
 
 <!-- Add one row per ADR as you write them. Keep the newest at the bottom. -->
 
