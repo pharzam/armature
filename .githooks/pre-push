@@ -12,7 +12,7 @@
 #
 # git passes each ref being pushed on stdin, one per line:
 #   <local ref> <local sha> <remote ref> <remote sha>
-# It is inert until you run `git config core.hooksPath .githooks`
+# It is inert until you run `sh .githooks/install.sh`
 # (see .githooks/README.md).
 #
 # How to adapt: change `protected` below if your default branch is not `main`.

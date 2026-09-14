@@ -41,7 +41,7 @@ you adapt to your domain and grow over time.
 | [`docs/tests/`](docs/tests/) | The testing conventions — the test levels, a pattern per level, the security, scaling, and Definition-of-Done checklists, and test-to-requirement traceability — plus [`run-discipline-tests.sh`](docs/tests/run-discipline-tests.sh), which tests the kit's own linters against fixtures. |
 | [`tests/`](tests/) | The repo-root drop-in where an adopter's product tests live. Empty in the kit (it has no product), kept in git by a `.gitkeep`. |
 | [`docs/tasks/`](docs/tasks/) | The task index — [`backlog.md`](docs/tasks/backlog.md) and [`completed.md`](docs/tasks/completed.md). |
-| [`.githooks/`](.githooks/) | Git hooks that enforce the cheap gate locally — a commit-message check and a pre-commit runner. Install with `git config core.hooksPath .githooks`. |
+| [`.githooks/`](.githooks/) | Git hooks that enforce the cheap gate locally — a commit-message check and a pre-commit runner. Install with `sh .githooks/install.sh`. |
 | [`.gitattributes`](.gitattributes) | **Copy this one.** It keeps the kit's scripts and hooks at line-feed endings, without which none of them runs on a Windows checkout, and pins the handful of fixtures whose Windows endings *are* the assertion. Leave it behind and the gate is either unrunnable or quietly testing nothing. |
 | [`docs/ci/`](docs/ci/) | Optional CI templates (GitHub Actions and GitLab CI) that run the same gate on every PR. Inert until you copy one into place. |
 | [`docs/templates/`](docs/templates/) | Optional, inert GitHub/GitLab issue and PR templates that embody the issue-first workflow. Inert until you copy them into place. |
@@ -74,8 +74,9 @@ To stand up a new project:
 2. Follow **[How to adapt this kit](docs/engineering-discipline.md#how-to-adapt-this-kit)** —
    set the project-wide values (test runner, evidence store, task-ID scheme, worktree
    directory) and fill the sibling documents.
-3. **Turn on enforcement.** Install the git hooks with
-   `git config core.hooksPath .githooks`, fill their `‹…›` steps, and — if you use
+3. **Turn on enforcement.** Install the git hooks by running
+   `sh .githooks/install.sh` (it pins `core.hooksPath` to the relative `.githooks`),
+   fill their `‹…›` steps, and — if you use
    GitHub or GitLab — activate CI by copying a template from
    [`docs/ci/`](docs/ci/) into place. This makes the quality gate self-enforcing;
    the [ADR](docs/adr/adr-lint.sh) and [PRD](docs/prd/prd-lint.sh) linters and their
