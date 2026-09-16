@@ -90,12 +90,15 @@ a person, not asserted by a command, so it is not a rung of the automated ladder
 
 A discipline test lints the **process rather than the product**: it checks the
 repo's own conventions and needs no product toolchain, so it can be the project's
-first test, before any product code exists. The kit ships three:
-[`adr-lint.sh`](../adr/adr-lint.sh) and [`prd-lint.sh`](../prd/prd-lint.sh)
+first test, before any product code exists. The kit ships five:
+[`adr-lint.sh`](../adr/adr-lint.sh), [`prd-lint.sh`](../prd/prd-lint.sh) and
+[`link-lint.sh`](../links/link-lint.sh)
 read repo files and run in
 both the hook and CI, while
-[`pr-link-lint.sh`](../ci/pr-link-lint.sh) reads the pull-request body — a forge
-artifact absent at commit time — so it runs in CI only. Add one whenever a
+[`pr-link-lint.sh`](../ci/pr-link-lint.sh) and
+[`review-record-lint.sh`](../ci/review-record-lint.sh) read a forge
+artifact absent at commit time — the pull-request body and the linked issue — so
+they run in CI only. Add one whenever a
 convention is worth enforcing by machine rather than by review.
 
 These linters are themselves tested. [`run-discipline-tests.sh`](run-discipline-tests.sh)
