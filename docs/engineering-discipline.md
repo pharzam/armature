@@ -79,9 +79,9 @@ memory:
   relative**: `.git/config` is shared by every worktree, so an absolute value binds
   them all to one checkout's hooks. This turns
   on [`.githooks/`](../.githooks/): the `commit-msg` hook checks
-  [commit format](#commit-messages), and the `pre-commit` hook runs the five
-  repo-file [discipline linters](#testing) and their self-tests, plus the fast
-  gate you fill in. See [Git hooks](#git-hooks).
+  [commit format](#commit-messages), and the `pre-commit` hook runs the three
+  repo-file [discipline linters](#testing) — ADR, PRD and link — and the discipline
+  self-tests, plus the fast gate you fill in. See [Git hooks](#git-hooks).
 - **Fill the hook and CI `‹…›` steps** for your stack — `‹lint›`, the test-level
   commands from [`tests/test-levels.md`](tests/test-levels.md)
   (`‹unit test command›`, `‹integration test command›`, `‹end-to-end test command›`),
@@ -780,19 +780,23 @@ on stable interfaces — no brittle selectors or timing. The full list is
 [`tests/scaling-checklist.md`](tests/scaling-checklist.md).
 
 **Discipline tests keep the process itself honest.** Beyond tests of the product,
-the kit ships three tests of its own conventions:
+the kit ships five tests of its own conventions:
 [`adr/adr-lint.sh`](adr/adr-lint.sh) lints [`adr/`](adr/) against the
 [ADR](#architecture-decision-records) rules — filenames, sequential numbering,
 required sections, the index, and cross-links —
 [`prd/prd-lint.sh`](prd/prd-lint.sh) lints [`prd/`](prd/) against the
 [PRD](#product-requirements) rules — requirement IDs, a resolvable cited fact per
-requirement, MoSCoW and phase, and the traceability matrix — and
-[`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull request's body links
-its issue ([R1](issue-workflow.md#r1--issue-first)). They read only text, so they
+requirement, MoSCoW and phase, and the traceability matrix —
+[`links/link-lint.sh`](links/link-lint.sh) resolves every in-tree Markdown link and
+heading anchor, [`ci/pr-link-lint.sh`](ci/pr-link-lint.sh) checks that a pull
+request's body links its issue ([R1](issue-workflow.md#r1--issue-first)), and
+[`ci/review-record-lint.sh`](ci/review-record-lint.sh) checks that the linked issue
+carries a parseable review record. They read only text, so they
 need no toolchain and can be the project's first tests, before any product code
-exists. The two that lint repo files run in the [`pre-commit`](#git-hooks) hook and
-in [CI](#continuous-integration-optional); the PR-link check reads the PR body — a
-forge artifact absent at commit time — so it runs in CI only. Add a discipline test
+exists. The three that lint repo files — ADR, PRD and link — run in the
+[`pre-commit`](#git-hooks) hook and
+in [CI](#continuous-integration-optional); the two that read a forge artifact — the
+PR-link and review-record checks — run in CI only. Add a discipline test
 whenever a convention is worth enforcing automatically rather than by review; wire
 each one into the hook and CI wherever its input is available.
 
@@ -800,8 +804,8 @@ each one into the hook and CI wherever its input is available.
 
 CI runs this whole gate automatically on every change, so it is enforced by the
 forge rather than by memory. It is the **authority**: its checks — the
-[discipline linters](#testing) the templates ship (ADR, PRD, agent-entry and the
-PR-link check), their [fixture self-tests](#testing), the
+[discipline linters](#testing) the templates ship (ADR, PRD, link, PR-link and
+review-record), their [fixture self-tests](#testing), the
 [test levels](#testing), lint, a security scan, and
 the [commit-format](#commit-messages) check — are the ones you make *required*
 before a merge. The [git hooks](#git-hooks) run the same rules locally for fast feedback.
@@ -832,8 +836,8 @@ It pins `core.hooksPath` to the relative `.githooks`. Two hooks ship with the ki
   which every linked worktree reaches too, so a hook left in `.git/hooks` is the
   same fault by another route (see [`guardrails.md`](guardrails.md)). It also
   refuses when it cannot resolve either path, rather than guessing. Then it runs
-  the four repo-file
-  [discipline linters](#testing) — ADR, PRD, agent-entry and link —
+  the three repo-file
+  [discipline linters](#testing) — ADR, PRD and link —
   and their fixture self-tests,
   then the `‹lint›`, the fast [test levels](#testing) (`‹unit test command›`, then
   `‹integration test command›`), and the `‹security scanner›` step you fill in for

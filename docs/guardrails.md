@@ -207,6 +207,20 @@ failure modes worth keeping.
   **amendment pointer** on the archived record. **The check:** grep the whole tree —
   archive and forge templates included — for the old wording, and reconcile each living
   mirror or point each immutable one; a dated log entry recording history stays.
+- ❌ **A hand-mirrored count or check-set that no linter guards.** The set of discipline
+  linters — and how many there are — is spelled out by hand across many living
+  docs, among them [`engineering-discipline.md`](engineering-discipline.md), this file,
+  [`tests/test-levels.md`](tests/test-levels.md), the two `tests/README.md` files,
+  [`ci/README.md`](ci/README.md) and
+  [`.githooks/README.md`](../.githooks/README.md). Add or remove a check and every one
+  can go stale, and a **removed** check leaves its name behind as a linter that no longer
+  exists — a `link-lint` run stays green, because it resolves a *link*, not a claim. It is
+  silent because the sentence still reads well and the count still looks deliberate: the
+  kit once said `three`, `four` and `five` at once, and named an `agent-entry` linter that
+  had been cut. **The check:** when you add or remove a discipline check, grep the whole
+  tree for the check-set enumeration — the old name and each spelled count — and reconcile
+  every living mirror in the same change; the immutable ADR and archived decision copies
+  stay as history.
 
 ## 3. Validation — how you check you are not fooling yourself
 
@@ -225,7 +239,7 @@ cheap enough to wire into CI; which run once per change of a given kind›`.
 
 **The automated gate is this validation layer, mechanized.** The cheap, always-on
 checks — the [discipline linters](engineering-discipline.md#testing) the kit
-ships (ADR, PRD and agent-entry) and their
+ships (ADR, PRD and link) and their
 [fixture self-tests](engineering-discipline.md#testing), the
 [test levels](engineering-discipline.md#testing), lint, a security
 scan, and the [commit-format](engineering-discipline.md#commit-messages)
