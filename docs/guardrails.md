@@ -208,9 +208,10 @@ failure modes worth keeping.
   archive and forge templates included — for the old wording, and reconcile each living
   mirror or point each immutable one; a dated log entry recording history stays.
 - ❌ **A hand-mirrored count or check-set that no linter guards.** The set of discipline
-  linters — and how many there are — is spelled out by hand in at least seven living
-  docs: [`engineering-discipline.md`](engineering-discipline.md), this file,
-  [`tests/test-levels.md`](tests/test-levels.md), the two `tests/README.md` files and
+  linters — and how many there are — is spelled out by hand across many living
+  docs, among them [`engineering-discipline.md`](engineering-discipline.md), this file,
+  [`tests/test-levels.md`](tests/test-levels.md), the two `tests/README.md` files,
+  [`ci/README.md`](ci/README.md) and
   [`.githooks/README.md`](../.githooks/README.md). Add or remove a check and every one
   can go stale, and a **removed** check leaves its name behind as a linter that no longer
   exists — a `link-lint` run stays green, because it resolves a *link*, not a claim. It is
